@@ -12,7 +12,7 @@ const member1=ref(true);
 
       <li style="margin-left:20px; margin-top:3px">
         <transition mode="out-in"
-            enter-active-class="animate__animated animate__backInLeft slow-anim-out"
+            enter-active-class="animate__animated animate__backInLeft  slow-anim-out"
             leave-active-class="animate__animated animate__backOutLeft slow-anim-in"
         >
           <span v-if="member1" key="member1" @click="member1=!member1" class="member1">Melody_sensei</span>
