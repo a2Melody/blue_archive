@@ -71,11 +71,11 @@ const member1=ref(true);
     cursor: pointer;
   }
   .slow-anim-out {
-    --animate-duration: 2.4s;
+    --animate-duration: 1.6s;
     animation-timing-function:ease ;
   }
   .slow-anim-in {
-    --animate-duration: 2.4s;
+    --animate-duration: 1.4s;
     animation-timing-function:ease-out ;
   }
 </style>
