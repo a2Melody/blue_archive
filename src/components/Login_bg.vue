@@ -3,7 +3,8 @@ import {computed} from "vue";
 
 const props=defineProps({
   bg:String,
-  bgPos: { type: String, default: 'center 0' }
+  bgPos: { type: String, default: 'center 0' },
+  comp:{type:Object,default:null}
 })
 
 const bgStyle = computed(() => ({
@@ -16,7 +17,7 @@ const bgStyle = computed(() => ({
 
 <template>
   <div class="back_image" :style="bgStyle">
-
+    <component :is="comp"></component>
   </div>
 </template>
 
@@ -25,7 +26,7 @@ const bgStyle = computed(() => ({
   position: relative;
   border:0;
   width: 100%;
-  height: 630px;
+  height: 660px;
   background-position: center center;
 }
 </style>

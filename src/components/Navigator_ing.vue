@@ -137,6 +137,8 @@ function jump(e){
   top: 100%;
   left:50%;
   transform:translateX(-50%);
+  //background-color: black;
+  z-index: 9999;
 }
 .up:hover,.down:hover{
   cursor: pointer;
@@ -164,23 +166,5 @@ function jump(e){
 }
 
 /*缩小和下拉的具体过渡效果*/
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 320ms cubic-bezier(.22,.9,.35,1),
-  transform 320ms cubic-bezier(.22,.9,.35,1);
-}
 
-/* 初始状态（进入前）和离开结束状态（离开后） */
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-6px); /* 向上偏移一点，再回到原位 */
-}
-
-/* 进入结束 / 离开开始状态（可省，因为默认为 final） */
-.fade-slide-enter-to,
-.fade-slide-leave-from {
-  opacity: 1;
-  transform: translateY(0);
-}
 </style>
