@@ -5,7 +5,7 @@
 <template>
 <!--Login为登录组件-->
 <div class="login_container">
-
+  <div class="login_words">登录</div>
 </div>
 
 </template>
@@ -18,8 +18,14 @@
   width: 430px;
   height: 408px;
   background-color: white;
-  opacity:0.5;
+  opacity:0.7;
   border-radius: 15px;
 }
-
+.login_words{
+  position: relative;
+  font-weight: 600;
+  font-size: 18px;
+  left: 56px;
+  top:43px;
+}
 </style>
