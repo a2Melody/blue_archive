@@ -20,6 +20,6 @@ const bgStyle = {
   border:0;
   width: 100%;
   height: 630px;
-  background-position: center;
+  background-position: center 0;
 }
 </style>
