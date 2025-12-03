@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>图片裁剪工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.css">
+    <style>
+        img {
+            width: 800px;
+            height: 500px;
+        }
+        .cropper-view-box, .cropper-face {
+            border-radius: 50%;
+        }
+        #cropped-result {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <img src="https://p1.ssl.qhimg.com/t019228fc2ed5df1aa8.jpg" id="image">
+</div>
+<button onclick="split()"> 裁剪 </button>
+<div>
+    <img id="cropped-result">
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.js"></script>
+<script>
+    var image = document.getElementById('image');
+    var cropper = new Cropper(image, {
+        aspectRatio: 1,
+    });
+    function split() {
+        console.log(1);
+        // 获取裁剪结果（返回裁剪后的图像数据）
+        var croppedData = cropper.getCroppedCanvas().toDataURL('image/jpeg');
+
+        // 将裁剪结果显示在另一个元素中
+        var resultElement = document.getElementById('cropped-result');
+        resultElement.src = croppedData;
+    }
+</script>
+</body>
+</html>
