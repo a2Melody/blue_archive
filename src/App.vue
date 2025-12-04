@@ -1,6 +1,6 @@
 <script setup>
-import Login from "@/view/Login.vue";
-import Register from "@/view/Register.vue";
+import LoginView from "@/view/Login_view.vue";
+import RegisterView from "@/view/Register_view.vue";
 import Navigator_ing from "@/components/Navigator_ing.vue";
 
 // import AvatarUploader from "@/test/AvatarUploader.vue";
@@ -8,9 +8,9 @@ import Navigator_ing from "@/components/Navigator_ing.vue";
 </script>
 
 <template>
-<Login></Login>
+<LoginView></LoginView>
   <div style="margin-top: 40px"></div>
-<Register></Register>
+<RegisterView></RegisterView>
 <!--<Navigator_ing></Navigator_ing>-->
 
 <!--  <AvatarUploader></AvatarUploader>-->

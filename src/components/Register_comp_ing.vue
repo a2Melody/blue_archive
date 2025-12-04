@@ -17,7 +17,7 @@
     left: 170px;
     top:60px;
     background-color: white;
-    opacity: 0.7;
-    border-radius: 15px;
+    opacity: 0.8;
+    border-radius: 18px;
   }
 </style>

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="js">
 import Navigator_ing from "@/components/Navigator_ing.vue";
 import Footer from "@/components/Footer.vue";
 import Login_bg from "@/components/Login_bg.vue";
