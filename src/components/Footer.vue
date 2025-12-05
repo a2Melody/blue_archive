@@ -11,28 +11,28 @@ const member3=ref(true);
     <ul class="members">
       <li class="title" data-tip=":点击下方的名字有小彩蛋">开发人员</li>
 
-      <li style="margin-left:20px; margin-top:0px">
+      <li style="margin-left:20px; margin-top:0px" @click="member1=!member1">
         <transition mode="out-in"
             enter-active-class="animate__animated animate__lightSpeedInRight  slow-anim-out"
             leave-active-class="animate__animated animate__lightSpeedOutLeft slow-anim-in">
-          <span v-if="member1" key="member1" @click="member1=!member1" class="member1" title="点击有小彩蛋">Melody_sensei</span>
-          <span v-else key="member1_words" @click="member1=!member1" class="member1_words">要玩一辈子的blue archive</span>
+          <span v-if="member1" key="member1" class="member1" title="点击有小彩蛋">Melody_sensei</span>
+          <span v-else key="member1_words"  class="member1_words">要玩一辈子的blue archive</span>
         </transition>
       </li>
-      <li style="margin-left: 20px">
+      <li style="margin-left: 20px" @click="member2=!member2">
         <transition mode="out-in"
                     enter-active-class="animate__animated animate__rotateInDownLeft  quick-anim-out"
                     leave-active-class="animate__animated animate__rotateOutDownRight quick-anim-in">
-          <span v-if="member2" key="member2" @click="member2=!member2" class="member2" >NzuCRAS</span>
-          <span v-else key="member2_words" @click="member2=!member2" class="member2_words">兵败如山倒desuwa</span>
+          <span v-if="member2" key="member2"  class="member2" >NzuCRAS</span>
+          <span v-else key="member2_words" class="member2_words">兵败如山倒desuwa</span>
         </transition>
       </li>
-      <li class="member3" style="margin-left: 20px">
+      <li class="member3" style="margin-left: 20px" @click="member3=!member3">
         <transition mode="out-in"
                     enter-active-class="animate__animated animate__bounceIn  slow-anim-out"
                     leave-active-class="animate__animated animate__bounceOut slow-anim-in">
-          <span v-if="member3" key="member3" @click="member3=!member3" class="member3" >小白</span>
-          <span v-else key="member3_words" @click="member3=!member3" class="member3_words">木有什么想说的，你们说就好</span>
+          <span v-if="member3" key="member3"  class="member3" >小白</span>
+          <span v-else key="member3_words"  class="member3_words">木有什么想说的，你们说就好</span>
         </transition>
       </li>
     </ul>

@@ -8,9 +8,9 @@ import Navigator_ing from "@/components/Navigator_ing.vue";
 </script>
 
 <template>
-<LoginView></LoginView>
-  <div style="margin-top: 40px"></div>
 <RegisterView></RegisterView>
+  <div style="margin-top: 40px"></div>
+  <LoginView></LoginView>
 <!--<Navigator_ing></Navigator_ing>-->
 
 <!--  <AvatarUploader></AvatarUploader>-->

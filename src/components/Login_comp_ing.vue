@@ -9,14 +9,14 @@ const user=ref('');
 <!--Login为登录组件-->
 <div class="login_container">
   <div class="login_words">登录</div>
-  <div class="input_container">
+  <div class="out_input_container">
     <div class="login_warning iconfont icon-gantanhaozhong" >用户名或者密码错误</div>
 
-    <div class="user_input_area">
+    <div class="input_area_container" style="margin-bottom: 15px;margin-top: 5px;">
 
     </div>
 
-    <div class="pwd_input_area">
+    <div class="input_area_container">
 
     </div>
 
@@ -50,8 +50,9 @@ const user=ref('');
   font-size: 20px;
   font-weight: 600;
   user-select: none;
+  letter-spacing: 1px;
 }
-.input_container{
+.out_input_container{
   width: 318px;
   height: 260px;
 }
@@ -73,14 +74,7 @@ const user=ref('');
 }
 
 /*输入框和按钮*/
-.user_input_area{
-  width: 318px;
-  height: 40px;
-  background-color: #ddd;
-  margin-bottom: 15px;
-  margin-top: 5px;
-}
-.pwd_input_area{
+.input_area_container{
   width: 318px;
   height: 40px;
   background-color: #ddd;
