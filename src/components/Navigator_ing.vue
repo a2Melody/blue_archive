@@ -56,7 +56,7 @@ function jump(e){
 
         <!--  向上缩小-->
         <div class="up" @click="changeShow">
-          <i class="iconfont icon-xiangshang"  style="color: #6BCBFF;font-size: 14px"></i>
+          <i class="iconfont icon-xiangshang"  style="color: #6BCBFF;font-size: 16px"></i>
         </div>
       </div>
     </transition>
@@ -64,7 +64,7 @@ function jump(e){
 <!--  下拉返回-->
      <transition name="">
        <div class="down" v-show="!show" @click="changeShow">
-         <i class="iconfont icon-xiangxia" style="color: white; font-size: 14px"></i>
+         <i class="iconfont icon-xiangxia" style="color: white; font-size: 16px"></i>
        </div>
      </transition>
 </template>
@@ -94,14 +94,19 @@ function jump(e){
 .nav li{
   margin-left: 60px;
 }
+
 /* 头像上传 */
 .profile{
   margin-left: 461px;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #dad8d8;
+  background-image: url("../assets/images/profile2.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position:  center;
 }
+
 /* 个性签名 */
 .sentence{
   margin-left: 30px;
@@ -125,6 +130,7 @@ function jump(e){
   font-weight: inherit;        /* 占位符使用与 input 相同的粗细 */
   color: rgba(255,255,255,1);
 }
+
 /* 缩放框 */
 .up{
   width: 30px;
@@ -137,12 +143,12 @@ function jump(e){
   top: 100%;
   left:50%;
   transform:translateX(-50%);
-  //background-color: black;
   z-index: 9999;
 }
 .up:hover,.down:hover{
   cursor: pointer;
 }
+
 /*下拉框*/
 .down{
   width: 100%;
@@ -151,6 +157,7 @@ function jump(e){
   text-align: center;
   background-color: #6BCBFF;
 }
+
 /*向上跳动动画效果*/
 .nav_link{
   display: inline-block;

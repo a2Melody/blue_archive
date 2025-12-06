@@ -186,6 +186,4 @@ function button_focus(){
     line-height: 18px;
   }
 
-
-
 </style>
