@@ -1,10 +1,12 @@
 <script setup lang="js">
 import {ref} from "vue";
 
+/*控制错误信息的显示与否*/
 const warning_show=ref(false);
-const user_name_input=ref(null);
+/*标签的引用*/
 const pwd_input=ref(null);
 const login_button=ref(null);
+/*v-model的值*/
 const pwd=ref('');
 const user_name=ref('');
 
@@ -23,7 +25,7 @@ function button_focus(){
   <div class="middle_input_container">
     <div class="login_warning iconfont icon-gantanhaozhong" :style="{visibility:warning_show?'visible':'hidden'}">用户名或者密码错误</div>
 
-    <div class="input_area_container" style="margin-bottom: 15px;margin-top: 5px;">
+    <div class="input_area_container" style="margin-bottom: 15px">
         <span class="icon iconfont icon-yun1"></span>
         <input class="input" v-model="user_name" ref="user_name_input" type="text" placeholder="请输入用户名" @keydown.enter="pwd_focus">
     </div>
@@ -33,7 +35,7 @@ function button_focus(){
       <input class="input" v-model="pwd" ref="pwd_input" type="password" placeholder="请输入密码" @keydown.enter="button_focus">
     </div>
 
-    <button class="login_submit" ref="login_button">登录</button>
+    <button class="login_submit" ref="login_button" type="submit">登录</button>
   </div>
   <!--    最下面的忘记密码和立即注册-->
   <div class="footer_a">
@@ -46,20 +48,21 @@ function button_focus(){
 <style scoped>
 .login_container{
   position: relative;
-  left: 910px;
-  top: 100px;
-  width: 430px;
-  height: 408px;
+  left: 920px;
+  top: 130px;
+  width: 398px;
+  height: 380px;
   background-color: white;
   opacity:0.8;
-  padding:40px 56px;
+  padding:45px 40px 30px 40px;
   font-weight: 500;
   border-radius: 18px;
 }
 .login_words{
   width: 132px;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  padding-left: 10px;
+  line-height: 30px;
   font-size: 20px;
   font-weight: 600;
   user-select: none;
@@ -67,7 +70,7 @@ function button_focus(){
 }
 .middle_input_container{
   width: 318px;
-  height: 260px;
+  height: 250px;
 }
 .login_warning{
   display: inline-flex;        /* 或 flex，视场景而定 */
@@ -75,7 +78,7 @@ function button_focus(){
   width: 160px;
   height: 18px;
   font-size: 14px;
-  margin-top: 16px;
+  margin-top: 10px;
   color: #6BCBFF;
   font-weight: 600;
   line-height: 18px;

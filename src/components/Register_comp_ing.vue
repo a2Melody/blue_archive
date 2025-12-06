@@ -1,9 +1,35 @@
 <script setup lang="js">
 import {ref} from "vue";
 
-const user_name_input=ref(null);
+/*控制错误信息的显示与否*/
+const user_warning=ref(false);
+const email_warning=ref(false);
+const pwd_warning=ref(false);
+const pwd_twice_warning=ref(false);
+/*v-model的值*/
 const user_name=ref('');
-const user_warning=ref(true);
+const email=ref('');
+const pwd=ref('');
+const pwd_twice=ref('');
+/*标签的引用*/
+const user_name_input=ref(null);
+const email_input=ref(null);
+const pwd_input=ref(null);
+const pwd_twice_input=ref(null);
+const register_btn=ref(null);
+
+function email_focus(){
+  email_input.value.focus();
+}
+function pwd_focus(){
+  pwd_input.value.focus();
+}
+function pwd_twice_focus(){
+  pwd_twice_input.value.focus();
+}
+function button_focus(){
+  register_btn.value.focus();
+}
 
 </script>
 
@@ -12,31 +38,37 @@ const user_warning=ref(true);
 <div class="register_container">
 
   <div class="top_container">
-    <div class="register_words">注册</div>
+    <span class="register_words">注册</span>
+    <span class="return_login"><router-link to="">返回登录</router-link></span>
   </div>
 
-  <div class="middle_input_container" style="margin-top: 5px">
+  <div class="middle_input_container" style="margin-top: 15px">
 <!--    用户名字输入-->
     <div class="input_area_container">
-      <span class="icon iconfont icon-yun1" style="font-size: 18px"></span>
-      <input class="input" v-model="user_name" ref="user_name_input" type="text" placeholder="请输入用户名" @keydown.enter="pwd_focus">
+      <span class="icon iconfont icon-yun1" style="font-size: 18px;margin-top: 5px"></span>
+      <input class="input" v-model="user_name" ref="user_name_input" type="text" placeholder="请输入用户名" @keydown.enter="email_focus">
     </div>
     <div class="warning iconfont icon-gantanhaozhong" :style="{visibility:user_warning?'visible':'hidden'}">用户名已经被注册</div>
 <!--  邮箱输入-->
     <div class="input_area_container">
-
+      <span class="icon iconfont icon-youxiang1" style="font-size: 26px;font-weight: 500"></span>
+      <input class="input" v-model="email" ref="email_input" type="text" placeholder="请输入邮箱" @keydown.enter="pwd_focus">
     </div>
-    <div class="warning iconfont icon-gantanhaozhong">邮箱格式错误</div>
+    <div class="warning iconfont icon-gantanhaozhong" :style="{visibility:email_warning?'visible':'hidden'}">邮箱格式错误</div>
 <!--密码输入-->
     <div class="input_area_container">
-
+      <span class="icon iconfont icon-key" style="font-size: 25px;font-weight: 600"></span>
+      <input class="input" v-model="pwd" ref="pwd_input" type="password" placeholder="请输入密码" @keydown.enter="pwd_twice_focus">
     </div>
-    <div class="warning iconfont icon-gantanhaozhong">密码至少包含一个大写字母、小写字母和数字</div>
+    <div class="warning iconfont icon-gantanhaozhong" :style="{visibility:pwd_warning?'visible':'hidden'}">密码至少包含一个大写字母、小写字母和数字</div>
 <!--重复密码输入-->
     <div class="input_area_container">
-
+      <span class="icon iconfont icon-key" style="font-size: 25px;font-weight: 600"></span>
+      <input class="input" v-model="pwd_twice" ref="pwd_twice_input" type="password" placeholder="请确认密码" @keydown.enter="button_focus">
     </div>
-    <div class="warning iconfont icon-gantanhaozhong">重复输入的密码并不相同</div>
+    <div class="warning iconfont icon-gantanhaozhong" :style="{visibility:pwd_twice_warning?'visible':'hidden'}">重复输入的密码并不相同</div>
+<!--注册按钮-->
+    <button ref="register_btn" type="submit" class="register_btn">注册</button>
   </div>
 </div>
 </template>
@@ -44,53 +76,67 @@ const user_warning=ref(true);
 <style scoped>
   .register_container{
     position: relative;
-    width: 430px;
+    width: 398px;
     height: 480px;
-    padding:40px 56px;
+    padding:40px 40px;
     left: 170px;
     top:80px;
     background-color: white;
     opacity: 0.8;
     border-radius: 18px;
   }
- /* 注册这两个字+返回登录*/
+
+  /* 注册这两个字+返回登录*/
   .top_container{
-    width: 318px;
+    position: relative;
+    width: 270px;
     height: 40px;
+    padding-top: 1px;
+    padding-left: 14px;
   }
   .register_words{
     width: 132px;
     height: 40px;
-    line-height: 40px;
     font-size: 20px;
     font-weight: 600;
     user-select: none;
     letter-spacing: 1px;
   }
+  .return_login{
+    margin-top: 3px;
+    margin-left: 150px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  .return_login:hover{
+    color: #6BCBFF;
+  }
+
+  /*  输入框+按钮*/
   .middle_input_container{
     width: 318px;
-    height: 260px;
+    height: 320px;
   }
-  /*输入框*/
   .input_area_container{
     display: flex;
     align-items: center;
     gap: 6px;
     width: 318px;
     height: 40px;
-    background-color: #ddd;
-    border-radius: 4px;
-    padding-left: 10px;
+    border-radius: 7px;
+    padding-left: 14px;
     padding-right: 25px;
     user-select: none;
+    background-color: transparent;
+    border-bottom: 2px solid #ddd;
   }
   .icon{
     height: 22px;
     width: 22px;
-    font-size: 20px;
+    font-size: 18px;
     color: #696969;
     user-select: none;
-    line-height: 22px;
   }
   .input{
     flex: 1;
@@ -105,7 +151,21 @@ const user_warning=ref(true);
     font-weight: 600;
     margin-left: 8px;
   }
-
+  .register_btn{
+    width: 318px;
+    color: white;
+    font-size: 16px;
+    letter-spacing: 4px;
+    font-weight: 600;
+    height: 40px;
+    margin-top: 35px;
+    background-color: #6BCBFF;
+    border-radius: 6px;
+    border: 0;
+  }
+  .register_btn:focus,.register_btn:hover{
+    outline:2px solid #ddd;
+  }
 
 /*  格式不正确的显示语句*/
   .warning{
@@ -114,11 +174,11 @@ const user_warning=ref(true);
   width: 318px;
   height: 18px;
   font-size: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 1px;
   color: #6BCBFF;
   font-weight: 600;
   line-height: 18px;
-  background-color: #55a532;
+  margin-left: 5px;
 }
   .warning::before{
     font-size: 17px;
