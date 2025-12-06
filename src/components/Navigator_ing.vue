@@ -21,6 +21,7 @@ function input_blur(e){
 function changeShow(){
   show.value=!show.value;
 }
+/*小a悬浮时会向上跳跃一下*/
 function jump(e){
   const el=e.currentTarget;
   if(!el) return;
@@ -29,11 +30,13 @@ function jump(e){
   const clean = () => { el.classList.remove("nav-jumping"); };
   el.addEventListener("animationend", clean, { once: true });   //动画结束后调用clean函数，并且触发一次事件后自动删除监听器
 }
+
 </script>
 
 <template>
-    <transition name="">
-      <div class="navigator_container" v-show="show">
+  <div class="nav-shell" :class="show ? 'h64' : 'h20'">
+    <transition name="up" mode="out-in">
+      <div class="navigator_container" v-if="show">
         <!--      logo-->
         <div class="logo">
           <img :src="sweets" width="30px" height="27px" alt="logo">
@@ -59,17 +62,31 @@ function jump(e){
           <i class="iconfont icon-xiangshang"  style="color: #6BCBFF;font-size: 16px"></i>
         </div>
       </div>
-    </transition>
 
-<!--  下拉返回-->
-     <transition name="">
-       <div class="down" v-show="!show" @click="changeShow">
-         <i class="iconfont icon-xiangxia" style="color: white; font-size: 16px"></i>
-       </div>
-     </transition>
+      <!--  下拉返回-->
+      <div class="down" v-else @click="changeShow">
+        <i class="iconfont icon-xiangxia" style="color: white; font-size: 16px"></i>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <style scoped>
+/* 外层壳：高度动画，影响布局，让下方内容跟随上移/下移 */
+.nav-shell {
+  position: relative;
+  transition: height 1s ease;
+  overflow: visible;
+  z-index: 2;
+}
+.nav-shell.h64 { height: 64px; }
+.nav-shell.h20 { height: 20px; }
+.navigator_container,
+.down {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+}
 .navigator_container{
   display: flex;
   align-items: center;
@@ -81,6 +98,8 @@ function jump(e){
   font-weight: 600;
   user-select: none;
   position: relative;
+
+  /* 高度收缩时不露出内容 */
 }
 .logo{
   margin-left: 78px;
@@ -97,10 +116,13 @@ function jump(e){
 
 /* 头像上传 */
 .profile{
+  position: relative;
+  z-index: 10;
   margin-left: 461px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  transition: all .8s ease;
   background-image: url("../assets/images/profile2.jpg");
   background-size: cover;
   background-repeat: no-repeat;
@@ -173,5 +195,20 @@ function jump(e){
 }
 
 /*缩小和下拉的具体过渡效果*/
+@keyframes up-leave {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-70px); } /* 与实际高度一致 */
+}
+.up-leave-active { animation: up-leave 1s ease; }
+@keyframes up-enter {
+  0%   { transform: translateY(-70px); }
+  100% { transform: translateY(0); }
+}
+.up-enter-active { animation: up-enter 1s ease; }
+
+/*头像悬浮时可以放大并且显示下拉表*/
+.profile:hover{
+  transform:translate(-20px,15px) scale(1.75);
+}
 
 </style>
