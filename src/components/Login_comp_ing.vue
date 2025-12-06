@@ -1,29 +1,42 @@
 <script setup lang="js">
 import {ref} from "vue";
 
-const user=ref('');
+const warning_show=ref(false);
+const user_name_input=ref(null);
+const pwd_input=ref(null);
+const login_button=ref(null);
+const pwd=ref('');
+const user_name=ref('');
 
+function pwd_focus(){
+  pwd_input.value.focus();
+}
+function button_focus(){
+  login_button.value.focus();
+}
 </script>
 
 <template>
 <!--Login为登录组件-->
 <div class="login_container">
   <div class="login_words">登录</div>
-  <div class="out_input_container">
-    <div class="login_warning iconfont icon-gantanhaozhong" >用户名或者密码错误</div>
+  <div class="middle_input_container">
+    <div class="login_warning iconfont icon-gantanhaozhong" :style="{visibility:warning_show?'visible':'hidden'}">用户名或者密码错误</div>
 
     <div class="input_area_container" style="margin-bottom: 15px;margin-top: 5px;">
-
+        <span class="icon iconfont icon-yun1"></span>
+        <input class="input" v-model="user_name" ref="user_name_input" type="text" placeholder="请输入用户名" @keydown.enter="pwd_focus">
     </div>
 
     <div class="input_area_container">
-
+      <span class="icon iconfont icon-key" style="font-size: 25px;font-weight: 600"></span>
+      <input class="input" v-model="pwd" ref="pwd_input" type="password" placeholder="请输入密码" @keydown.enter="button_focus">
     </div>
 
-    <button class="login_submit">登录</button>
+    <button class="login_submit" ref="login_button">登录</button>
   </div>
-
-  <div class="footer">
+  <!--    最下面的忘记密码和立即注册-->
+  <div class="footer_a">
     <div class="forget_pwd"><RouterLink to="">忘记密码</RouterLink></div>
     <div class="to_register"><RouterLink to="">立即注册</RouterLink></div>
   </div>
@@ -52,7 +65,7 @@ const user=ref('');
   user-select: none;
   letter-spacing: 1px;
 }
-.out_input_container{
+.middle_input_container{
   width: 318px;
   height: 260px;
 }
@@ -73,12 +86,42 @@ const user=ref('');
   line-height: 18px;
 }
 
-/*输入框和按钮*/
+/*输入框*/
 .input_area_container{
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 318px;
   height: 40px;
-  background-color: #ddd;
+  border-radius: 7px;
+  padding-left: 14px;
+  padding-right: 25px;
+  user-select: none;
+  background-color: transparent;
+  border-bottom: 2px solid #ddd;
 }
+.icon{
+  height: 22px;
+  width: 22px;
+  font-size: 20px;
+  color: #696969;
+  user-select: none;
+}
+.input{
+  flex: 1;
+  height: 100%;
+  border: none;            /* 移除边框 */
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+  color: #696969;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+/*登录按钮*/
 .login_submit{
   width: 318px;
   color: white;
@@ -91,9 +134,12 @@ const user=ref('');
   border-radius: 6px;
   border: 0;
 }
+.login_submit:focus,.login_submit:hover{
+  outline:2px solid #ddd;
+}
 
 /*最下面的忘记密码和立即注册*/
-.footer{
+.footer_a{
   font-size: 14px;
   font-weight: 600;
   color: #333;
@@ -109,4 +155,6 @@ const user=ref('');
 .forget_pwd:hover,.to_register:hover{
   color: #6BCBFF;
 }
+
+
 </style>
