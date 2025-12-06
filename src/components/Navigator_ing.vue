@@ -50,7 +50,11 @@ function jump(e){
           <li><RouterLink to="" class="nav_link" @mouseenter="jump">测试ing</RouterLink></li>
         </ul>
         <!--      头像 profile photo-->
-        <div class="profile">
+        <div class="profile_wrapper">
+          <div class="profile"></div>
+          <ul class="content">
+            <li><router-link to="">个人中心</router-link></li>
+          </ul>
         </div>
         <!--      个性签名desu-->
         <div class="sentence">
@@ -115,10 +119,16 @@ function jump(e){
 }
 
 /* 头像上传 */
-.profile{
+.profile_wrapper{
   position: relative;
   z-index: 10;
   margin-left: 461px;
+  background-color: pink;
+  display: inline-block;
+}
+.profile{
+  position: relative;
+  z-index: 10;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -128,6 +138,29 @@ function jump(e){
   background-repeat: no-repeat;
   background-position:  center;
 }
+.content{
+  display: flex;
+  flex-direction: column;      /* 垂直排列 li */
+  align-items: center;         /* 交叉轴(水平)居中每个 li */
+  width: 200px;
+  height: 120px;
+  position: absolute;
+  background-color: white;
+  border-radius: 12px;
+  opacity: 0;
+  left: -98px;
+  top: 70px;
+  visibility: hidden;
+  color: #333;
+  font-size: 14px;
+
+}
+.profile_wrapper:hover .content,
+.profile_wrapper .content:hover {
+  visibility: visible;
+  opacity: 0.8;
+}
+
 
 /* 个性签名 */
 .sentence{
