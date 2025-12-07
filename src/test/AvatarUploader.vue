@@ -9,10 +9,6 @@
           <img ref="sourceImgRef" :src="sourceUrl" alt="待裁剪图片" @load="initCropper" />
         </div>
         <div class="controls" v-if="isReady">
-          <button @click="zoomIn">放大</button>
-          <button @click="zoomOut">缩小</button>
-          <button @click="rotateLeft">左旋90°</button>
-          <button @click="rotateRight">右旋90°</button>
           <button @click="reset">重置</button>
           <button class="primary" @click="doCrop">裁剪并生成（可下载）</button>
         </div>
@@ -21,7 +17,7 @@
       <div class="result-container">
         <h3>裁剪结果（实时预览）</h3>
         <!-- 使用 Cropper 的 preview 功能：这个容器将实时显示裁剪框内容 -->
-        <div class="image-wrapper result">
+        <div class="image-wrapper">
           <div class="result-preview"></div>
         </div>
 
@@ -88,14 +84,13 @@ const initCropper = () => {
     // 关键：开启预览容器（可以是选择器、元素、节点列表或数组）
     preview: '.result-preview',
     ready() {
-      isReady.value = true
+      isReady.value=true
     },
   })
 }
-
-const onFileChange = (e) => {
-  const file = e.target.files?.[0]
-  if (!file) return
+const onFileChange=(e)=>{
+  const file=e.target.files?.[0]
+  if (!file)return
 
   revokeIfNeeded(croppedUrl.value)
   croppedUrl.value = ''
@@ -117,10 +112,6 @@ const doCrop = () => {
   }, 'image/png', 0.92)
 }
 
-const zoomIn = () => isReady.value && cropperRef.value?.zoom(0.1)
-const zoomOut = () => isReady.value && cropperRef.value?.zoom(-0.1)
-const rotateLeft = () => isReady.value && cropperRef.value?.rotate(-90)
-const rotateRight = () => isReady.value && cropperRef.value?.rotate(90)
 const reset = () => isReady.value && cropperRef.value?.reset()
 
 onBeforeUnmount(() => {
