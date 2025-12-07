@@ -8,8 +8,8 @@ import Test from "@/test/Test.vue";
 </script>
 
 <template>
-  <AvatarUploader></AvatarUploader>
-  <div style="margin-top: 40px"></div>
+<!--  <AvatarUploader></AvatarUploader>-->
+<!--  <div style="margin-top: 40px"></div>-->
   <Developing_view></Developing_view>
   <div style="margin-top: 40px"></div>
   <RegisterView></RegisterView>

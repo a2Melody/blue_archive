@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "42191240",
+      "name": "arrow-right-s-line",
+      "font_class": "arrow-right-s-line",
+      "unicode": "e747",
+      "unicode_decimal": 59207
+    },
+    {
+      "icon_id": "4437608",
+      "name": "右箭头",
+      "font_class": "youjiantou1",
+      "unicode": "e617",
+      "unicode_decimal": 58903
+    },
+    {
+      "icon_id": "21167612",
+      "name": "右箭头",
+      "font_class": "youjiantou2",
+      "unicode": "e625",
+      "unicode_decimal": 58917
+    },
+    {
       "icon_id": "909403",
       "name": "i-休息",
       "font_class": "xiuxi",

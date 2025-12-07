@@ -53,22 +53,20 @@ function jump(e){
         <div class="profile_wrapper">
           <div class="profile"></div>
           <ul class="content">
-            <li><router-link to="" class="iconfont icon-icon li_icon">上传头像</router-link></li>
-            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link></li>
-            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link></li>
+            <li><router-link to="" class="iconfont icon-icon li_icon">上传头像</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->
         <div class="sentence">
           <input class="input_sentence" type="text" v-model="signature" placeholder="与你的每一天都是奇迹" @keydown.enter="input_enter" @focus="input_focus" @blur="input_blur">
         </div>
-
         <!--  向上缩小-->
         <div class="up" @click="changeShow">
           <i class="iconfont icon-xiangshang"  style="color: #6BCBFF;font-size: 16px"></i>
         </div>
       </div>
-
       <!--  下拉返回-->
       <div class="down" v-else @click="changeShow">
         <i class="iconfont icon-xiangxia" style="color: white; font-size: 16px"></i>
@@ -161,12 +159,17 @@ function jump(e){
   color: #696969;
   font-size: 14px;
   transition: opacity .8s ease;
-  padding: 28px 20px;
+  padding: 28px 10px;
 }
 .li_icon::before{
   font-size: 20px;
   display: inline-block;
-  transform: translate(-6px,1px);
+  transform: translate(-1px,1px);
+}
+.span_icon{
+  display: inline-block;
+  font-size: 18px;
+  margin-left: 20px;
 }
 .content li:hover{
   color: #6BCBFF;
