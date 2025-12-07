@@ -6,6 +6,62 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "909403",
+      "name": "i-休息",
+      "font_class": "xiuxi",
+      "unicode": "e667",
+      "unicode_decimal": 58983
+    },
+    {
+      "icon_id": "15634360",
+      "name": "休息",
+      "font_class": "xiuxi1",
+      "unicode": "e6ad",
+      "unicode_decimal": 59053
+    },
+    {
+      "icon_id": "145454",
+      "name": "图片",
+      "font_class": "tupian",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    },
+    {
+      "icon_id": "1002631",
+      "name": "图片",
+      "font_class": "icon",
+      "unicode": "e694",
+      "unicode_decimal": 59028
+    },
+    {
+      "icon_id": "1304896",
+      "name": "用户",
+      "font_class": "yonghu1",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    },
+    {
+      "icon_id": "10593835",
+      "name": "用户-角色-用户名-单人_jurassic",
+      "font_class": "jurassic_user",
+      "unicode": "e6a4",
+      "unicode_decimal": 59044
+    },
+    {
+      "icon_id": "11372711",
+      "name": "图片",
+      "font_class": "tupian1",
+      "unicode": "e8ba",
+      "unicode_decimal": 59578
+    },
+    {
+      "icon_id": "33661815",
+      "name": "用户_用户",
+      "font_class": "yonghu_yonghu",
+      "unicode": "e678",
+      "unicode_decimal": 59000
+    },
+    {
       "icon_id": "399197",
       "name": "密码，钥匙",
       "font_class": "mimayaochi",

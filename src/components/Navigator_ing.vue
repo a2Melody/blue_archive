@@ -53,7 +53,9 @@ function jump(e){
         <div class="profile_wrapper">
           <div class="profile"></div>
           <ul class="content">
-            <li><router-link to="">个人中心</router-link></li>
+            <li><router-link to="" class="iconfont icon-icon li_icon">上传头像</router-link></li>
+            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link></li>
+            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link></li>
           </ul>
         </div>
         <!--      个性签名desu-->
@@ -123,7 +125,6 @@ function jump(e){
   position: relative;
   z-index: 10;
   margin-left: 461px;
-  background-color: pink;
   display: inline-block;
 }
 .profile{
@@ -131,6 +132,7 @@ function jump(e){
   z-index: 10;
   width: 40px;
   height: 40px;
+  border: 1px solid white;
   border-radius: 50%;
   transition: all .8s ease;
   background-image: url("../assets/images/profile2.jpg");
@@ -138,29 +140,40 @@ function jump(e){
   background-repeat: no-repeat;
   background-position:  center;
 }
+/*头像悬浮时可以放大并且显示下拉表*/
+.profile_wrapper:hover .profile{
+  transform:translate(-22px,22px) scale(1.75);
+}
 .content{
   display: flex;
   flex-direction: column;      /* 垂直排列 li */
   align-items: center;         /* 交叉轴(水平)居中每个 li */
-  width: 200px;
-  height: 120px;
+  width: 220px;
+  height: 240px;
   position: absolute;
   background-color: white;
   border-radius: 12px;
   opacity: 0;
-  left: -98px;
-  top: 70px;
+  left: -110px;
+  top: 62px;
   visibility: hidden;
-  color: #333;
+  color: #696969;
   font-size: 14px;
-
+  transition: opacity .8s ease;
+  padding: 28px 20px;
 }
-.profile_wrapper:hover .content,
-.profile_wrapper .content:hover {
+.li_icon::before{
+  font-size: 20px;
+  display: inline-block;
+  transform: translate(-6px,1px);
+}
+.content li:hover{
+  color: #6BCBFF;
+}
+.profile_wrapper:hover .content, .content:hover {
   visibility: visible;
   opacity: 0.8;
 }
-
 
 /* 个性签名 */
 .sentence{
@@ -239,9 +252,6 @@ function jump(e){
 }
 .up-enter-active { animation: up-enter 1s ease; }
 
-/*头像悬浮时可以放大并且显示下拉表*/
-.profile:hover{
-  transform:translate(-20px,15px) scale(1.75);
-}
+
 
 </style>
