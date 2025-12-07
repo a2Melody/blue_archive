@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <span class="content">前端正在偷懒desu</span>
+  <span class="content">前端在睡觉偷懒</span>
 </template>
 
 <style scoped>
