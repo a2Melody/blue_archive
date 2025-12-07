@@ -157,6 +157,7 @@ function jump(e){
   left: -110px;
   top: 62px;
   visibility: hidden;
+  letter-spacing: 1px;
   color: #696969;
   font-size: 14px;
   transition: opacity .8s ease;

@@ -65,13 +65,11 @@ const destroyCropper = () => {
 const initCropper = () => {
   if (!sourceImgRef.value || !sourceUrl.value) return
   destroyCropper()
-
   const imgEl = sourceImgRef.value
   if (!(imgEl instanceof HTMLImageElement)) {
     console.error('sourceImgRef.value 不是 HTMLImageElement', imgEl)
     return
   }
-
   cropperRef.value = new Cropper(imgEl, {
     viewMode: 1,
     dragMode: 'move',
@@ -87,10 +85,8 @@ const initCropper = () => {
     guides: true,
     center: true,
     highlight: true,
-
     // 关键：开启预览容器（可以是选择器、元素、节点列表或数组）
     preview: '.result-preview',
-
     ready() {
       isReady.value = true
     },
