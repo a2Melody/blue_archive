@@ -53,9 +53,9 @@ function jump(e){
         <div class="profile_wrapper">
           <div class="profile"></div>
           <ul class="content">
-            <li><router-link to="" class="iconfont icon-icon li_icon">上传头像</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
-            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
-            <li style="margin-top: 12px"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="user_name">Melody_sensei</li>
+            <li class="li_a" ><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->
@@ -149,17 +149,25 @@ function jump(e){
   width: 220px;
   height: 240px;
   position: absolute;
-  background-color: white;
+  background-color: #f1f2f5;
   border-radius: 12px;
   opacity: 0;
   left: -110px;
   top: 62px;
   visibility: hidden;
-  letter-spacing: 1px;
-  color: #696969;
   font-size: 14px;
   transition: opacity .8s ease;
-  padding: 28px 10px;
+  padding: 20px 10px;
+}
+.user_name{
+  color: #696969;
+  margin-bottom: 10px;
+}
+.li_a{
+  margin-left: 8px;
+  margin-top: 12px;
+  letter-spacing: 1px;
+  color: #696969;
 }
 .li_icon::before{
   font-size: 20px;
@@ -171,7 +179,7 @@ function jump(e){
   font-size: 18px;
   margin-left: 20px;
 }
-.content li:hover{
+.content .li_a:hover{
   color: #6BCBFF;
 }
 .profile_wrapper:hover .content, .content:hover {
