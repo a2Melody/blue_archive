@@ -1,10 +1,13 @@
 <script setup lang="js">
 import sweets from "../assets/images/sweets.svg";
-import 'animate.css';
-import {ref} from "vue"
+import {ref,computed} from "vue"
+import {userStore} from "@/stores/UserStore.js";
+const store=userStore();
 
+console.log(store.profile)
 const signature=ref('');
 const show=ref(true);
+
 
 function input_enter(e){
     e.preventDefault();
@@ -51,9 +54,9 @@ function jump(e){
         </ul>
         <!--      头像 profile photo-->
         <div class="profile_wrapper">
-          <div class="profile"></div>
+          <div class="profile" :style="store.profile?{ backgroundImage:`url(${store.profile})`}:{}"></div>
           <ul class="content">
-            <li class="user_name">Melody_sensei</li>
+            <li class="user_name">{{ store.user_name }}</li>
             <li class="li_a" ><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
             <li class="li_a"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
@@ -128,15 +131,14 @@ function jump(e){
 .profile{
   position: relative;
   z-index: 10;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: 1px solid white;
   border-radius: 50%;
   transition: all .8s ease;
-  background-image: url("../assets/images/profile2.jpg");
-  background-size: cover;
+  background-size: cover;       /* 或 'contain' 视需求 */
+  background-position: center;
   background-repeat: no-repeat;
-  background-position:  center;
 }
 /*头像悬浮时可以放大并且显示下拉表*/
 .profile_wrapper:hover .profile{
@@ -152,12 +154,12 @@ function jump(e){
   background-color: #f1f2f5;
   border-radius: 12px;
   opacity: 0;
-  left: -110px;
-  top: 62px;
+  left: -104px;
+  top: 70px;
   visibility: hidden;
   font-size: 14px;
   transition: opacity .8s ease;
-  padding: 20px 10px;
+  padding: 34px 10px 20px 10px;
 }
 .user_name{
   color: #696969;

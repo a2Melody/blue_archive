@@ -1,12 +1,15 @@
 <script setup lang="js">
 import {ref, onBeforeUnmount} from "vue";
 import Cropper from 'cropperjs/dist/cropper.esm.js'
-import 'cropperjs/dist/cropper.css'
+import 'cropperjs/dist/cropper.css';
+import {userStore} from "@/stores/UserStore.js";
+const store=userStore();
 
 const isReady=ref(false);
+const preUrl=ref('');
 const sourceUrl=ref('');          //保存生成的Url
-const CropperUrl=ref(null);       //保存Cropper，而不是标签引用
-const sourceImgRef=ref(null);     //指向左侧要被遮罩/裁剪的容器
+const CropperRef=ref(null);       //保存Cropper，而不是标签引用
+const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
 
 //销毁预览图片
@@ -15,28 +18,31 @@ const revokeIfNeeded=(url)=>{
 }
 /*销毁Cropper*/
 const destroyCropper=()=>{
-    if(CropperUrl.value){
-      try { CropperUrl.value.destroy() } catch (e) {}
-      CropperUrl.value = null
-    }
+  if(CropperRef.value){
+    try { CropperRef.value.destroy() } catch (e) {}
+    CropperRef.value = null
+  }
   isReady.value=false;
 }
-
 /*input上传文件*/
 function onFileChange(e){
   const file=e.target.files?.[0]  //如果没有files或files为空，则file为undefined
   if (!file)return
-  revokeIfNeeded(sourceUrl.value);
-  destroyCropper();
+  if(sourceUrl.value)preUrl.value=sourceUrl.value;
 
   sourceUrl.value=URL.createObjectURL(file);
-  isReady.value=true;
+  if(CropperRef.value) CropperRef.value.replace(sourceUrl.value); /*更换文件时Cropper改变值，第一次上传时还未初始化Cropper，所以skip*/
   inputRef.value.value=null;
 }
 function initCropper(){
+  isReady.value=true;
+  if(preUrl.value){
+      revokeIfNeeded(preUrl.value);
+      preUrl.value='';
+  }
+  if(CropperRef.value)return;
   const imgEl=sourceImgRef.value;
-  if(CropperUrl.value)destroyCropper();
-  CropperUrl.value=new Cropper(imgEl,{
+  CropperRef.value=new Cropper(imgEl,{
     viewMode: 1,
     dragMode: 'move',
     aspectRatio: 1,
@@ -53,13 +59,35 @@ function initCropper(){
     highlight: true,
     // 关键：开启预览容器（可以是选择器、元素、节点列表或数组）
     preview: '.result',
-    ready() {
-      isReady.value=true;
-    },
   })
 }
 function onRechoose() {
   inputRef.value.click();
+}
+
+function onSave() {
+  if (!CropperRef.value) return;
+  const targetSize=50;                      // 最终 CSS 大小（px）
+  const dpr=window.devicePixelRatio || 1;
+  const supersample=3;                      // 超采样倍数，1 或 2（试试 2）
+  const outW=Math.round(targetSize * dpr * supersample);
+  const outH=Math.round(targetSize * dpr * supersample);
+
+  const canvas=CropperRef.value.getCroppedCanvas({
+    width:outW,
+    height:outH,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high'
+  });
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const blobUrl = URL.createObjectURL(blob);
+    // 回收旧 URL（按你 store 的实现）
+    if (store.profile && store.profile.startsWith('blob:')) {
+      try { URL.revokeObjectURL(store.profile); } catch(e) {}
+    }
+    store.profile_set(blobUrl);
+  }, 'image/png'); // PNG 更少压缩模糊；如果用 jpeg，可用 'image/jpeg', 0.95
 }
 
 onBeforeUnmount(() => {
@@ -70,36 +98,36 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="container">
-      <!--最上面的input上传图片-->
+  <div class="container">
+    <!--最上面的input上传图片-->
 
-      <!--      左侧的裁剪框-->
-      <div class="left_container">
+    <!--      左侧的裁剪框-->
+    <div class="left_container">
 
-        <div class="pic_input_container" v-show="!isReady">
-          <label for="input" class="input_words iconfont icon-shangchuantuxiang">上传图像</label>
-          <input ref="inputRef" id="input" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+      <div class="pic_input_container" v-show="!isReady">
+        <label for="input" class="input_words iconfont icon-shangchuantuxiang">上传图像</label>
+        <input ref="inputRef" id="input" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+      </div>
+      <div class="pic_show" v-show="isReady" style="margin-top: 23px">
+        <div class="image_wrapper" ref="image_wrapper" style="background-color: black">
+          <img ref="sourceImgRef" :src="sourceUrl" @load="initCropper"/>
         </div>
-        <div class="pic_show" v-show="isReady" style="margin-top: 23px">
-          <div class="image_wrapper" ref="image_wrapper">
-            <img ref="sourceImgRef" :src="sourceUrl" @load="initCropper"/>
-          </div>
-          <!--        重新选择图片-->
-          <div class="controls" style="margin-top:4px;text-align: center">
-            <span class="words iconfont icon-zhongxinjiazai1" @click="onRechoose">重新选择</span>
-          </div>
+        <!--        重新选择图片-->
+        <div class="controls" style="margin-top:4px;text-align: center">
+          <span class="words iconfont icon-zhongxinjiazai1" @click="onRechoose">重新选择</span>
         </div>
-
       </div>
 
-      <!--      右侧的实际效果显示框-->
-      <div class="right_container">
-         <div class="result"></div>
-         <span style="font-size: 12px;color: #99a2aa;font-weight: 500;margin-top: 12px">当前头像</span>
-      </div>
-
-      <div class="btn_save"><span>保存</span></div>
     </div>
+
+    <!--      右侧的实际效果显示框-->
+    <div class="right_container">
+      <div class="result"></div>
+      <span style="font-size: 12px;color: #99a2aa;font-weight: 500;margin-top: 12px">当前头像</span>
+    </div>
+
+    <div class="btn_save" @click="onSave"><span>保存</span></div>
+  </div>
 
 </template>
 
