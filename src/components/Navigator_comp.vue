@@ -140,6 +140,9 @@ function jump(e){
   background-position: center;
   background-repeat: no-repeat;
 }
+.profile:hover{
+    cursor: pointer;
+}
 /*头像悬浮时可以放大并且显示下拉表*/
 .profile_wrapper:hover .profile{
   transform:translate(-22px,22px) scale(1.75);

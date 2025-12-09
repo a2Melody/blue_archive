@@ -1,10 +1,10 @@
 <script setup>
-import Navigator from "@/components/Navigator.vue";
+import NavigatorComp from "@/components/Navigator_comp.vue";
 import Cropper_profile_comp from "@/components/Cropper_profile_comp.vue";
 </script>
 
 <template>
-<Navigator></Navigator>
+<NavigatorComp></NavigatorComp>
   <Cropper_profile_comp></Cropper_profile_comp>
 </template>
 

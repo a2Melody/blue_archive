@@ -6,6 +6,62 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1166549",
+      "name": "减号",
+      "font_class": "jianhao2",
+      "unicode": "e635",
+      "unicode_decimal": 58933
+    },
+    {
+      "icon_id": "5387532",
+      "name": "减号",
+      "font_class": "jianhao3",
+      "unicode": "eaf5",
+      "unicode_decimal": 60149
+    },
+    {
+      "icon_id": "7434423",
+      "name": "减号",
+      "font_class": "jianhao4",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
+      "icon_id": "9626879",
+      "name": "减号",
+      "font_class": "jianhao5",
+      "unicode": "e871",
+      "unicode_decimal": 59505
+    },
+    {
+      "icon_id": "1302",
+      "name": "加",
+      "font_class": "jia",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
+      "icon_id": "577313",
+      "name": "加号1",
+      "font_class": "jiahao1",
+      "unicode": "e727",
+      "unicode_decimal": 59175
+    },
+    {
+      "icon_id": "2939198",
+      "name": "加减组件 加号",
+      "font_class": "jiajianzujianjiahao",
+      "unicode": "e64d",
+      "unicode_decimal": 58957
+    },
+    {
+      "icon_id": "8721197",
+      "name": "加号",
+      "font_class": "jiahao3",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
       "icon_id": "10524954",
       "name": "上传图像",
       "font_class": "shangchuantuxiang",

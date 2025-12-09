@@ -1,7 +1,7 @@
 <script setup lang="js">
-import Navigator from "@/components/Navigator.vue";
-import Footer from "@/components/Footer.vue";
-import BackgroundImage from "@/components/Background_image.vue";
+import NavigatorComp from "@/components/Navigator_comp.vue";
+import FooterComp from "@/components/Footer_comp.vue";
+import BackgroundImageComp from "@/components/Background_image_comp.vue";
 import LoginComp from "@/components/Login_comp.vue";
 
 import imageUrl_alice from "@/assets/images/alice_bg.jpg"
@@ -9,9 +9,9 @@ import imageUrl_alice from "@/assets/images/alice_bg.jpg"
 </script>
 
 <template>
-  <Navigator></Navigator>
-  <BackgroundImage :bg="imageUrl_alice" :bg-pos="'100% center'" :comp="LoginComp"></BackgroundImage>
-  <Footer></Footer>
+  <NavigatorComp></NavigatorComp>
+  <BackgroundImageComp :bg="imageUrl_alice" :bg-pos="'100% center'" :comp="LoginComp"></BackgroundImageComp>
+  <FooterComp></FooterComp>
 </template>
 
 <style scoped>

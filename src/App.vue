@@ -2,14 +2,16 @@
 import LoginView from "@/view/Login_view.vue";
 import RegisterView from "@/view/Register_view.vue";
 import Developing_view from "@/view/Developing_view.vue";
-
-import AvatarUploader from "@/test/AvatarUploader.vue";
-import Test from "@/test/Test.vue";
 import Cropping_view from "@/view/Cropping_view.vue";
-import Cropper_profile_comp from "@/components/Cropper_profile_comp.vue";
+import Diary_writing_view from "@/view/Diary_writing_view.vue";
+import JiaJian from "@/components/small_components/Jia_Jian.vue";
+
 </script>
 
 <template>
+  <JiaJian></JiaJian>
+  <Diary_writing_view></Diary_writing_view>
+  <div style="margin-top: 40px"></div>
   <Cropping_view></Cropping_view>
   <div style="margin-top: 40px"></div>
   <Developing_view></Developing_view>

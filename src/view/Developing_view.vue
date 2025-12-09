@@ -1,16 +1,16 @@
 <script setup lang="js">
-import Navigator from "@/components/Navigator.vue";
-import Footer from "@/components/Footer.vue";
-import Background_image from "@/components/Background_image.vue";
+import NavigatorComp from "@/components/Navigator_comp.vue";
+import FooterComp from "@/components/Footer_comp.vue";
+import BackgroundImageComp from "@/components/Background_image_comp.vue";
 import Toulan from "@/components/small_components/Toulan.vue";
 
 import rabbit from "@/assets/images/rabbit.jpg"
 </script>
 
 <template>
-  <Navigator></Navigator>
-  <Background_image :bg="rabbit" :bg-pos="'center 0'" :comp="Toulan"></Background_image>
-  <Footer></Footer>
+  <NavigatorComp></NavigatorComp>
+  <BackgroundImageComp :bg="rabbit" :bg-pos="'center 0'" :comp="Toulan"></BackgroundImageComp>
+  <FooterComp></FooterComp>
 </template>
 
 <style scoped>
