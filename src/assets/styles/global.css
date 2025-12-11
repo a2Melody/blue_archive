@@ -2,7 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: "微软雅黑", "PingFang SC", "Hiragino Sans GB", "Segoe UI", Arial, sans-serif;
+    font-family: SourceHanSansCN-Regular,PingFang SC,Microsoft YaHei,-apple-system,system-ui,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Helvetica Neue,Hiragino Sans GB,Arial;
 }
 a {
     color: inherit;                    /* 继承文字颜色，而不是默认蓝色 */
@@ -15,7 +15,6 @@ a {
     -webkit-tap-highlight-color: transparent; /* 移动端点击高亮 */
     -webkit-appearance: none;
 }
-
 ul {
     list-style: none;
 }

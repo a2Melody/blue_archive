@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4948411 */
-  src: url('iconfont.woff2?t=1765292778916') format('woff2'),
-       url('iconfont.woff?t=1765292778916') format('woff'),
-       url('iconfont.ttf?t=1765292778916') format('truetype');
+  src: url('iconfont.woff2?t=1765346306873') format('woff2'),
+       url('iconfont.woff?t=1765346306873') format('woff'),
+       url('iconfont.ttf?t=1765346306873') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,66 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-fuhao-jiacu:before {
+  content: "\e71d";
+}
+
+.icon-jiacu1:before {
+  content: "\e851";
+}
+
+.icon-jiacu2:before {
+  content: "\e7ed";
+}
+
+.icon-jiacu:before {
+  content: "\e6fe";
+}
+
+.icon-chehui:before {
+  content: "\e7c7";
+}
+
+.icon-huifu:before {
+  content: "\e7cc";
+}
+
+.icon-ai247:before {
+  content: "\e6eb";
+}
+
+.icon-ziti:before {
+  content: "\e7b1";
+}
+
+.icon-zitijiacu:before {
+  content: "\ec83";
+}
+
+.icon-zitixieti:before {
+  content: "\ec85";
+}
+
+.icon-zitiyanse:before {
+  content: "\ec86";
+}
+
+.icon-A:before {
+  content: "\e612";
+}
+
+.icon-A1:before {
+  content: "\e613";
+}
+
+.icon-A2:before {
+  content: "\e614";
+}
+
+.icon-a:before {
+  content: "\e616";
 }
 
 .icon-jianhao2:before {
