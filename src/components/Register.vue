@@ -110,7 +110,7 @@ function button_focus(){
     color: #333;
   }
   .return_login:hover{
-    color: #6BCBFF;
+    color: #64CBFF;
   }
 
   /*  输入框+按钮*/
@@ -159,7 +159,7 @@ function button_focus(){
     font-weight: 600;
     height: 40px;
     margin-top: 35px;
-    background-color: #6BCBFF;
+    background-color: #64CBFF;
     border-radius: 6px;
     border: 0;
   }
@@ -175,7 +175,7 @@ function button_focus(){
   height: 18px;
   font-size: 14px;
   margin-bottom: 1px;
-  color: #6BCBFF;
+  color: #64CBFF;
   font-weight: 600;
   line-height: 18px;
   margin-left: 5px;

@@ -46,7 +46,7 @@ const member3=ref(true);
     width: 100%;
     height: 160px;
     position: relative;
-    background-color: #6BCBFF;
+    background-color: #64CBFF;
     border-radius: 0 0 14px 14px;
     padding-left: 106px;
     padding-top: 20px;

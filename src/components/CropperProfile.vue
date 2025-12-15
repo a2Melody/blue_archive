@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
   margin-top: 1px;
 }
 .words:hover{
-  color: #6BCBFF;
+  color: #64CBFF;
   cursor: pointer;
 }
 /*左侧容器*/
@@ -237,7 +237,7 @@ onBeforeUnmount(() => {
   display: inline-flex;        /* 或 display: flex */
   align-items: center;         /* 垂直居中 */
   justify-content: center;     /* 水平居中 */
-  background-color: #6BCBFF;
+  background-color: #64CBFF;
   letter-spacing: 4px;
   color: white;
   border-radius: 5px;

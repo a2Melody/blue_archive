@@ -99,7 +99,7 @@ function jump(e){
   align-items: center;
   width: 100%;
   height:64px;
-  background-color: #6BCBFF;
+  background-color:#64CBFF;
   color: white;
   font-size: 15px;
   font-weight: 600;
@@ -185,7 +185,7 @@ function jump(e){
   margin-left: 20px;
 }
 .content .li_a:hover{
-  color: #6BCBFF;
+  color: #64CBFF;
 }
 .profile_wrapper:hover .content, .content:hover {
   visibility: visible;
@@ -240,7 +240,7 @@ function jump(e){
   height: 20px;
   line-height: 20px;
   text-align: center;
-  background-color: #6BCBFF;
+  background-color: #64CBFF;
 }
 
 /*向上跳动动画效果*/

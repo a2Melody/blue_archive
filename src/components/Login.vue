@@ -95,7 +95,7 @@ async function submit_test() {
   height: 18px;
   font-size: 14px;
   margin-top: 10px;
-  color: #6BCBFF;
+  color: #64CBFF;
   font-weight: 600;
   line-height: 18px;
 }
@@ -149,7 +149,7 @@ async function submit_test() {
   font-weight: 600;
   height: 40px;
   margin-top: 40px;
-  background-color: #6BCBFF;
+  background-color: #64CBFF;
   border-radius: 6px;
   border: 0;
 }
@@ -172,7 +172,7 @@ async function submit_test() {
   margin-left: 10px;
 }
 .forget_pwd:hover,.to_register:hover{
-  color: #6BCBFF;
+  color: #64CBFF;
 }
 
 
