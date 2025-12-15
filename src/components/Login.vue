@@ -1,5 +1,6 @@
 <script setup lang="js">
 import {ref} from "vue";
+import axios from 'axios';
 
 /*控制错误信息的显示与否*/
 const warning_show=ref(false);
@@ -15,6 +16,21 @@ function pwd_focus(){
 }
 function button_focus(){
   login_button.value.focus();
+}
+
+async function submit_test() {
+  try {
+    // 用相对路径，不带 host/port，Vite dev server 会代理到 target
+    const res = await axios.post('/api/user/login',{
+      usernameOrEmail: user_name.value,
+      password: pwd.value
+    });
+    // 只输出后端返回的业务数据
+    console.log(1);
+    console.log('后端返回：', res.data);
+  } catch (err) {
+    console.error('请求出错：', err);
+  }
 }
 </script>
 
@@ -35,7 +51,7 @@ function button_focus(){
       <input class="input" v-model="pwd" ref="pwd_input" type="password" placeholder="请输入密码" @keydown.enter="button_focus">
     </div>
 
-    <button class="login_submit" ref="login_button" type="submit">登录</button>
+    <button class="login_submit" ref="login_button" type="submit" @click="submit_test">登录</button>
   </div>
   <!--    最下面的忘记密码和立即注册-->
   <div class="footer_a">

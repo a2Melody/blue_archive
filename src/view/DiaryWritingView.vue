@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import useTools from "@/utils/writing_toolbar";
+import useTools from "@/utils/diary-toolbar";
 const { onBeforeInput, onCompositionStart, onCompositionEnd,isUndoDisabled, isRedoDisabled,editorRef, fileInputRef, onUndo, onRedo, onBold, onItalic, onColorChange, onFileButtonClick, onFileInputChange, onInsertLocalImage}=useTools();
 </script>
 

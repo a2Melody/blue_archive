@@ -1,26 +1,26 @@
 <script setup>
-import LoginView from "@/view/Login_view.vue";
-import RegisterView from "@/view/Register_view.vue";
-import Developing_view from "@/view/Developing_view.vue";
-import Cropping_view from "@/view/Cropping_view.vue";
-import Diary_writing_view from "@/view/Diary_writing_view.vue";
-import JiaJian from "@/components/small_components/Jia_Jian.vue";
+import LoginView from "@/view/LoginView.vue";
+import RegisterView from "@/view/RegisterView.vue";
+import LazyingView from "@/view/LazyingView.vue";
+import CroppingProfileView from "@/view/CroppingProfileView.vue";
+import DiaryWritingView from "@/view/DiaryWritingView.vue";
+import AddAndDelete from "@/components/colocate/AddAndDelete.vue";
 
 import Test from "@/test/Test.vue"
 
 </script>
 
 <template>
-  <JiaJian></JiaJian>
-  <Diary_writing_view></Diary_writing_view>
-<!--  <div style="margin-top: 40px"></div>
-  <Cropping_view></Cropping_view>
+  <AddAndDelete></AddAndDelete>
+<!--  <DiaryWritingView></DiaryWritingView>
+  <div style="margin-top: 40px"></div>-->
+  <CroppingProfileView></CroppingProfileView>
   <div style="margin-top: 40px"></div>
-  <Developing_view></Developing_view>
+  <LazyingView></LazyingView>
   <div style="margin-top: 40px"></div>
   <RegisterView></RegisterView>
   <div style="margin-top: 40px"></div>
-  <LoginView></LoginView>-->
+  <LoginView></LoginView>
 
 </template>
 
