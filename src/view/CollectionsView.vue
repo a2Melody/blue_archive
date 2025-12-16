@@ -10,23 +10,26 @@ import xia from "@/assets/images/夏.png";
 import shiroko from "@/assets/images/shiroko.png";
 import zhigengniao from "@/assets/images/知更鸟2.jpg"
 import zhanfushaonu from "@/assets/images/zhanfushaonu.png"
+import xuemei from "@/assets/images/学妹.jpg";
+import hina1 from "@/assets/images/hina.jpg";
+import hina2 from "@/assets/images/hina.png"
+import test1 from "@/assets/images/test1.jpg"
 
-
-const test=ref("新月\n同行\n———\n组长，回头看，向前走，答案在前也在后");
+const test=ref("新月同行:\n回头看，向前走，答案在前也在后");
 </script>
 
 <template>
   <Navigator></Navigator>
-  <Add></Add>
-  <Delete></Delete>
   <div class="collections_container">
+    <Add></Add>
+    <Delete></Delete>
     <Collection :bg-url="xia" :info="test"></Collection>
     <Collection :bg-url="shiroko"></Collection>
     <Collection :bg-url="zhanfushaonu"></Collection>
-    <Collection :bg-url="xia"></Collection>
-    <Collection :bg-url="xia"></Collection>
+    <Collection :bg-url="hina1"></Collection>
+    <Collection :bg-url="test1"></Collection>
     <Collection :bg-url="zhigengniao"></Collection>
-    <Collection :bg-url="xia"></Collection>
+    <Collection :bg-url="test1"></Collection>
   </div>
 </template>
 
@@ -47,7 +50,8 @@ const test=ref("新月\n同行\n———\n组长，回头看，向前走，答�
   background: #E0EAFC;  /* fallback for old browsers */
   background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
   background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-  padding: 40px 100px 150px 100px;
+  padding: 60px 150px 150px 150px;
 
+  position: relative;
 }
 </style>

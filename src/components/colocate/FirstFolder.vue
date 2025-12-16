@@ -15,6 +15,10 @@ const props=defineProps({
   left:{
     type:Number,
     default:0
+  },
+  name:{
+    type:String,
+    default:'默认收藏夹1'
   }
 })
 </script>
@@ -32,7 +36,7 @@ const props=defineProps({
         <span class="iconfont icon-xingzhuang-sanjiaoxing1 icon" ></span>
       </div>
 
-      <span class="folder_name">默认收藏夹1</span>
+      <span class="folder_name">{{props.name}}</span>
     </div>
   </div>
 </template>
@@ -108,7 +112,7 @@ const props=defineProps({
 }
 .folder_name{
   position: absolute;
-  right: 60px;
+  left: 90px;
   bottom: 9px;
 }
 

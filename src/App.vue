@@ -8,16 +8,19 @@ import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
 import FirstFoldersView from "@/view/FirstFoldersView.vue";
 import CollectionsView from "@/view/CollectionsView.vue";
+import CreateFirstFolderView from "@/view/CreateFirstFolderView.vue";
 
 </script>
 
 <template>
+  <CreateFirstFolderView></CreateFirstFolderView>
+  <div style="margin-top: 40px"></div>
+<!--  <FirstFoldersView></FirstFoldersView>
+  <div style="margin-top: 40px"></div>
   <CollectionsView></CollectionsView><Add></Add><Delete></Delete>
   <div style="margin-top: 40px"></div>
-  <FirstFoldersView></FirstFoldersView><Add></Add><Delete></Delete>
-  <div style="margin-top: 40px"></div>
   <DiaryWritingView></DiaryWritingView>
-  <div style="margin-top: 40px"></div>
+  <div style="margin-top: 40px"></div>-->
   <CroppingProfileView></CroppingProfileView>
   <div style="margin-top: 40px"></div>
   <LazyingView></LazyingView>

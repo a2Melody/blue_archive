@@ -39,7 +39,7 @@ const props=defineProps({
   display: block;
   width: auto;           /* ← 新增：优先使用图片自身宽度，受容器 max-width 限制 */
   max-width: 100%;
-  max-height: 360px;
+  max-height: 320px;
   object-fit: contain;
   border: 2px solid white;
   border-radius: 8px;

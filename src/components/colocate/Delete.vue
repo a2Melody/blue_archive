@@ -10,7 +10,7 @@
 
 <style scoped>
 .container{
-  position: absolute;
+  position: absolute;     /* 改成fixed*/
   right: 20px;
   top: 320px;
   display: flex;

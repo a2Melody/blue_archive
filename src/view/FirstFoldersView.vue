@@ -1,15 +1,20 @@
 <script setup>
+import {ref} from "vue";
 import FirstFolder from "@/components/colocate/FirstFolder.vue";
 import Navigator from "@/components/Navigator.vue";
 import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
+import SecondFolder from "@/components/SecondFolder.vue";
 
 import profile from "@/assets/images/profile_test.jpg"
 import xia from "@/assets/images/夏.png"
 import zhanfushaonu from "@/assets/images/zhanfushaonu.png"
 import arona from "@/assets/images/arona.png"
 import zhigengniao from "@/assets/images/知更鸟2.jpg"
+import test1 from "@/assets/images/test1.jpg"
 
+
+const folder_show=ref(false);
 </script>
 
 <template>
@@ -17,12 +22,12 @@ import zhigengniao from "@/assets/images/知更鸟2.jpg"
     <Add></Add>
     <Delete></Delete>
     <Navigator></Navigator>
-
     <div class="grid_container">
-      <FirstFolder :row="2" :col="1" :left="100" :bg="zhanfushaonu"></FirstFolder>
-      <FirstFolder :row="1" :col="2" :bg="xia"></FirstFolder>
+      <SecondFolder v-show="folder_show"></SecondFolder>
+      <FirstFolder :row="2" :col="1" :left="100" :bg="test1" @click="folder_show=!folder_show"></FirstFolder>
+      <FirstFolder :row="1" :col="2" :bg="zhanfushaonu"></FirstFolder>
       <FirstFolder :row="2" :col="3" :bg="profile"></FirstFolder>
-      <FirstFolder :row="1" :col="4" :bg="arona"></FirstFolder>
+      <FirstFolder :row="1" :col="4" :bg="arona" @click="folder_show=!folder_show"></FirstFolder>
       <FirstFolder :row="2" :col="5" :bg="zhigengniao"></FirstFolder>
     </div>
 
@@ -47,6 +52,7 @@ import zhigengniao from "@/assets/images/知更鸟2.jpg"
     grid-auto-columns: 450px;
     place-items: center;
     overflow-x: auto;
+    position: relative;
   }
 
 </style>
