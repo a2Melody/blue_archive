@@ -57,8 +57,8 @@ function jump(e){
           <div class="profile" :style="store.profile?{ backgroundImage:`url(${store.profile})`}:{}"></div>
           <ul class="content">
             <li class="user_name">{{ store.user_name }}</li>
-            <li class="li_a" ><router-link to="" class="iconfont icon-yonghu_yonghu li_icon">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
-            <li class="li_a"><router-link to="" class="iconfont icon-xiuxi li_icon">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a" ><router-link to="">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a"><router-link to="">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->

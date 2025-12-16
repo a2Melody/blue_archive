@@ -1,11 +1,28 @@
 <script setup>
+import shiroko from "@/assets/images/shiroko.png";
 
+const props=defineProps({
+  bg:{
+    type:String,
+    default:shiroko
+  },
+  row:{
+    type:Number
+  },
+  col:{
+    type:Number
+  },
+  left:{
+    type:Number,
+    default:0
+  }
+})
 </script>
 
 <template>
-  <div class="container">
+  <div class="container" :style="{gridRow: props.row, gridColumn: props.col ,marginLeft:props.left+'px',marginRight:props.right}">
     <div class="img_container">
-      <div class="img_bg"></div>
+      <div class="img_bg" :style="{backgroundImage:`url(${props.bg})`}"></div>
     </div>
     <div class="input_container">
       <div class="icons">
@@ -21,10 +38,9 @@
 </template>
 
 <style scoped>
+
 .container{
   position: relative;
-  margin-top: 80px;
-  margin-left: 200px;
   width: 420px;
   height: 210px;
   user-select: none;
@@ -46,7 +62,7 @@
   width: calc(100% + 77px);        /* = container width + offset */
   height: 100%;
   left: -77px;                     /* = - height * tan(20deg) */   /* = - height * tan(20deg) */
-  background-image: url("src/assets/images/shiroko.png");
+
   background-size: cover;            /* 保持比例、不变形 */
   background-repeat: no-repeat;
   background-position: center center;
