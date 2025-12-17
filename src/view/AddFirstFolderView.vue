@@ -34,14 +34,16 @@ function onFileChange(e){
     <div class="body_container">
       <div class="container">
 
-        <div class="name_input" style="float: left">
-          <label for="firstFolder_name" style="font-size: 14px">收藏夹名称: </label>
-          <input id="firstFolder_name" type="text" v-model="name" >
-        </div>
+        <div class="top_container">
+          <div class="name_input">
+            <label style="font-size: 14px">收藏夹名称: </label>
+            <input type="text" v-model="name" maxlength="7" style="color: #676767;background-color: rgba(255,255,255,0.8);">
+          </div>
 
-        <div class="pic_input_container" style="float: right;">
-          <label for="input_a" class="input_words iconfont icon-shangchuantuxiang">上传图像</label>
-          <input ref="inputRef" id="input_a" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+          <div class="pic_input_container">
+            <label for="input_a" class="input_words iconfont icon-shangchuantuxiang" style="font-size: 12px"><span style="font-size: 12px">上传图片</span></label>
+            <input ref="inputRef" id="input_a" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+          </div>
         </div>
 
         <FirstFolder :bg="sourceUrl" :name="name"></FirstFolder>
@@ -56,6 +58,11 @@ input{
   outline: none;
   border:none;
 }
+#firstFolder_name{
+  background-color: transparent;
+  border-bottom: 1px solid white;
+  color: black;
+}
 /*渐变色背景*/
 .body_container{
   user-select: none;
@@ -64,7 +71,6 @@ input{
   background: #E0EAFC;  /* fallback for old browsers */
   background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);  /* Chrome 10-25, Safari 5.1-6 */
   background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
   display: flex;
   justify-content: center; /* 水平居中 .container */
   align-items: flex-start; /* 或 center */
@@ -74,7 +80,18 @@ input{
 .container{
   display: inline-block;
   position: relative;
-  background-color: pink;
+}
+/*放名字输入和上传图像的input的*/
+.top_container{
+  display: flex;
+  justify-content: space-between; /* 左右两端对齐 */
+  align-items: center;            /* y 轴居中对齐 */
+  gap: 16px;                      /* 可选：两项之间的间距 */
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+  color: #676767;
 }
 /*上传图像的样式*/
 .pic_input_container{
@@ -83,22 +100,21 @@ input{
   align-items: center;     /* 垂直居中 */
   background-color: #f1f2f5;
   border-radius: 5px;
-  height: 40px;
-  width: 100px;
+  height: 30px;
+  width: 80px;
   color: #99a2aa;
-
+}
+.input_words:hover{
+    cursor: pointer;
 }
 .pic_input_container:hover{
   background-color: #e5e9ef;
 }
 /*最下面的保存按钮*/
 .btn_save{
-  /*position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  top:370px;*/
   width: 100px;
   height: 32px;
+  margin: 70px auto;
   display: flex;        /* 或 display: flex */
   align-items: center;         /* 垂直居中 */
   justify-content: center;     /* 水平居中 */
@@ -106,8 +122,10 @@ input{
   letter-spacing: 4px;
   color: white;
   border-radius: 5px;
+  transform: translateX(5%);
 }
 .btn_save:hover{
   border: 2px solid #ddd;
+  cursor: pointer;
 }
 </style>

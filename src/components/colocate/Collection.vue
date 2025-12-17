@@ -6,7 +6,7 @@ const props=defineProps({
   },
   info:{
     type:String,
-    default:"敬请期待"
+    default:"未完待续"
   }
 })
 
@@ -29,7 +29,6 @@ const props=defineProps({
   justify-content: center;
 
   position: relative;
-  background-color: pink;
   width: max-content;         /* shrink-to-fit，但受下面的 max-width 限制 */
   max-width: 100%;            /* 不会超出父格子的可用宽度 */
 }

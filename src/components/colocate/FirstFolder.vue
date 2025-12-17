@@ -114,6 +114,7 @@ const props=defineProps({
   position: absolute;
   left: 90px;
   bottom: 9px;
+  color: #676767;
 }
 
 
