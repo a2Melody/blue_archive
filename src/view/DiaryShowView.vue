@@ -1,12 +1,14 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import Navigator from "@/components/Navigator.vue";
 import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
 import DiaryLi from "@/components/colocate/DiaryLi.vue";
 
 const content=ref('');
-
+onMounted(()=>{
+  console.log("diary")
+})
 </script>
 
 <template>

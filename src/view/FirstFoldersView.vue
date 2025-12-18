@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import FirstFolder from "@/components/colocate/FirstFolder.vue";
 import Navigator from "@/components/Navigator.vue";
 import Add from "@/components/colocate/Add.vue";
@@ -25,7 +25,9 @@ const showSecondFolder = (event) => {
 const preventClose = (event) => {
   event.stopPropagation();
 };
-
+onMounted(()=>{
+  console.log("firstfolder")
+})
 </script>
 
 <template>

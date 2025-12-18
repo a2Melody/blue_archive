@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 
 import Navigator from "@/components/Navigator.vue";
 import Collection from "@/components/colocate/Collection.vue";

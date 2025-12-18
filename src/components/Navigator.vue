@@ -47,10 +47,10 @@ function jump(e){
         </div>
         <!--      RouterLink-->
         <ul class="nav">
-          <li><RouterLink to="" class="nav_link" @mouseenter="jump">日记</RouterLink></li>
-          <li><RouterLink to="" class="nav_link" @mouseenter="jump">收藏</RouterLink></li>
-          <li><RouterLink to="" class="nav_link" @mouseenter="jump">旅途ing</RouterLink></li>
-          <li><RouterLink to="" class="nav_link" @mouseenter="jump">测试ing</RouterLink></li>
+          <li><RouterLink to="/diary" class="nav_link" @mouseenter="jump">日记</RouterLink></li>
+          <li><RouterLink to="/firstFolders" class="nav_link" @mouseenter="jump">收藏</RouterLink></li>
+          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">旅途ing</RouterLink></li>
+          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试ing</RouterLink></li>
         </ul>
         <!--      头像 profile photo-->
         <div class="profile_wrapper">
@@ -59,6 +59,8 @@ function jump(e){
             <li class="user_name">{{ store.user_name }}</li>
             <li class="li_a" ><router-link to="">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
             <li class="li_a"><router-link to="">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a"><router-link to=""></router-link></li>
+            <li class="li_a"><router-link to="">切换账户</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->

@@ -15,26 +15,7 @@ import DiaryShowView from "@/view/DiaryShowView.vue";
 </script>
 
 <template>
-  <FirstFoldersView></FirstFoldersView>
-  <div style="margin-top: 40px"></div>
-  <DiaryShowView></DiaryShowView>
-  <div style="margin-top: 40px"></div>
-  <AddCollectionView></AddCollectionView>
-  <div style="margin-top: 40px"></div>
-  <AddFirstFolderView></AddFirstFolderView>
-  <div style="margin-top: 40px"></div>
-  <CollectionsView></CollectionsView>
-  <div style="margin-top: 40px"></div>
-  <DiaryWritingView></DiaryWritingView>
-  <div style="margin-top: 40px"></div>
-  <CroppingProfileView></CroppingProfileView>
-  <div style="margin-top: 40px"></div>
-  <LazyingView></LazyingView>
-  <div style="margin-top: 40px"></div>
-  <RegisterView></RegisterView>
-  <div style="margin-top: 40px"></div>
-  <LoginView></LoginView>
-
+  <RouterView></RouterView>
 </template>
 
 <style scoped>

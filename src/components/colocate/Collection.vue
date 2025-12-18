@@ -1,4 +1,6 @@
 <script setup>
+import {ref} from "vue";
+
 const props=defineProps({
   bgUrl:{
     type:String,
@@ -8,12 +10,16 @@ const props=defineProps({
     type:String,
     default:"未完待续"
   }
-})
+});
+const show=ref(false);
 
 </script>
 
 <template>
   <div class="collection_container">
+    <div ref="jianhao" class="container" v-show="show">
+      <span class="jianhao iconfont icon-jianhao3" ></span>
+    </div>
     <img class="bg_img" :src="props.bgUrl" alt="" />
     <div class="info">
       <div class="info_text">{{ props.info }}</div>
@@ -66,7 +72,7 @@ const props=defineProps({
   color: rgba(255,255,255,0); /* 初始文字透明 */
 
   transition: color 1s ease;
-  padding: 20px;
+  padding: 25px;
 
 }
 
@@ -76,5 +82,28 @@ const props=defineProps({
 }
 .collection_container:hover .info .info_text{
   color: rgba(255,255,255,1); /* 文字完全不透明 */
+}
+
+.container{
+  position: absolute;     /* 改成fixed*/
+  left: 4px;
+  top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #6BCBFF;
+  border-radius: 50%;
+  z-index: 5;
+  user-select: none;
+}
+.jianhao{
+  display: inline-block;
+  color: white;
+  font-size: 14px;
+}
+.container:hover{
+  cursor: pointer;
 }
 </style>
