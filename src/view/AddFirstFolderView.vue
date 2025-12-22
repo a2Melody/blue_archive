@@ -64,7 +64,7 @@ async function onSave(){
   const contentType = uploadedFile.value.type || 'application/octet-stream';
   const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
   try {
-    const res = await axios.post('/api/user/presign', presignReq, {
+    const res = await axios.post('/api/collection/folder/level1/presign', presignReq, {
       headers: authHeaders(),
       withCredentials: true
     });
