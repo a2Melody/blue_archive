@@ -13,7 +13,7 @@ const CropperRef=ref(null);       //保存Cropper，而不是标签引用
 const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
 
-const pre_file_name=ref(null);
+const uploadedFile = ref(null);
 
 //销毁预览图片
 const revokeIfNeeded=(url)=>{
@@ -29,14 +29,14 @@ const destroyCropper=()=>{
 }
 /*input上传文件*/
 function onFileChange(e){
-  const file=e.target.files?.[0]  //如果没有files或files为空，则file为undefined
-  if (!file)return
+  const file = e.target.files?.[0];
+  if (!file) return;
+  uploadedFile.value = file;
   if(sourceUrl.value)preUrl.value=sourceUrl.value;
 
   sourceUrl.value=URL.createObjectURL(file);
   if(CropperRef.value) CropperRef.value.replace(sourceUrl.value); /*更换文件时Cropper改变值，第一次上传时还未初始化Cropper，所以skip*/
-  pre_file_name.value=inputRef.value.value;
-  console.log(pre_file_name.value);
+
   inputRef.value.value=null;
 }
 function initCropper(){
@@ -70,6 +70,33 @@ function onRechoose() {
   inputRef.value.click();
 }
 
+function authHeaders() {
+  const headers = {};
+  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
+  return headers;
+}
+async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
+  const uploadHeaders = {};
+  for (const k in putHeaders) {
+    if (!Object.prototype.hasOwnProperty.call(putHeaders, k)) continue;
+    uploadHeaders[k] = putHeaders[k];
+  }
+  uploadHeaders['Content-Type'] = contentType;
+
+  const uploadRes = await fetch(putUrl, {
+    method: 'PUT',
+    headers: uploadHeaders,
+    body: file,
+  });
+
+  console.log(`[upload] POST -> status=${uploadRes.status} ${uploadRes.statusText}`);
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text().catch(()=>null);
+    console.log('[upload] upload failed; response text: ' + text);
+    return false;
+  }
+  return true;
+}
 function onSave() {
   if (!CropperRef.value) return;
   const targetSize=50;                      // 最终 CSS 大小（px）
@@ -85,7 +112,6 @@ function onSave() {
     imageSmoothingQuality: 'high'
   });
 
-
   canvas.toBlob(async (blob) => {
     if (!blob) return;
     // 可选：保存预览 URL（保留你原先的行为）
@@ -95,26 +121,33 @@ function onSave() {
     }
     store.setProfile(blobUrl);
 
-
-    const contentType = 'image/jpeg' || 'application/octet-stream';
-    const presignReq = { originalFilename: pre_file_name.value, mimeType: contentType };
-
+/*第一次上传*/
+    const contentType = uploadedFile.value.type || 'application/octet-stream';
+    const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
     try {
-      const res = await fetch(`/api/user/presign`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: Object.assign({'Content-Type': 'application/json'}),
-        body: JSON.stringify(presignReq)
+      const res = await axios.post('/api/user/presign', presignReq, {
+        headers: authHeaders(),
+        withCredentials: true
       });
-      console.log(res.data);
-      console.log(2);
+      console.log('presign response (axios):', res.data);
+
+/*第二次上传*/
+      const attachmentId=res.data.attachmentId;
+      const putUrl=res.data.putUrl;
+      const putHeaders=res.data.putHeaders;
+      const ok = await uploadToPresigned(putUrl, putHeaders, uploadedFile.value, contentType);
+      if (!ok) return;
+
+      console.log(`[user presign] upload successful. attachmentId=${attachmentId}`);
+/*第三次上传desu*/
+      const presignReq3 = { attachmentId: attachmentId };
+      const res3 = await axios.post('/api/user/userAvatar',presignReq3, {
+        headers: authHeaders()
+      });
+      console.log("success_desu");
+    } catch (e) {
+      console.error(e);
     }
-    catch (e){
-      console.log(1)
-    }
-
-
-
   }, 'image/png'); // PNG 更少压缩模糊；如果用 jpeg，可用 'image/jpeg', 0.95
 }
 

@@ -39,6 +39,12 @@ async function submit() {
       user.setUser(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
 
       await router.push('/firstFolders');
+      const newAccess = res.headers.get("New-Access-Token");
+      console.log(newAccess);
+      if (newAccess) {
+        user.setToken(newAccess);
+        console.log(user.getToken());
+      }
     } else {
       // 处理业务逻辑错误（如密码错误）
       console.warn('登录失败：', responseData.message);
