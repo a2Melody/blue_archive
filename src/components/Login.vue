@@ -1,6 +1,11 @@
 <script setup lang="js">
 import {ref} from "vue";
 import axios from 'axios';
+import {useRouter} from "vue-router";
+import { userStore } from '@/stores/UserStore.js'
+
+const router = useRouter();
+const user=userStore();
 
 /*控制错误信息的显示与否*/
 const warning_show=ref(false);
@@ -11,6 +16,7 @@ const login_button=ref(null);
 const pwd=ref('');
 const user_name=ref('');
 
+
 function pwd_focus(){
   pwd_input.value.focus();
 }
@@ -18,18 +24,28 @@ function button_focus(){
   login_button.value.focus();
 }
 
-async function submit_test() {
+async function submit() {
   try {
-    // 用相对路径，不带 host/port，Vite dev server 会代理到 target
-    const res = await axios.post('/api/user/login',{
+    const res = await axios.post('/api/user/login', {
       usernameOrEmail: user_name.value,
       password: pwd.value
     });
-    // 只输出后端返回的业务数据
-    console.log(1);
-    console.log('后端返回：', res.data);
+    const responseData = res.data;
+    console.log(responseData);
+    // 2. 获取嵌套在里面的 data 对象
+    if (responseData.isSuccess) {
+      const userInfo = responseData.data;
+      console.log(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
+      user.setUser(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
+
+      await router.push('/firstFolders');
+    } else {
+      // 处理业务逻辑错误（如密码错误）
+      console.warn('登录失败：', responseData.message);
+    }
   } catch (err) {
-    console.error('请求出错：', err);
+    warning_show.value = true;
+    console.error('网络或服务器出错：', err);
   }
 }
 </script>
@@ -51,12 +67,12 @@ async function submit_test() {
       <input class="input" v-model="pwd" ref="pwd_input" type="password" placeholder="请输入密码" @keydown.enter="button_focus">
     </div>
 
-    <button class="login_submit" ref="login_button" type="submit" @click="submit_test">登录</button>
+    <button class="login_submit" ref="login_button" type="submit" @click="submit">登录</button>
   </div>
   <!--    最下面的忘记密码和立即注册-->
   <div class="footer_a">
     <div class="forget_pwd"><RouterLink to="">忘记密码</RouterLink></div>
-    <div class="to_register"><RouterLink to="">立即注册</RouterLink></div>
+    <div class="to_register"><RouterLink to="/register">立即注册</RouterLink></div>
   </div>
 </div>
 </template>

@@ -12,6 +12,7 @@ import zhanfushaonu from "@/assets/images/zhanfushaonu.png"
 import arona from "@/assets/images/arona.png"
 import zhigengniao from "@/assets/images/知更鸟2.jpg"
 import test1 from "@/assets/images/test1.jpg"
+import {useRouter} from "vue-router";
 
 const folder_show = ref(false);
 
@@ -25,15 +26,18 @@ const showSecondFolder = (event) => {
 const preventClose = (event) => {
   event.stopPropagation();
 };
-onMounted(()=>{
-  console.log("firstfolder")
-})
+
+
+/*跳转函数*/
+const router=useRouter();
+
+//
 </script>
 
 <template>
   <Navigator></Navigator>
   <div class="body_container" @click="folder_show=false">
-    <Add></Add>
+    <Add @click="router.push('/addFirstView')"></Add>
     <Delete></Delete>
     <SecondFolderContainer v-show="folder_show"  class="second-folder-overlay" @click="preventClose"></SecondFolderContainer>
     <div class="grid_container" :class="{ 'scroll-locked': folder_show }">

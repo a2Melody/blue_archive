@@ -4,9 +4,6 @@
     padding: 0;
     font-family: SourceHanSansCN-Regular,PingFang SC,Microsoft YaHei,-apple-system,system-ui,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Helvetica Neue,Hiragino Sans GB,Arial;
 }
-body{
-    cursor: url("src/assets/images/alternate.ani"), auto;
-}
 a {
     color: inherit;                    /* 继承文字颜色，而不是默认蓝色 */
     text-decoration: none;             /* 去下划线 */

@@ -3,6 +3,7 @@ import {ref, onBeforeUnmount} from "vue";
 import Cropper from 'cropperjs/dist/cropper.esm.js'
 import 'cropperjs/dist/cropper.css';
 import {userStore} from "@/stores/UserStore.js";
+import axios from "axios";
 const store=userStore();
 
 const isReady=ref(false);
@@ -11,6 +12,8 @@ const sourceUrl=ref('');          //保存生成的Url
 const CropperRef=ref(null);       //保存Cropper，而不是标签引用
 const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
+
+const pre_file_name=ref(null);
 
 //销毁预览图片
 const revokeIfNeeded=(url)=>{
@@ -32,6 +35,8 @@ function onFileChange(e){
 
   sourceUrl.value=URL.createObjectURL(file);
   if(CropperRef.value) CropperRef.value.replace(sourceUrl.value); /*更换文件时Cropper改变值，第一次上传时还未初始化Cropper，所以skip*/
+  pre_file_name.value=inputRef.value.value;
+  console.log(pre_file_name.value);
   inputRef.value.value=null;
 }
 function initCropper(){
@@ -79,14 +84,32 @@ function onSave() {
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high'
   });
-  canvas.toBlob((blob) => {
+
+
+  canvas.toBlob(async (blob) => {
     if (!blob) return;
+    // 可选：保存预览 URL（保留你原先的行为）
     const blobUrl = URL.createObjectURL(blob);
-    // 回收旧 URL（按你 store 的实现）
     if (store.profile && store.profile.startsWith('blob:')) {
-      try { URL.revokeObjectURL(store.profile); } catch(e) {}
+      try { URL.revokeObjectURL(store.profile); } catch (e) {}
     }
-    store.profile_set(blobUrl);
+    store.setProfile(blobUrl);
+
+    /*第一次传presign接口*/
+    try {
+      const res = await axios.post('/api/user/presign', {
+        originalFilename: pre_file_name.value,
+        mimeType: 'image/jpeg'
+      });
+      const responseData = res.data;
+      console.log(responseData);
+    } catch (err) {
+      console.error('上传出错', err);
+    }
+
+
+
+
   }, 'image/png'); // PNG 更少压缩模糊；如果用 jpeg，可用 'image/jpeg', 0.95
 }
 

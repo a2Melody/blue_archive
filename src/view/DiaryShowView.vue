@@ -4,18 +4,21 @@ import Navigator from "@/components/Navigator.vue";
 import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
 import DiaryLi from "@/components/colocate/DiaryLi.vue";
+import {useRouter} from "vue-router";
 
+const router=useRouter();
 const content=ref('');
-onMounted(()=>{
-  console.log("diary")
-})
+
+
+
 </script>
 
 <template>
   <Navigator></Navigator>
 
   <div class="body_container">
-    <Add></Add><Delete></Delete>
+    <Add @click="router.push('/diaryWriting')"></Add>
+    <Delete></Delete>
     <div class="diary_container">
       <DiaryLi title="日记_name_test1" :date="'2025-12-17'"></DiaryLi>
       <DiaryLi title="日记_name_test2" :date="'2025-12-17'"></DiaryLi>

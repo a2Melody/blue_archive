@@ -27,6 +27,12 @@ function onFileChange(e){
   sourceUrl.value=URL.createObjectURL(file);
   inputRef.value.value=null;
 }
+
+//先调用presign返回id和一个url
+//往url中放入图片文件
+//创建文件夹传(level1Dto)
+//直接跳转界面
+
 </script>
 
 <template>

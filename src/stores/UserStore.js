@@ -3,14 +3,22 @@ import { ref } from 'vue';
 
 export const userStore = defineStore('navigator', () => {
     const user_id=ref(null);
-    const user_name=ref("Melody_sensei");
+    const user_name=ref('');
     const profile=ref(null);
-    function profile_set(url){
-            profile.value=url;
-            console.log(profile.value)
-    }
 
+    function setUser(id, name, profileUrl) {
+        user_id.value = id;
+        user_name.value = name;
+        profile.value = profileUrl;
+    }
+    function setProfile(url){
+        profile.value=url;
+    }
     return {
-        user_name,profile,profile_set
+        user_id,
+        user_name,
+        profile,
+        setUser,
+        setProfile
     };
 });
