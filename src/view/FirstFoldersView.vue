@@ -31,7 +31,9 @@ const preventClose = (event) => {
 /*跳转函数*/
 const router=useRouter();
 
-//
+/*    /api/collection/folder/level1/getUserFolders 不用上传任何东西 传回来是这个链表 每个节点 */
+
+
 </script>
 
 <template>

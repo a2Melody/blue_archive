@@ -95,18 +95,23 @@ function onSave() {
     }
     store.setProfile(blobUrl);
 
-    /*第一次传presign接口*/
-    try {
-      const res = await axios.post('/api/user/presign', {
-        originalFilename: pre_file_name.value,
-        mimeType: 'image/jpeg'
-      });
-      const responseData = res.data;
-      console.log(responseData);
-    } catch (err) {
-      console.error('上传出错', err);
-    }
 
+    const contentType = 'image/jpeg' || 'application/octet-stream';
+    const presignReq = { originalFilename: pre_file_name.value, mimeType: contentType };
+
+    try {
+      const res = await fetch(`/api/user/presign`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: Object.assign({'Content-Type': 'application/json'}),
+        body: JSON.stringify(presignReq)
+      });
+      console.log(res.data);
+      console.log(2);
+    }
+    catch (e){
+      console.log(1)
+    }
 
 
 
