@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import useTools from "@/utils/diary-toolbar";
+import {useRouter} from "vue-router";
 const { onBeforeInput, onCompositionStart, onCompositionEnd,isUndoDisabled, isRedoDisabled,editorRef, fileInputRef, onUndo, onRedo, onBold, onItalic, onFileButtonClick, onFileInputChange, onInsertLocalImage}=useTools();
+
+const router=useRouter();
+
 </script>
 
 <template>
@@ -8,7 +12,7 @@ const { onBeforeInput, onCompositionStart, onCompositionEnd,isUndoDisabled, isRe
   <div class="container">
     <!---->
     <div class="header_container">
-      <button type="button" class="btn return">返回</button>
+      <button type="button" class="btn return" @click="router.push('/diaryShow')">返回</button>
       <button type="button" class="btn save"><span>保存</span></button>
     </div>
     <div class="tool_container">
@@ -93,7 +97,7 @@ button, input, textarea{
 /*整体的容器*/
 .container{       /*改成fixed即可,.scroll_container的margin-top得改成126px*/
   width: 100%;
-  position: relative;
+  position: fixed;
   top: 0;
 }
 /*分隔线条*/
@@ -171,7 +175,7 @@ button, input, textarea{
 /*正文输入的容器*/
 .scroll_container{
   width:100%;
-  margin-top: 26px;
+  margin-top: 126px;
 }
 .content_container{
   width: 910px;

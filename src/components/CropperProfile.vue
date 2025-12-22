@@ -4,15 +4,15 @@ import Cropper from 'cropperjs/dist/cropper.esm.js'
 import 'cropperjs/dist/cropper.css';
 import {userStore} from "@/stores/UserStore.js";
 import axios from "axios";
-const store=userStore();
 
+
+const store=userStore();
 const isReady=ref(false);
 const preUrl=ref('');
 const sourceUrl=ref('');          //保存生成的Url
 const CropperRef=ref(null);       //保存Cropper，而不是标签引用
 const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
-
 const uploadedFile = ref(null);
 
 //销毁预览图片
@@ -70,6 +70,8 @@ function onRechoose() {
   inputRef.value.click();
 }
 
+
+/*上传头像*/
 function authHeaders() {
   const headers = {};
   if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
@@ -88,11 +90,8 @@ async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
     headers: uploadHeaders,
     body: file,
   });
-
-  console.log(`[upload] POST -> status=${uploadRes.status} ${uploadRes.statusText}`);
   if (!uploadRes.ok) {
     const text = await uploadRes.text().catch(()=>null);
-    console.log('[upload] upload failed; response text: ' + text);
     return false;
   }
   return true;
@@ -140,8 +139,8 @@ function onSave() {
 
       console.log(`[user presign] upload successful. attachmentId=${attachmentId}`);
 /*第三次上传desu*/
-      const presignReq3 = { attachmentId: attachmentId };
-      const res3 = await axios.post('/api/user/userAvatar',presignReq3, {
+      const presignReq_userAvatar = { attachmentId: attachmentId };
+      const res_userAvatar = await axios.post('/api/user/userAvatar',presignReq_userAvatar, {
         headers: authHeaders()
       });
       console.log("success_desu");
@@ -150,6 +149,8 @@ function onSave() {
     }
   }, 'image/png'); // PNG 更少压缩模糊；如果用 jpeg，可用 'image/jpeg', 0.95
 }
+
+
 
 onBeforeUnmount(() => {
   destroyCropper()

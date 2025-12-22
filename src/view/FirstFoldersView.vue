@@ -13,8 +13,13 @@ import arona from "@/assets/images/arona.png"
 import zhigengniao from "@/assets/images/知更鸟2.jpg"
 import test1 from "@/assets/images/test1.jpg"
 import {useRouter} from "vue-router";
+import {userStore} from "@/stores/UserStore.js";
+import axios from "axios";
 
+
+const store=userStore();
 const folder_show = ref(false);
+const router=useRouter();
 
 // 显示 SecondFolderContainer
 const showSecondFolder = (event) => {
@@ -28,12 +33,33 @@ const preventClose = (event) => {
 };
 
 
-/*跳转函数*/
-const router=useRouter();
+/*上传一级收藏夹名字和图片*/
+function authHeaders() {
+  const headers = {};
+  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
+  return headers;
+}
+const folders = ref([]);
+async function getData(){
+  /*第一次上传*/
+  try {
+    const res = await axios.post('/api/collection/folder/level1/getUserFolders', {
+      headers: authHeaders(),
+    });
+    console.log('response (axios):', res.data);
+    if (res.data.isSuccess) {
+      folders.value = res.data.data;
+    }
+  } catch (e) {
+    console.log(1111)
+    console.error(e);
+  }
+}
 
-/*    /api/collection/folder/level1/getUserFolders 不用上传任何东西 传回来是这个链表 每个节点 */
 
-
+onMounted(()=>{
+  getData();
+});
 </script>
 
 <template>
@@ -43,12 +69,19 @@ const router=useRouter();
     <Delete></Delete>
     <SecondFolderContainer v-show="folder_show"  class="second-folder-overlay" @click="preventClose"></SecondFolderContainer>
     <div class="grid_container" :class="{ 'scroll-locked': folder_show }">
-      <FirstFolder :row="2" :col="1" :left="100" :bg="test1" @click="showSecondFolder"></FirstFolder>
-      <FirstFolder :row="1" :col="2" :bg="zhanfushaonu" @click="showSecondFolder"></FirstFolder>
-      <FirstFolder :row="2" :col="3" :bg="profile" @click="showSecondFolder"></FirstFolder>
-      <FirstFolder :row="1" :col="4" :bg="arona" @click="showSecondFolder"></FirstFolder>
-      <FirstFolder :row="2" :col="5" :bg="zhigengniao" @click="showSecondFolder"></FirstFolder>
-      <FirstFolder :row="1" :col="6" :bg="xia" @click="showSecondFolder"></FirstFolder>
+      <FirstFolder
+          v-for="(item, index) in folders"
+          :key="item.id"
+          :id="item.id"
+          :bg="item.url"
+          :name="item.name"
+          :row="(index % 2) === 0 ? 2 : 1"
+          :col="index + 1"
+          :left="index === 0 ? 100 : 0"
+          @click="showSecondFolder"
+      >
+        {{ item.name }}
+      </FirstFolder>
     </div>
   </div>
 </template>

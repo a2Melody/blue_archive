@@ -1,69 +1,41 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-const LOCAL_USER_KEY = 'myapp_user'; // 可改为项目命名空间，避免 key 冲突
-const LOCAL_TOKEN_KEY = 'myapp_token';
+export const userStore = defineStore('userStore', () => {
+    // 1. 直接初始化响应式引用，不再从 localStorage 读取
+    const user_id = ref(null);
+    const user_name = ref('');
+    const profile = ref(null);
+    const accessToken = ref(null);
 
-export const userStore = defineStore('navigator', () => {
-    // 从 localStorage 恢复
-    let storedUser = null;
-    try {
-        storedUser = JSON.parse(localStorage.getItem(LOCAL_USER_KEY));
-    } catch (e) {
-        storedUser = null;
-    }
-    const user_id = ref(storedUser?.id ?? null);
-    const user_name = ref(storedUser?.username ?? '');
-    const profile = ref(storedUser?.profile ?? null);
-    const accessToken = ref(localStorage.getItem(LOCAL_TOKEN_KEY) ?? null);
-
-    function persistUser() {
-        try {
-            localStorage.setItem(LOCAL_USER_KEY, JSON.stringify({
-                id: user_id.value,
-                username: user_name.value,
-                profile: profile.value
-            }));
-        } catch (e) { /* ignore storage errors */ }
-    }
-    function clearPersistedUser() {
-        try {
-            localStorage.removeItem(LOCAL_USER_KEY);
-        } catch (e) {}
-    }
-    function persistToken() {
-        try {
-            if (accessToken.value) localStorage.setItem(LOCAL_TOKEN_KEY, accessToken.value);
-            else localStorage.removeItem(LOCAL_TOKEN_KEY);
-        } catch (e) {}
-    }
-
-    function setUser(id, name, profileUrl) {
+    // 2. 更新状态的方法（删除了所有调用 persist 的逻辑）
+    function setUser(id, name, profileUrl,accesstoken) {
         user_id.value = id;
         user_name.value = name;
         profile.value = profileUrl;
-        persistUser();
+        accessToken.value=accesstoken
     }
-    function setProfile(url){
+
+    function setProfile(url) {
         profile.value = url;
-        persistUser();
     }
-    function setToken(token){
-        if(token) accessToken.value = token;
-        else accessToken.value = null;
-        persistToken();
+
+    function setToken(token) {
+        accessToken.value = token || null;
     }
+
+    // 3. 清理方法（只清理内存中的变量）
     function clearAll() {
         user_id.value = null;
         user_name.value = '';
         profile.value = null;
         accessToken.value = null;
-        clearPersistedUser();
-        try { localStorage.removeItem(LOCAL_TOKEN_KEY); } catch (e) {}
     }
-    function getToken(){
+
+    function getToken() {
         return accessToken.value;
     }
+
     return {
         user_id,
         user_name,

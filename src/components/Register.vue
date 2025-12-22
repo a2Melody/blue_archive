@@ -40,10 +40,10 @@ async function submit() {
   }
   try {
     const res = await axios.post('/api/user/register',{
-      username:user_name,
-      password: pwd,
-      confirmPassword: pwd_twice,
-      email: email
+      username:user_name.value,
+      password: pwd.value,
+      confirmPassword: pwd_twice.value,
+      email: email.value
     });
     console.log('后端返回：', res.data);
     await router.push('/');

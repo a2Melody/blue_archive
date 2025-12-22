@@ -2,9 +2,12 @@
 import shiroko from "@/assets/images/shiroko.png";
 
 const props=defineProps({
+  id:{
+    type:Number,
+    required:true
+  },
   bg:{
     type:String,
-    default:shiroko
   },
   row:{
     type:Number
@@ -18,7 +21,6 @@ const props=defineProps({
   },
   name:{
     type:String,
-    default:'默认收藏夹1'
   }
 })
 </script>

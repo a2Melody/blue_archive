@@ -15,9 +15,16 @@ app.use(pinia);
 app.use(router); // <--- 关键：全局注册 vue-router 的组件 (RouterLink / RouterView)
 app.mount('#app');
 
-// 恢复并设置 axios 默认 Authorization（在 pinia 注册后再调用 store）
-const store = userStore();
-const token = store.getToken();
-if (token) {
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-}
+// 添加请求拦截器
+axios.interceptors.request.use(config => {
+    const store = userStore();
+    const token = store.getToken();
+
+    if (token) {
+        // 将 Token 注入到 Authorization 头中
+        config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});

@@ -11,17 +11,8 @@ const router=useRouter();
 const signature=ref('');
 const show=ref(true);
 
-/*切换账户的函数功能*/
-async function onSwitchAccount(){
-  try {
-    const res = await axios.post('/api/user/logout');
-    console.log('后端返回：', res.data);
-    user.setUser(null,null,null);
-    await  router.push('/');
-  } catch (err) {
-    console.error('请求出错：', err);
-  }
-}
+
+
 function input_enter(e){
     e.preventDefault();
     e.target.blur();
@@ -47,6 +38,17 @@ function jump(e){
   el.addEventListener("animationend", clean, { once: true });   //动画结束后调用clean函数，并且触发一次事件后自动删除监听器
 }
 
+/*切换账户的函数功能*/
+async function logout(){
+  try {
+    const res = await axios.post('/api/user/logout');
+    console.log('后端返回：', res.data);
+    user.clearAll();
+    await router.push('/');
+  } catch (err) {
+    console.error('请求出错：', err);
+  }
+}
 
 </script>
 
@@ -71,11 +73,11 @@ function jump(e){
           <div class="profile" :style="user.profile?{ backgroundImage:`url(${user.profile})`}:{}" @click="router.push('/cropProfile')"></div>
           <ul class="content">
             <li class="user_name">{{ user.user_name }}</li>
-            <li class="li_a" ><router-link to="">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
-            <li class="li_a"><router-link to="">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a" ><router-link to="/test">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a"><router-link to="/test">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
             <li class="li_a"><router-link to=""></router-link></li>
             <li class="li_a"><router-link to=""></router-link></li>
-            <li class="li_a"><router-link to="/">切换账户</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a" @click="logout"><a>切换账户</a><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->

@@ -10,15 +10,7 @@ import axios from "axios";
 import {userStore} from "@/stores/UserStore.js";
 
 const user=userStore();
-onMounted(async () => {
-  try {
-    const res = await axios.post('/api/user/logout');
-    console.log('后端返回：', res.data);
-    user.setUser(null, null, null);
-  } catch (err) {
-    console.error('请求出错：', err);
-  }
-})
+
 </script>
 
 <template>

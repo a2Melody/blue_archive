@@ -42,7 +42,7 @@ function test(){
   right: 0;
   top:  0;
   z-index: 1000;
-  clip-path: polygon(48% 0, 100% 0, 100% 100%, 0% 100%);
+  clip-path: polygon(46% 0, 100% 0, 100% 100%, 0% 100%);
   overflow: hidden;
 
   user-select: none;

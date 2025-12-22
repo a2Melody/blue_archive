@@ -2,14 +2,18 @@
 import {ref} from "vue";
 import Navigator from "@/components/Navigator.vue";
 import FirstFolder from "@/components/colocate/FirstFolder.vue";
+import axios from "axios";
+import {userStore} from "@/stores/UserStore.js";
+import {useRouter} from "vue-router";
 
+const router=useRouter();
+const store=userStore();
 const name=ref('');               //存标题名字
-
 const preUrl=ref('');
 const sourceUrl=ref('');          //保存生成的Url
 const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
-
+const uploadedFile = ref(null);
 
 //销毁预览图片
 const revokeIfNeeded=(url)=>{
@@ -17,8 +21,9 @@ const revokeIfNeeded=(url)=>{
 }
 /*input上传文件*/
 function onFileChange(e){
-  const file=e.target.files?.[0]  //如果没有files或files为空，则file为undefined
-  if (!file)return
+  const file = e.target.files?.[0];
+  if (!file) return;
+  uploadedFile.value = file;
   if(preUrl.value){
     revokeIfNeeded(preUrl.value);
     preUrl.value='';
@@ -28,10 +33,67 @@ function onFileChange(e){
   inputRef.value.value=null;
 }
 
-//先调用presign返回id和一个url
-//往url中放入图片文件
-//创建文件夹传(level1Dto)
-//直接跳转界面
+/*上传一级收藏夹名字和图片*/
+function authHeaders() {
+  const headers = {};
+  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
+  return headers;
+}
+async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
+  const uploadHeaders = {};
+  for (const k in putHeaders) {
+    if (!Object.prototype.hasOwnProperty.call(putHeaders, k)) continue;
+    uploadHeaders[k] = putHeaders[k];
+  }
+  uploadHeaders['Content-Type'] = contentType;
+
+  const uploadRes = await fetch(putUrl, {
+    method: 'PUT',
+    headers: uploadHeaders,
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text().catch(()=>null);
+    return false;
+  }
+  return true;
+}
+async function onSave(){
+  console.log(1111);
+  /*第一次上传*/
+  const contentType = uploadedFile.value.type || 'application/octet-stream';
+  const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
+  try {
+    const res = await axios.post('/api/user/presign', presignReq, {
+      headers: authHeaders(),
+      withCredentials: true
+    });
+    console.log(`success_desu`);
+
+    /*第二次上传*/
+    const attachmentId=res.data.attachmentId;
+    const putUrl=res.data.putUrl;
+    const putHeaders=res.data.putHeaders;
+    const ok = await uploadToPresigned(putUrl, putHeaders, uploadedFile.value, contentType);
+    if (!ok) return;
+    console.log(`success_desu_desu`);
+
+    /*第三次上传desu*/
+    const presignReq_createNewFolder = { attachmentId: attachmentId,name:name.value};
+    console.log(presignReq_createNewFolder)
+    const res_createNewFolder = await axios.post('/api/collection/folder/level1/createNewFolder',presignReq_createNewFolder, {
+      headers: authHeaders()
+    });
+    console.log("success_desu_desu_desu");
+
+
+    router.push('/firstFolders');
+  } catch (e) {
+
+    console.error(e);
+  }
+}
+
 
 </script>
 

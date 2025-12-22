@@ -2,13 +2,16 @@
 import {ref} from "vue";
 import Navigator from "@/components/Navigator.vue";
 import Collection from "@/components/colocate/Collection.vue";
+import axios from "axios";
+import {userStore} from "@/stores/UserStore.js";
 
+
+const store=userStore();
 const info=ref('');               //存标题名字
-
 const preUrl=ref('');
 const sourceUrl=ref('');          //保存生成的Url
 const inputRef=ref(null);         //获取Input元素
-
+const uploadedFile = ref(null);
 
 //销毁预览图片
 const revokeIfNeeded=(url)=>{
@@ -16,8 +19,9 @@ const revokeIfNeeded=(url)=>{
 }
 /*input上传文件*/
 function onFileChange(e){
-  const file=e.target.files?.[0]  //如果没有files或files为空，则file为undefined
-  if (!file)return
+  const file = e.target.files?.[0];
+  if (!file) return;
+  uploadedFile.value = file;
   if(preUrl.value){
     revokeIfNeeded(preUrl.value);
     preUrl.value='';
@@ -27,6 +31,65 @@ function onFileChange(e){
   inputRef.value.value=null;
   info.value='';
 }
+
+
+/*上传名字和图片*/
+function authHeaders() {
+  const headers = {};
+  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
+  return headers;
+}
+async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
+  const uploadHeaders = {};
+  for (const k in putHeaders) {
+    if (!Object.prototype.hasOwnProperty.call(putHeaders, k)) continue;
+    uploadHeaders[k] = putHeaders[k];
+  }
+  uploadHeaders['Content-Type'] = contentType;
+
+  const uploadRes = await fetch(putUrl, {
+    method: 'PUT',
+    headers: uploadHeaders,
+    body: file,
+  });
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text().catch(()=>null);
+    return false;
+  }
+  return true;
+}
+async function onSave(){
+  console.log(1111)
+  /*第一次上传*/
+  const contentType = uploadedFile.value.type || 'application/octet-stream';
+  const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
+  try {
+    const res = await axios.post('/api/user/presign', presignReq, {
+      headers: authHeaders(),
+      withCredentials: true
+    });
+    console.log('presign response (axios):', res.data);
+
+    /*第二次上传*/
+    const attachmentId=res.data.attachmentId;
+    const putUrl=res.data.putUrl;
+    const putHeaders=res.data.putHeaders;
+    const ok = await uploadToPresigned(putUrl, putHeaders, uploadedFile.value, contentType);
+    if (!ok) return;
+    console.log(`[user presign] upload successful. attachmentId=${attachmentId}`);
+
+    /*第三次上传desu*/
+    /*const presignReq_createCustom = { attachmentId: attachmentId,name:info.value,description:info.value,father_level2_id:};
+    const res_createCustom = await axios.post('/api/collection/item/createCustom',presignReq_createCustom, {
+      headers: authHeaders()
+    });
+    console.log("success_desu");*/
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 </script>
 
 <template>
