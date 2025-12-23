@@ -5,11 +5,7 @@ import BackgroundImage from "@/components/BackgroundImage.vue";
 import Login from "@/components/Login.vue";
 
 import imageUrl_alice from "@/assets/images/alice_bg.jpg"
-import {onMounted} from "vue";
-import axios from "axios";
-import {userStore} from "@/stores/UserStore.js";
 
-const user=userStore();
 
 </script>
 

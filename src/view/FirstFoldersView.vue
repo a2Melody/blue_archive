@@ -6,57 +6,54 @@ import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
 import SecondFolderContainer from "@/components/SecondFolderContainer.vue";
 
-import profile from "@/assets/images/profile_test.jpg"
-import xia from "@/assets/images/夏.png"
-import zhanfushaonu from "@/assets/images/zhanfushaonu.png"
-import arona from "@/assets/images/arona.png"
-import zhigengniao from "@/assets/images/知更鸟2.jpg"
-import test1 from "@/assets/images/test1.jpg"
 import {useRouter} from "vue-router";
-import {userStore} from "@/stores/UserStore.js";
 import axios from "axios";
 
 
-const store=userStore();
-const folder_show = ref(false);
 const router=useRouter();
 
-// 显示 SecondFolderContainer
-const showSecondFolder = (event) => {
-  event.stopPropagation(); // 阻止事件冒泡到 body_container
-  folder_show.value = !folder_show.value;
-  console.log(1);
-};
-// 阻止 SecondFolderContainer 内部点击关闭自己
-const preventClose = (event) => {
-  event.stopPropagation();
-};
-
-
-/*上传一级收藏夹名字和图片*/
-function authHeaders() {
-  const headers = {};
-  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
-  return headers;
-}
+/*拉取该用户的所有一级收藏夹*/
 const folders = ref([]);
 async function getData(){
   /*第一次上传*/
   try {
-    const res = await axios.post('/api/collection/folder/level1/getUserFolders', {
-      headers: authHeaders(),
-    });
+    const res = await axios.post('/api/collection/folder/level1/getUserFolders', {});
     console.log('response (axios):', res.data);
     if (res.data.isSuccess) {
       folders.value = res.data.data;
     }
   } catch (e) {
-    console.log(1111)
     console.error(e);
   }
 }
 
+const folder_show = ref(false);
+const secondFolders = ref([]); // 新增：存放二级列表数据
+const selectedFolderName = ref(""); // 新增：存放当前选中的一级文件夹名字
+const selectedFolderId =ref(null);
 
+async function showSecondFolder(event,item){
+  event.stopPropagation(); // 阻止事件冒泡到 body_container
+  if(folder_show.value){
+    folder_show.value = false;
+  }
+  else {
+    folder_show.value = true;
+    selectedFolderName.value=item.name;
+    selectedFolderId.value=item.id;
+    console.log(item.id);
+    const res = await axios.post('/api/collection/folder/level2/getFoldersByParent', {
+      father_id:item.id
+    });
+    const responseData = res.data;
+    console.log(responseData);
+    secondFolders.value=res.data.data;
+  }
+}
+
+
+
+/*每次到这个界面都会拉取一级收藏夹的数据*/
 onMounted(()=>{
   getData();
 });
@@ -67,7 +64,14 @@ onMounted(()=>{
   <div class="body_container" @click="folder_show=false">
     <Add @click="router.push('/addFirstView')"></Add>
     <Delete></Delete>
-    <SecondFolderContainer v-show="folder_show"  class="second-folder-overlay" @click="preventClose"></SecondFolderContainer>
+    <SecondFolderContainer
+        :father_id="selectedFolderId"
+        :first-folder-name="selectedFolderName"
+        :data="secondFolders"
+        v-if="folder_show"
+        class="second-folder-overlay"
+        @click.stop
+    ></SecondFolderContainer>
     <div class="grid_container" :class="{ 'scroll-locked': folder_show }">
       <FirstFolder
           v-for="(item, index) in folders"
@@ -78,7 +82,7 @@ onMounted(()=>{
           :row="(index % 2) === 0 ? 2 : 1"
           :col="index + 1"
           :left="index === 0 ? 100 : 0"
-          @click="showSecondFolder"
+          @click="showSecondFolder($event,item)"
       >
         {{ item.name }}
       </FirstFolder>

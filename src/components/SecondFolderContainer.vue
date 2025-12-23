@@ -1,33 +1,63 @@
 <script setup>
 import {ref} from "vue";
 import SecondFolder from "@/components/colocate/SecondFolder.vue";
+import axios from "axios";
 
 const props=defineProps({
   firstFolderName:{
     type:String,
-    default:"默认收藏夹1"
+    required:true
+  },
+  father_id:{
+    type:Number,
+    required:true
+  },
+  data:{
+    type:Object,
+    required:true
   }
 });
+
+
 const secondFName=ref('');
 const input_show=ref(false);
 
-
-function test(){
-  console.log(1);
+async function createSecondFolder(){
+  if(secondFName.value==='')return;
+  try{
+    const res = await axios.post('/api/collection/folder/level2/createDefaultFolder', {
+      name:secondFName.value,
+      father_id:props.father_id
+    });
+    const responseData = res.data;
+    console.log(responseData);
+  }catch (e){
+    console.log(e)
+  }
 }
+
 </script>
 
 <template>
   <div class="tixing" @click="input_show=false">
     <span class="folder_name">{{props.firstFolderName}}</span>
     <div class="folder_container">
-      <SecondFolder></SecondFolder>
-      <SecondFolder></SecondFolder>
+      <SecondFolder
+          v-for="item in props.data"
+          :name="item.name"
+      ></SecondFolder>
 <!--创建二级收藏夹-->
       <div class="create_container" @click.stop="input_show=!input_show">
         <span class="left"></span>
         <span class="name">创建收藏夹</span>
-        <input @keydown.enter="test" @click.stop v-model="secondFName" v-show="input_show" type="text" class="name_input" maxlength="12">
+        <input
+           @keydown.enter="createSecondFolder"
+           @click.stop
+           v-model="secondFName"
+           v-show="input_show"
+           type="text"
+           class="name_input"
+           maxlength="12">
       </div>
     </div>
   </div>

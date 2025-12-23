@@ -33,7 +33,7 @@ function pwd_twice_focus(){
 function button_focus(){
   register_btn.value.focus();
 }
-
+/*上传注册*/
 async function submit() {
   if (!isPwdMatch.value||!isEmailValid) {
     return;

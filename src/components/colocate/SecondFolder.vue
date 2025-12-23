@@ -2,7 +2,7 @@
 const props=defineProps({
   name:{
     type:String,
-    default:"test-name"
+    required:true
   }
 })
 

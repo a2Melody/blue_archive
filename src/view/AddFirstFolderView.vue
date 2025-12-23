@@ -34,11 +34,6 @@ function onFileChange(e){
 }
 
 /*上传一级收藏夹名字和图片*/
-function authHeaders() {
-  const headers = {};
-  if (store.getToken()) headers['Authorization'] = 'Bearer ' + store.getToken();
-  return headers;
-}
 async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
   const uploadHeaders = {};
   for (const k in putHeaders) {
@@ -65,7 +60,6 @@ async function onSave(){
   const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
   try {
     const res = await axios.post('/api/collection/folder/level1/presign', presignReq, {
-      headers: authHeaders(),
       withCredentials: true
     });
     console.log(`success_desu`);
@@ -81,11 +75,8 @@ async function onSave(){
     /*第三次上传desu*/
     const presignReq_createNewFolder = { attachmentId: attachmentId,name:name.value};
     console.log(presignReq_createNewFolder)
-    const res_createNewFolder = await axios.post('/api/collection/folder/level1/createNewFolder',presignReq_createNewFolder, {
-      headers: authHeaders()
-    });
+    const res_createNewFolder = await axios.post('/api/collection/folder/level1/createNewFolder',presignReq_createNewFolder);
     console.log("success_desu_desu_desu");
-
 
     router.push('/firstFolders');
   } catch (e) {

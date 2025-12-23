@@ -9,11 +9,10 @@ export const userStore = defineStore('userStore', () => {
     const accessToken = ref(null);
 
     // 2. 更新状态的方法（删除了所有调用 persist 的逻辑）
-    function setUser(id, name, profileUrl,accesstoken) {
+    function setUser(id, name, profileUrl) {
         user_id.value = id;
         user_name.value = name;
         profile.value = profileUrl;
-        accessToken.value=accesstoken
     }
 
     function setProfile(url) {
