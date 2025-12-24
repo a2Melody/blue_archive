@@ -96,7 +96,7 @@ async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
   }
   return true;
 }
-function onSave() {
+async function onSave() {
   if (!CropperRef.value) return;
   const targetSize=50;                      // 最终 CSS 大小（px）
   const dpr=window.devicePixelRatio || 1;
@@ -143,7 +143,6 @@ function onSave() {
       const res_userAvatar = await axios.post('/api/user/userAvatar',presignReq_userAvatar, {
         headers: authHeaders()
       });
-      console.log("success_desu");
     } catch (e) {
       console.error(e);
     }
