@@ -1,23 +1,30 @@
 <script setup>
-import {ref} from "vue";
 
 const props=defineProps({
+  id:{
+    type:Number,
+  },
   bgUrl:{
     type:String,
     required:true
   },
   info:{
     type:String,
-    default:"未完待续"
-  }
+    default:""
+  },
+  showDelete: Boolean
 });
-const show=ref(false);
+const emit = defineEmits(['delete-item']);
+
+function onClickDelete() {
+  emit('delete-item', props.id); // 把要删除的 id 传回给父组件
+}
 
 </script>
 
 <template>
   <div class="collection_container">
-    <div ref="jianhao" class="container" v-show="show">
+    <div ref="jianhao" class="container" v-show="props.showDelete" @click.stop="onClickDelete">
       <span class="jianhao iconfont icon-jianhao3" ></span>
     </div>
     <img class="bg_img" :src="props.bgUrl" alt="" />
@@ -37,6 +44,7 @@ const show=ref(false);
   position: relative;
   width: max-content;         /* shrink-to-fit，但受下面的 max-width 限制 */
   max-width: 100%;            /* 不会超出父格子的可用宽度 */
+  user-select: none;
 }
 
 /* .bg_img：改为等比例显示（不裁切），并保留白色边框 */
@@ -60,7 +68,7 @@ const show=ref(false);
   border-radius: 8px;
 
   background-color: rgba(0,0,0,0); /* 初始完全透明背景 */
-  transition: background-color 1s ease;
+  transition: background-color .6s ease;
   z-index: 2;
 
   white-space: pre-wrap;    /* ← 新增：保留换行符并自动换行 */
@@ -71,7 +79,7 @@ const show=ref(false);
   height: 100%;
   color: rgba(255,255,255,0); /* 初始文字透明 */
 
-  transition: color 1s ease;
+  transition: color .6s ease;
   padding: 25px;
 
 }
@@ -86,14 +94,14 @@ const show=ref(false);
 
 .container{
   position: absolute;     /* 改成fixed*/
-  left: 4px;
-  top: 4px;
+  left: 5px;
+  top: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
-  background-color: #6BCBFF;
+  background-color: #bababa;
   border-radius: 50%;
   z-index: 5;
   user-select: none;

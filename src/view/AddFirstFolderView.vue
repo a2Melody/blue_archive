@@ -78,7 +78,7 @@ async function onSave(){
     const res_createNewFolder = await axios.post('/api/collection/folder/level1/createNewFolder',presignReq_createNewFolder);
     console.log("success_desu_desu_desu");
 
-    router.push('/firstFolders');
+    await router.push('/firstFolders');
   } catch (e) {
 
     console.error(e);

@@ -1,35 +1,78 @@
 <script setup>
 import {onMounted, ref} from "vue";
-
 import Navigator from "@/components/Navigator.vue";
 import Collection from "@/components/colocate/Collection.vue";
 import Add from "@/components/colocate/Add.vue";
 import Delete from "@/components/colocate/Delete.vue";
+import {useRoute, useRouter} from "vue-router";
+import axios from "axios";
 
-import xia from "@/assets/images/夏.png";
-import shiroko from "@/assets/images/shiroko.png";
-import zhigengniao from "@/assets/images/知更鸟2.jpg"
-import zhanfushaonu from "@/assets/images/zhanfushaonu.png"
-import xuemei from "@/assets/images/学妹.jpg";
-import hina1 from "@/assets/images/hina.jpg";
-import hina2 from "@/assets/images/hina.png"
-import test1 from "@/assets/images/test1.jpg"
 
-const test=ref("新月同行:\n回头看，向前走，答案在前也在后");
+const route=useRoute();
+const router=useRouter();
+const currentFolderId = ref(null);
+const collections=ref(null);
+
+/*从后端拉取收藏内容*/
+async function getCollections(){
+  try {
+    const res = await axios.post('/api/collection/item/getItems', {
+       father_level2_id:currentFolderId.value
+    });
+    console.log('response (axios):', res.data);
+    collections.value=res.data.data;
+  } catch (e) {
+    console.error(e);
+  }
+}
+/*跳转创建界面*/
+function goToAddCollection() {
+  router.push({
+    path: '/addCollection',
+    query: { id: currentFolderId.value } // 使用 query 会在 URL 后面拼接 ?id=xxx，推荐这种方式，更直观
+  });
+}
+
+// CollectionsView.vue
+const isDeleteMode = ref(false); // 控制减号显示的状态
+// 切换模式的方法
+function toggleDeleteMode() {
+  isDeleteMode.value = !isDeleteMode.value;
+}
+// 执行删除请求的方法
+async function handleDelete(id) {
+  try {
+    await axios.post('/api/collection/item/delete', { id:id });
+    // 删除成功后重新拉取列表
+    await getCollections();
+  } catch (e) {
+    console.error("删除失败", e);
+  }
+}
+
+onMounted(() => {
+  // 从 query 中读取 id
+  currentFolderId.value = route.query.id;
+  console.log("获取到的文件夹ID是:", currentFolderId.value);
+  getCollections();
+});
+
 </script>
 
 <template>
   <Navigator></Navigator>
-  <div class="collections_container">
-    <Add></Add>
-    <Delete></Delete>
-    <Collection :bg-url="xia" :info="test"></Collection>
-    <Collection :bg-url="shiroko"></Collection>
-    <Collection :bg-url="zhanfushaonu"></Collection>
-    <Collection :bg-url="hina1"></Collection>
-    <Collection :bg-url="test1"></Collection>
-    <Collection :bg-url="zhigengniao"></Collection>
-    <Collection :bg-url="test1"></Collection>
+  <div class="collections_container" @click="isDeleteMode=false">
+    <Add @click="goToAddCollection"></Add>
+    <Delete @click.stop="toggleDeleteMode"></Delete>
+    <Collection
+        v-for="collection in collections"
+        :id="collection.id"
+        :key="collection.id"
+        :bg-url="collection.url"
+        :info="collection.description"
+        :show-delete="isDeleteMode"
+        @delete-item="handleDelete"
+    ></Collection>
   </div>
 </template>
 

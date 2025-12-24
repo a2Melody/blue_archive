@@ -3,13 +3,17 @@ const props=defineProps({
   name:{
     type:String,
     required:true
+  },
+  id:{
+    type:Number,
+    required:true
   }
 })
 
 </script>
 
 <template>
-    <div class="second_folder">
+    <div class="second_folder" >
       <span class="left"></span>
       <span class="name">{{props.name}}</span>
     </div>

@@ -8,6 +8,7 @@ import AddFirstFolderView from "@/view/AddFirstFolderView.vue";
 import CroppingProfileView from "@/view/CroppingProfileView.vue";
 import DiaryWritingView from "@/view/DiaryWritingView.vue";
 import CollectionsView from "@/view/CollectionsView.vue";
+import AddCollectionView from "@/view/AddCollectionView.vue";
 
 const routes = [
     { path: '/', name: 'Home', component: LoginView },
@@ -20,6 +21,7 @@ const routes = [
     { path: '/diaryWriting', name: 'diaryWriting', component: DiaryWritingView },
     { path: '/diaryShow', name: 'diaryShow', component: DiaryShowView },
     { path: '/collectionsShow', name: 'collectionShow', component: CollectionsView },
+    { path: '/addCollection', name: 'addCollection', component: AddCollectionView },
 ];
 const router = createRouter({ history: createWebHistory(), routes });
 export default router;

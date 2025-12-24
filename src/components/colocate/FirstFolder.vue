@@ -1,10 +1,9 @@
 <script setup>
-import shiroko from "@/assets/images/shiroko.png";
+import {ref} from "vue";
 
 const props=defineProps({
   id:{
     type:Number,
-    required:true
   },
   bg:{
     type:String,
@@ -21,12 +20,21 @@ const props=defineProps({
   },
   name:{
     type:String,
-  }
+  },
+  showDelete: Boolean
 })
+const emit = defineEmits(['delete-firstFolder']);
+function onClickDelete() {
+  emit('delete-firstFolder', props.id); // 把要删除的 id 传回给父组件
+}
+
 </script>
 
 <template>
-  <div class="container" :style="{gridRow: props.row, gridColumn: props.col ,marginLeft:props.left+'px',marginRight:props.right}">
+  <div class="container" :style="{gridRow: props.row, gridColumn: props.col ,marginLeft:props.left+'px'}">
+    <div ref="jianhao" class="jianhao_container" v-show="props.showDelete" @click.stop="onClickDelete">
+      <span class="jianhao iconfont icon-jianhao3" ></span>
+    </div>
     <div class="img_container">
       <div class="img_bg" :style="{backgroundImage:`url(${props.bg})`}"></div>
     </div>
@@ -44,6 +52,26 @@ const props=defineProps({
 </template>
 
 <style scoped>
+/*删除按钮*/
+.jianhao_container{
+  position: absolute;     /* 改成fixed*/
+  left: 4px;
+  top: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #bababa;
+  border-radius: 50%;
+  z-index: 5;
+  user-select: none;
+}
+.jianhao{
+  display: inline-block;
+  color: white;
+  font-size: 14px;
+}
 
 .container{
   position: relative;

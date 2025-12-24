@@ -2,6 +2,7 @@
 import {ref} from "vue";
 import SecondFolder from "@/components/colocate/SecondFolder.vue";
 import axios from "axios";
+import {useRouter} from "vue-router";
 
 const props=defineProps({
   firstFolderName:{
@@ -17,11 +18,12 @@ const props=defineProps({
     required:true
   }
 });
-
-
+const emit=defineEmits(['refresh']);
+const router=useRouter();
 const secondFName=ref('');
 const input_show=ref(false);
 
+/*创建二级收藏夹*/
 async function createSecondFolder(){
   if(secondFName.value==='')return;
   try{
@@ -29,11 +31,25 @@ async function createSecondFolder(){
       name:secondFName.value,
       father_id:props.father_id
     });
-    const responseData = res.data;
-    console.log(responseData);
+    if(res.data.isSuccess) { // 假设后端返回 isSuccess
+      // 成功后通知父组件刷新
+      emit('refresh');
+      // 清空输入框并收起
+      secondFName.value = '';
+      input_show.value = false;
+    }
+    console.log(res.data);
   }catch (e){
     console.log(e)
   }
+}
+/*点击<SecondFolder>后跳转界面*/
+function goToCollection(folderId) {
+  console.log("click goToCollection");
+  router.push({
+    path: '/collectionsShow',
+    query: { id: folderId } // 使用 query 会在 URL 后面拼接 ?id=xxx，推荐这种方式，更直观
+  });
 }
 
 </script>
@@ -45,6 +61,8 @@ async function createSecondFolder(){
       <SecondFolder
           v-for="item in props.data"
           :name="item.name"
+          :id="item.id"
+          @click="goToCollection(item.id)"
       ></SecondFolder>
 <!--创建二级收藏夹-->
       <div class="create_container" @click.stop="input_show=!input_show">
@@ -72,16 +90,16 @@ async function createSecondFolder(){
   right: 0;
   top:  0;
   z-index: 1000;
-  clip-path: polygon(46% 0, 100% 0, 100% 100%, 0% 100%);
+  clip-path: polygon(47% 0, 100% 0, 100% 100%, 0% 100%);
   overflow: hidden;
-
   user-select: none;
 }
 .folder_name{
   position: absolute;
   bottom: 438px;
-  right: 220px;
+  left: 220px;
   color: #676767;
+/*  background-color: pink;*/
 }
 .folder_container{
   position: absolute;
