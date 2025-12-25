@@ -39,6 +39,7 @@ export const userStore = defineStore('userStore', () => {
         user_id,
         user_name,
         profile,
+        accessToken,
         setUser,
         setProfile,
         setToken,
