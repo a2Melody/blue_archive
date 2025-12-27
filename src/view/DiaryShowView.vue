@@ -120,7 +120,7 @@ onMounted(() => {
           v-for="d in diaries"
           :key="d.id"
           :title="d.title"
-          :date="d.createdAt || d.date || ''"
+          :date="(d.createdAt || d.date || '').replace('T', ' ')"
           @click="loadDiary(d.id)"
       />
     </div>
@@ -147,10 +147,11 @@ onMounted(() => {
   float: left;
   width: 540px;
   min-height: 200px;
-  margin-left: 100px;
+  margin-left: 120px;
   padding: 20px;
-  background-color: #fff3f3;
+  background-color: #ffffff;
   white-space: normal;
+  border-radius: 5px;
 }
 /* Title styling */
 .diary-title{

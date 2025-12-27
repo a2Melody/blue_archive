@@ -462,7 +462,7 @@ onMounted(() => {
     </div>
   </div>
 
-  <div style="padding:12px; max-width:910px; margin: 12px auto">
+<!--  <div style="padding:12px; max-width:910px; margin: 12px auto">
     <strong>预览：</strong>
     <div id="diaryPreview" class="preview"></div>
   </div>
@@ -470,7 +470,7 @@ onMounted(() => {
   <div style="padding:12px; max-width:910px; margin: 12px auto">
     <strong>日志：</strong>
     <pre style="white-space:pre-wrap;background:#fafafa;border:1px solid #eee;padding:8px;height:160px;overflow:auto;border-radius:4px">{{ logLines }}</pre>
-  </div>
+  </div>-->
 </template>
 
 <style scoped>
@@ -491,11 +491,11 @@ button, input, textarea{
 .w_edit_tool button{ width: 100%; height: 100%; }
 .w_edit_tool svg{ width: 16px; height: 16px; }
 .w_edit_tool:hover{ background-color: #f1f1f1; cursor: pointer; }
-.scroll_container{ width:100%; margin-top: 126px; }
+.scroll_container{ width:100%; margin-top: 126px;}
 .content_container{ width: 910px; margin: 0 auto; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); border-radius: 10px 10px 0 0; }
 .title_input{ width: 910px; height: 50px; line-height: 50px; padding: 0 16px; font-size: 16px; color: #00AFE8; border-bottom: 0.6px solid #ddd; }
 .title_input::placeholder{ color: #6BCBFF; }
-.edit{ width: 910px; padding: 16px; font-size: 14px; min-height: 400px; user-select: text; white-space: pre-wrap; }
+.edit{ width: 910px; padding: 16px; font-size: 14px; min-height: 100vh; user-select: text; white-space: pre-wrap; }
 .edit:focus{ outline: none; }
 .progress{width:200px;height:8px;background:#eee;border-radius:4px;overflow:hidden}
 .progress > i{display:block;height:100%;background:linear-gradient(90deg,#4facfe,#00f2fe);width:0%}

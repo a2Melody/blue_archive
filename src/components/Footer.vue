@@ -8,6 +8,16 @@ const member3=ref(true);
 
 <template>
   <div class="footer_container">
+    <ul class="github_container">
+      <li style="margin-bottom: 5px">
+        <div style="margin-bottom: 3px">前端github仓库:</div>
+        <a href="https://github.com/a2Melody/blue_archive" style="margin-left: 30px">https://github.com/a2Melody/blue_archive.git(master分支)</a>
+      </li>
+      <li>
+        <div style="margin-bottom: 3px">后端github仓库:</div>
+        <a href="https://github.com/NzuCRAS/anime" style="margin-left: 30px">https://github.com/NzuCRAS/anime.git</a>
+      </li>
+    </ul>
     <ul class="members">
       <li class="title" data-tip=":点击下方的名字有小彩蛋">开发人员</li>
 
@@ -41,6 +51,15 @@ const member3=ref(true);
 </template>
 
 <style scoped>
+/*放github的容器*/
+.github_container{
+  position: absolute;
+  font-size: 14px;
+  color: white;
+  bottom: 40px;
+  right: 48px;
+  font-weight: 600;
+}
   .footer_container{
     user-select: none;
     width: 100%;

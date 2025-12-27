@@ -44,7 +44,7 @@ async function submit() {
         user.setToken(newAccess);
         console.log(user.getToken());
       }
-      await router.push('/test');
+      await router.push('/firstFolders');
     } else {
       // 处理业务逻辑错误（如密码错误）
       console.warn('登录失败：', responseData.message);

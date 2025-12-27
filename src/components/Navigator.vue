@@ -10,7 +10,7 @@ const router=useRouter();
 
 const signature=ref('');
 const show=ref(true);
-
+const isLogin = computed(() => user.accessToken);
 
 
 function input_enter(e){
@@ -69,9 +69,9 @@ async function logout(){
           <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试ing</RouterLink></li>
         </ul>
         <!--      头像 profile photo-->
-        <div class="profile_wrapper">
+        <div class="profile_wrapper" :class="{ 'no-login': !isLogin }">
           <div class="profile" :style="user.profile?{ backgroundImage:`url(${user.profile})`}:{}" @click="router.push('/cropProfile')"></div>
-          <ul class="content">
+          <ul class="content" v-if="isLogin">
             <li class="user_name">{{ user.user_name }}</li>
             <li class="li_a" ><router-link to="/test">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
             <li class="li_a"><router-link to="/test">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
@@ -146,6 +146,9 @@ async function logout(){
   z-index: 10;
   margin-left: 461px;
   display: inline-block;
+}
+.no-login:hover .profile {
+  transform: none !important; /* 禁用头像放大 */
 }
 .profile{
   position: relative;
