@@ -90,14 +90,27 @@ function goToCollection(folderId) {
   right: 0;
   top:  0;
   z-index: 1000;
-  clip-path: polygon(47% 0, 100% 0, 100% 100%, 0% 100%);
+  clip-path: polygon(46.15% 0, 100% 0, 100% 100%, 0% 100%);
+  border: 4px solid white;
   overflow: hidden;
   user-select: none;
 }
+.tixing::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  right:393px;
+  width: 5px;
+  height: 100%;
+  background-color: white;
+  transform: skew(-20deg);
+
+}
+
 .folder_name{
   position: absolute;
   bottom: 438px;
-  left: 220px;
+  left: 230px;
   color: #676767;
 /*  background-color: pink;*/
 }
@@ -105,7 +118,7 @@ function goToCollection(folderId) {
   position: absolute;
   width: 300px;
   height: 400px;
-  right: 100px;
+  right: 80px;
   bottom: 40px;
   transform: skew(-20deg);
 

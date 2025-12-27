@@ -27,7 +27,7 @@ function onClickDelete() {
     <div ref="jianhao" class="container" v-show="props.showDelete" @click.stop="onClickDelete">
       <span class="jianhao iconfont icon-jianhao3" ></span>
     </div>
-    <img class="bg_img" :src="props.bgUrl" alt="" />
+    <img class="bg_img" :src="props.bgUrl" alt="" :style="!props.bgUrl ? { border: 'none' } : {}"/>
     <div class="info">
       <div class="info_text">{{ props.info }}</div>
     </div>
