@@ -1,4 +1,5 @@
 <script setup>
+import {computed} from "vue";
 
 const props=defineProps({
   id:{
@@ -15,19 +16,48 @@ const props=defineProps({
   showDelete: Boolean
 });
 const emit = defineEmits(['delete-item']);
-
+/*判断视频*/
+const isVideo = computed(() => {
+  if (!props.bgUrl) return false;
+  // 兼容 blob 链接和普通 url
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  return videoExtensions.some(ext => props.bgUrl.toLowerCase().includes(ext)) ||
+      props.bgUrl.startsWith('blob:') && props.bgUrl.includes('video');
+  // 注意：如果是 File 生成的 Blob，可以通过 type 判断，这里简化处理
+});
 function onClickDelete() {
   emit('delete-item', props.id); // 把要删除的 id 传回给父组件
 }
+function goToUrl() {
+  // 如果正在显示删除模式，可能不希望触发跳转，可以加个判断
+  if (props.showDelete) return;
 
+  window.open(props.bgUrl, '_blank');
+}
 </script>
 
 <template>
-  <div class="collection_container">
+  <div class="collection_container" @click="goToUrl">
     <div ref="jianhao" class="container" v-show="props.showDelete" @click.stop="onClickDelete">
       <span class="jianhao iconfont icon-jianhao3" ></span>
     </div>
-    <img class="bg_img" :src="props.bgUrl" alt="" :style="!props.bgUrl ? { border: 'none' } : {}"/>
+    <video
+        v-if="isVideo"
+        class="bg_img"
+        :src="props.bgUrl"
+        autoplay
+        muted
+        loop
+        playsinline
+    ></video>
+
+    <img
+        v-else
+        class="bg_img"
+        :src="props.bgUrl"
+        alt=""
+        :style="!props.bgUrl ? { border: 'none' } : {}"
+    />
     <div class="info">
       <div class="info_text">{{ props.info }}</div>
     </div>

@@ -9,7 +9,7 @@ const member3=ref(true);
 <template>
   <div class="footer_container">
     <ul class="github_container">
-      <li style="margin-bottom: 5px">
+      <li style="margin-bottom: 8px">
         <div style="margin-bottom: 3px">前端github仓库:</div>
         <a href="https://github.com/a2Melody/blue_archive" style="margin-left: 30px">https://github.com/a2Melody/blue_archive.git(master分支)</a>
       </li>

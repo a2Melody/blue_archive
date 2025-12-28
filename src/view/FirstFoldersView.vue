@@ -135,7 +135,7 @@ onMounted(()=>{
   display: grid;
   grid-auto-flow: column;
   padding-bottom: 16px;
-  padding-right: 200px;
+  padding-right: 320px;
   grid-template-rows: repeat(2, 320px);
   grid-auto-columns: 450px;
   place-items: center;

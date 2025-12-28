@@ -98,55 +98,70 @@ async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
 }
 async function onSave() {
   if (!CropperRef.value) return;
-  const targetSize=50;                      // 最终 CSS 大小（px）
-  const dpr=window.devicePixelRatio || 1;
-  const supersample=3;                      // 超采样倍数，1 或 2（试试 2）
-  const outW=Math.round(targetSize * dpr * supersample);
-  const outH=Math.round(targetSize * dpr * supersample);
 
-  const canvas=CropperRef.value.getCroppedCanvas({
-    width:outW,
-    height:outH,
+  // 1. 先计算尺寸
+  const targetSize = 150; // 目标显示大小
+  const dpr = window.devicePixelRatio || 1;
+  const supersample = 2;
+  const outW = Math.round(targetSize * dpr * supersample);
+  const outH = Math.round(targetSize * dpr * supersample);
+
+  // 2. 获取裁剪后的 Canvas
+  const canvas = CropperRef.value.getCroppedCanvas({
+    width: outW,
+    height: outH,
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high'
   });
 
+  // 3. 转换为 Blob 并上传
   canvas.toBlob(async (blob) => {
     if (!blob) return;
-    // 可选：保存预览 URL（保留你原先的行为）
+
+    // --- 本地预览更新 ---
     const blobUrl = URL.createObjectURL(blob);
     if (store.profile && store.profile.startsWith('blob:')) {
       try { URL.revokeObjectURL(store.profile); } catch (e) {}
     }
     store.setProfile(blobUrl);
 
-/*第一次上传*/
-    const contentType = uploadedFile.value.type || 'application/octet-stream';
-    const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
+    // --- 上传逻辑 ---
+    // 裁剪后我们统一使用 png 格式
+    const contentType = 'image/png';
+    // 生成一个文件名，保留原名但改后缀为 .png
+    const fileName = (uploadedFile.value?.name || 'avatar.png').replace(/\.[^/.]+$/, "") + ".png";
+
+    const presignReq = {
+      originalFilename: fileName,
+      mimeType: contentType
+    };
+
     try {
+      // 第一步：获取预签名 URL
       const res = await axios.post('/api/user/presign', presignReq, {
         headers: authHeaders(),
         withCredentials: true
       });
-      console.log('presign response (axios):', res.data);
 
-/*第二次上传*/
-      const attachmentId=res.data.attachmentId;
-      const putUrl=res.data.putUrl;
-      const putHeaders=res.data.putHeaders;
-      const ok = await uploadToPresigned(putUrl, putHeaders, uploadedFile.value, contentType);
-      if (!ok) return;
+      const { attachmentId, putUrl, putHeaders } = res.data;
 
-      console.log(`[user presign] upload successful. attachmentId=${attachmentId}`);
-/*第三次上传desu*/
-      const presignReq_userAvatar = { attachmentId: attachmentId };
-      const res_userAvatar = await axios.post('/api/user/userAvatar',presignReq_userAvatar, {
+      // 第二步：上传裁剪后的 blob (注意这里传入的是 blob)
+      const ok = await uploadToPresigned(putUrl, putHeaders, blob, contentType);
+      if (!ok) {
+        console.error("上传到存储服务器失败");
+        return;
+      }
+
+      // 第三步：关联头像到用户
+      await axios.post('/api/user/userAvatar', { attachmentId: attachmentId }, {
         headers: authHeaders()
       });
+
+      console.log('头像更新成功！');
     } catch (e) {
-      console.error(e);
+      console.error('上传过程出错:', e);
     }
-  }, 'image/png'); // PNG 更少压缩模糊；如果用 jpeg，可用 'image/jpeg', 0.95
+  }, 'image/png');
 }
 
 

@@ -109,7 +109,7 @@ onMounted(() => {
 
         <div class="pic_input_container">
           <label for="input_c" class="input_words iconfont icon-shangchuantuxiang" style="font-size: 12px"><span style="font-size: 12px">上传图片</span></label>
-          <input ref="inputRef" id="input_c" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+          <input ref="inputRef" id="input_c" type="file" accept="image/*,video/*" @change="onFileChange" style="display: none"/>
         </div>
       </div>
 
@@ -147,7 +147,7 @@ input,textarea{
   position: relative;
   justify-content: center;
   align-items: center;     /* 保持：在 x 轴（横向）居中子项 */
-/*  background-color: pink;*/
+  /*  background-color: pink;*/
 }
 /*放名字输入和上传图像的input的*/
 .top_container{
