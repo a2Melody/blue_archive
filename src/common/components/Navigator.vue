@@ -1,5 +1,5 @@
 <script setup lang="js">
-import sweets from "../assets/images/sweets.svg";
+import sweets from "../../assets/images/sweets.svg";
 import {ref,computed} from "vue"
 import {userStore} from "@/stores/UserStore.js";
 import {useRouter} from "vue-router";

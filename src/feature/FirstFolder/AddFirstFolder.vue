@@ -1,19 +1,17 @@
 <script setup>
-import {onMounted, ref} from "vue";
-import Navigator from "@/components/Navigator.vue";
-import Collection from "@/components/colocate/Collection.vue";
+import {ref} from "vue";
+import Navigator from "@/common/components/Navigator.vue";
+import FirstFolder from "@/feature/FirstFolder/components/FirstFolder.vue";
 import axios from "axios";
 import {userStore} from "@/stores/UserStore.js";
-import {useRoute, useRouter} from "vue-router";
+import {useRouter} from "vue-router";
 
-
-const store=userStore();
 const router=useRouter();
-const route=useRoute();
-const currentFolderId=ref(null);
-const info=ref('');               //存标题名字
+const store=userStore();
+const name=ref('');               //存标题名字
 const preUrl=ref('');
 const sourceUrl=ref('');          //保存生成的Url
+const sourceImgRef=ref(null);     //指向img标签
 const inputRef=ref(null);         //获取Input元素
 const uploadedFile = ref(null);
 
@@ -35,8 +33,7 @@ function onFileChange(e){
   inputRef.value.value=null;
 }
 
-
-/*创建收藏内容、上传名字、信息、和图片*/
+/*上传一级收藏夹名字和图片*/
 async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
   const uploadHeaders = {};
   for (const k in putHeaders) {
@@ -57,11 +54,12 @@ async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
   return true;
 }
 async function onSave(){
+  console.log(1111);
   /*第一次上传*/
   const contentType = uploadedFile.value.type || 'application/octet-stream';
   const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
   try {
-    const res = await axios.post('/api/collection/item/presign', presignReq, {
+    const res = await axios.post('/api/collection/folder/level1/presign', presignReq, {
       withCredentials: true
     });
     console.log(`success_desu`);
@@ -75,57 +73,55 @@ async function onSave(){
     console.log(`success_desu_desu`);
 
     /*第三次上传desu*/
-    const presignReq_createNewCollection = { attachment_id: attachmentId,name:uploadedFile.value.name,description:info.value,father_level2_id:currentFolderId.value};
-    console.log(presignReq_createNewCollection)
-    const res_createCollection = await axios.post('/api/collection/item/createCustom',presignReq_createNewCollection);
+    const presignReq_createNewFolder = { attachmentId: attachmentId,name:name.value};
+    console.log(presignReq_createNewFolder)
+    const res_createNewFolder = await axios.post('/api/collection/folder/level1/createNewFolder',presignReq_createNewFolder);
     console.log("success_desu_desu_desu");
 
-    await router.push({
-      path: '/collectionsShow',
-      query: { id: currentFolderId.value } // 使用 query 会在 URL 后面拼接 ?id=xxx，推荐这种方式，更直观
-    });
+    await router.push('/firstFolders');
   } catch (e) {
+
     console.error(e);
   }
 }
 
-onMounted(() => {
-  // 从 query 中读取 id
-  currentFolderId.value = route.query.id;
-  console.log("创建Collection的界面 获取到的文件夹ID是:", currentFolderId.value);
-});
+
 </script>
 
 <template>
-  <Navigator></Navigator>
-  <div class="body_container">
-    <div class="container">
+    <Navigator></Navigator>
+    <div class="body_container">
+      <div class="container">
 
-      <div class="top_container">
-        <div class="name_input">
-          <label  style="font-size: 14px">内容: </label>
-          <textarea  class="info_textarea" v-model="info" ></textarea>
+        <div class="top_container">
+          <div class="name_input">
+            <label style="font-size: 14px">收藏夹名称: </label>
+            <input type="text" v-model="name" maxlength="7" style="color: #676767;background-color: rgba(255,255,255,0.8);">
+          </div>
+
+          <div class="pic_input_container">
+            <label for="input_a" class="input_words iconfont icon-shangchuantuxiang" style="font-size: 12px"><span style="font-size: 12px">上传图片</span></label>
+            <input ref="inputRef" id="input_a" type="file" accept="image/*" @change="onFileChange" style="display: none"/>
+          </div>
         </div>
 
-        <div class="pic_input_container">
-          <label for="input_c" class="input_words iconfont icon-shangchuantuxiang" style="font-size: 12px"><span style="font-size: 12px">上传图片</span></label>
-          <input ref="inputRef" id="input_c" type="file" accept="image/*,video/*" @change="onFileChange" style="display: none"/>
-        </div>
+        <FirstFolder :bg="sourceUrl" :name="name"></FirstFolder>
+
+        <div class="btn_save" @click="onSave"><span>创建</span></div>
       </div>
-
-      <Collection :bgUrl="sourceUrl" :info="info"></Collection>
-
-      <div class="btn_save" @click="onSave"><span>创建</span></div>
     </div>
-  </div>
 </template>
 
 <style scoped>
-input,textarea{
+input{
   outline: none;
   border:none;
 }
-
+#firstFolder_name{
+  background-color: transparent;
+  border-bottom: 1px solid white;
+  color: black;
+}
 /*渐变色背景*/
 .body_container{
   user-select: none;
@@ -137,42 +133,24 @@ input,textarea{
   display: flex;
   justify-content: center; /* 水平居中 .container */
   align-items: flex-start; /* 或 center */
-  padding-top: 50px;
+  padding-top: 100px;
 }
 
 .container{
-  display: flex;
-  max-width: 600px;
-  flex-direction: column; /* 新增：让子项竖直排列 */
+  display: inline-block;
   position: relative;
-  justify-content: center;
-  align-items: center;     /* 保持：在 x 轴（横向）居中子项 */
-  /*  background-color: pink;*/
 }
 /*放名字输入和上传图像的input的*/
 .top_container{
   display: flex;
   justify-content: space-between; /* 左右两端对齐 */
-  align-items: flex-end;          /* 改为靠底部对齐（最小修改） */
-  gap: 30px;                      /* 可选：两项之间的间距 */
+  align-items: center;            /* y 轴居中对齐 */
+  gap: 16px;                      /* 可选：两项之间的间距 */
   width: 100%;
   height: 56px;
-
+  padding: 0 20px;
   margin-bottom: 20px;
   color: #676767;
-}
-.name_input{
-  display: flex;
-  align-items: flex-end; /* 底部对齐 */
-  gap: 8px;              /* 可选，label 与 textarea 间距 */
-
-}
-.info_textarea{
-  width: 200px;
-  height: auto;
-  background-color: rgba(255,255,255,0.8);
-  opacity: 0.7;
-  border-radius: 4px;
 }
 /*上传图像的样式*/
 .pic_input_container{
@@ -186,7 +164,7 @@ input,textarea{
   color: #99a2aa;
 }
 .input_words:hover{
-  cursor: pointer;
+    cursor: pointer;
 }
 .pic_input_container:hover{
   background-color: #e5e9ef;
@@ -195,7 +173,7 @@ input,textarea{
 .btn_save{
   width: 100px;
   height: 32px;
-  margin: 40px auto;
+  margin: 70px auto;
   display: flex;        /* 或 display: flex */
   align-items: center;         /* 垂直居中 */
   justify-content: center;     /* 水平居中 */

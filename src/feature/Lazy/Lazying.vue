@@ -1,7 +1,7 @@
 <script setup lang="js">
-import Navigator from "@/components/Navigator.vue";
-import Footer from "@/components/Footer.vue";
-import BackgroundImage from "@/components/BackgroundImage.vue";
+import Navigator from "@/common/components/Navigator.vue";
+import Footer from "@/common/components/Footer.vue";
+import BackgroundImage from "@/common/components/BackgroundImage.vue";
 
 import rabbit from "@/assets/images/rabbit.jpg"
 

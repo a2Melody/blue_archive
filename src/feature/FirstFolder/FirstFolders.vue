@@ -1,10 +1,10 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import FirstFolder from "@/components/colocate/FirstFolder.vue";
-import Navigator from "@/components/Navigator.vue";
+import FirstFolder from "@/feature/FirstFolder/components/FirstFolder.vue";
+import Navigator from "@/common/components/Navigator.vue";
 import Add from "@/common/components/Add.vue";
 import Delete from "@/common/components/Delete.vue";
-import SecondFolderContainer from "@/components/SecondFolderContainer.vue";
+import SecondFolderContainer from "@/feature/SecondFolder/SecondFolderContainer.vue";
 
 import {useRouter} from "vue-router";
 import axios from "axios";

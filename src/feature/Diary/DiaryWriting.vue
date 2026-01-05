@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import useTools from "@/utils/diary-toolbar";
+import useTools from "@/feature/Diary/hooks/diary-toolbar.ts";
 import { useRouter } from "vue-router";
 import axios from "axios";
 

@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import SecondFolder from "@/components/colocate/SecondFolder.vue";
+import SecondFolder from "@/feature/SecondFolder/components/SecondFolder.vue";
 import axios from "axios";
 import {useRouter} from "vue-router";
 

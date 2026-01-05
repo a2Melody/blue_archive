@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import Navigator from "@/components/Navigator.vue";
-import Collection from "@/components/colocate/Collection.vue";
+import Navigator from "@/common/components/Navigator.vue";
+import Collection from "@/feature/Collection/components/Collection.vue";
 import Add from "@/common/components/Add.vue";
 import Delete from "@/common/components/Delete.vue";
 import {useRoute, useRouter} from "vue-router";
@@ -33,7 +33,7 @@ function goToAddCollection() {
   });
 }
 
-// CollectionsView.vue
+// Collections.vue
 const isDeleteMode = ref(false); // 控制减号显示的状态
 // 切换模式的方法
 function toggleDeleteMode() {
