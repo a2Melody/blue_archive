@@ -1,5 +1,6 @@
 <script setup lang="js">
 import sweets from "../../assets/images/sweets.svg";
+import momotalk from "@/assets/images/momotalk.jpg";
 import {ref,computed} from "vue"
 import {userStore} from "@/stores/UserStore.js";
 import {useRouter} from "vue-router";
@@ -7,7 +8,6 @@ import axios from "axios";
 
 const user=userStore();
 const router=useRouter();
-
 const signature=ref('');
 const show=ref(true);
 const isLogin = computed(() => user.accessToken);
@@ -50,6 +50,15 @@ async function logout(){
   }
 }
 
+/*复制用户的id*/
+async function copyId(id) {
+  try {
+    await navigator.clipboard.writeText(id);
+    alert('复制成功');
+  } catch (err) {
+    console.error('无法复制: ', err);
+  }
+}
 </script>
 
 <template>
@@ -63,25 +72,32 @@ async function logout(){
         </div>
         <!--      RouterLink-->
         <ul class="nav">
-          <li><RouterLink to="/diary" class="nav_link" @mouseenter="jump">日记</RouterLink></li>
+          <li style="position: relative">
+            <div class="momotalk" @click="router.push('/momotalk')" :style="{ backgroundImage:`url(${momotalk})`}" ></div>
+            <div class="momotalk_numbers" v-if="user.getMessages()===null||user.getMessages()===0">99+</div>
+          </li>
+          <li><RouterLink to="/videos" class="nav_link" @mouseenter="jump">社交</RouterLink></li>
           <li><RouterLink to="/firstFolders" class="nav_link" @mouseenter="jump">收藏</RouterLink></li>
-          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">旅途ing</RouterLink></li>
-          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试ing</RouterLink></li>
+          <li><RouterLink to="/diary" class="nav_link" @mouseenter="jump">日记</RouterLink></li>
+          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试</RouterLink></li>
         </ul>
         <!--      头像 profile photo-->
-        <div class="profile_wrapper" :class="{ 'no-login': !isLogin }">
+        <div class="profile_wrapper" v-if="isLogin" :class="{ 'no-login': !isLogin }">
           <div class="profile" :style="user.profile?{ backgroundImage:`url(${user.profile})`}:{}" @click="router.push('/cropProfile')"></div>
           <ul class="content" v-if="isLogin">
-            <li class="user_name">{{ user.user_name }}</li>
-            <li class="li_a" ><router-link to="/test">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
-            <li class="li_a"><router-link to="/test">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="user_name">{{ user.getUserName() }}</li>
+            <li class="user_id" @click="copyId(user.getUserId().value)">{{user.getUserId()}}
+              <span class="iconfont icon-fuzhi copy_icon" style="margin-left: 6px"></span>
+            </li>
+            <li class="li_a"><router-link to="/lazy">个人中心</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a"><router-link to="/lazy">待开发中</router-link><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
             <li class="li_a"><router-link to=""></router-link></li>
             <li class="li_a"><router-link to=""></router-link></li>
-            <li class="li_a" @click="logout"><a>切换账户</a><span class="iconfont icon-arrow-right-s-line span_icon"></span></li>
+            <li class="li_a" @click="logout" style="font-size: 13px"><a>切换账户</a><span class="iconfont icon-arrow-right-s-line span_icon" style="font-size: 14px"></span></li>
           </ul>
         </div>
         <!--      个性签名desu-->
-        <div class="sentence">
+        <div class="sentence" v-if="isLogin">
           <input class="input_sentence" type="text" v-model="signature" placeholder="与你的每一天都是奇迹" @keydown.enter="input_enter" @focus="input_focus" @blur="input_blur">
         </div>
         <!--  向上缩小-->
@@ -135,16 +151,44 @@ async function logout(){
 .nav{
   display: flex;
   align-items: center;
+  margin-left: 20px;
 }
 .nav li{
-  margin-left: 60px;
+  margin-left: 40px;
 }
 
+.momotalk{
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0; /* 防止被挤成椭圆 */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center; /* 建议加上，保证图片居中 */
+  border-radius: 50%;
+  user-select: none;
+  cursor: pointer;
+}
+.momotalk_numbers{
+  display: inline-block;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  position: absolute;
+  top: -7px;
+  left: 28px;
+  color: red;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 200;
+}
+.momotalk:hover{
+  cursor: pointer;
+}
 /* 头像上传 */
 .profile_wrapper{
   position: relative;
   z-index: 10;
-  margin-left: 461px;
+  margin-left: 520px;
   display: inline-block;
 }
 .no-login:hover .profile {
@@ -184,12 +228,28 @@ async function logout(){
   visibility: hidden;
   font-size: 14px;
   transition: opacity .8s ease;
-  padding: 34px 10px 20px 10px;
+  padding: 30px 10px 20px 10px;
 }
 .user_name{
   color: #696969;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
+.user_id{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  color: #696969;
+  font-size: 12px;
+  margin-bottom: 5px;
+  position: relative;
+}
+.user_id:hover{
+  cursor: pointer;
+  color: #6BCBFF;
+}
+
+
 .li_a{
   margin-left: 8px;
   margin-top: 12px;
@@ -208,6 +268,7 @@ async function logout(){
 }
 .content .li_a:hover{
   color: #64CBFF;
+  cursor: pointer;
 }
 .profile_wrapper:hover .content, .content:hover {
   visibility: visible;
@@ -216,7 +277,7 @@ async function logout(){
 
 /* 个性签名 */
 .sentence{
-  margin-left: 30px;
+  margin-left: 20px;
 }
 .input_sentence{
   background: transparent;  /* 背景透明 */
@@ -248,8 +309,7 @@ async function logout(){
   user-select: none;
   position: absolute;
   top: 100%;
-  left:50%;
-  transform:translateX(-50%);
+  left:730px;
   z-index: 9999;
 }
 .up:hover,.down:hover{

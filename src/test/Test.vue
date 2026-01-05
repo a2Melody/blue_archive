@@ -1,6 +1,7 @@
 <script setup>
 import axios from "axios";
 
+
 async function pingBackend()
 {
   try {
@@ -18,7 +19,7 @@ async function pingBackend()
 </script>
 
 <template>
-  <button @click="pingBackend">测试</button>
+  <Momotalk></Momotalk>
 </template>
 
 <style scoped>

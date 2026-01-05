@@ -9,12 +9,15 @@ import CroppingProfile from "@/feature/Profile/CroppingProfile.vue";
 import DiaryWriting from "@/feature/Diary/DiaryWriting.vue";
 import Collections from "@/feature/Collection/Collections.vue";
 import AddCollectionvue from "@/feature/Collection/AddCollection.vue";
+import Test from  "@/test/Test.vue";
+import Videos from "@/feature/SocialVideos/Videos.vue";
+import Momotalk from "@/feature/Momotalk/Momotalk.vue";
 import {userStore} from "@/stores/UserStore.js";
-import Test from "@/test/Test.vue";
 
 const routes = [
     { path: '/', name: 'Home', component:Login },
-    { path: '/test', name: 'Test', component: Lazying },
+    { path: '/lazy', name: 'Lazy', component: Lazying },
+    { path: '/test', name: 'Test', component: Test },
     { path: '/diary', name: 'Diary', component: Diaries },
     { path: '/firstFolders', name: 'firstFolders', component: FirstFolders },
     { path: '/register', name: 'Register', component: Register },
@@ -24,6 +27,8 @@ const routes = [
     { path: '/diaryShow', name: 'diaryShow', component: Diaries },
     { path: '/collectionsShow', name: 'collectionShow', component: Collections },
     { path: '/addCollection', name: 'addCollection', component: AddCollectionvue },
+    { path: '/momotalk', name: 'momotalk', component: Momotalk },
+    { path: '/videos', name: 'videos', component:Videos }
 ];
 const router = createRouter({ history: createWebHistory(), routes });
 router.beforeEach((to, from, next) => {

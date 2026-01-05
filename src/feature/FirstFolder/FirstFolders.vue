@@ -4,7 +4,7 @@ import FirstFolder from "@/feature/FirstFolder/components/FirstFolder.vue";
 import Navigator from "@/common/components/Navigator.vue";
 import Add from "@/common/components/Add.vue";
 import Delete from "@/common/components/Delete.vue";
-import SecondFolderContainer from "@/feature/SecondFolder/SecondFolderContainer.vue";
+import SecondFolder from "@/feature/SecondFolder/SecondFolder.vue";
 
 import {useRouter} from "vue-router";
 import axios from "axios";
@@ -91,7 +91,7 @@ onMounted(()=>{
   <div class="body_container" @click="containerClick">
     <Add @click="router.push('/addFirstView')"></Add>
     <Delete @click.stop="toggleDeleteMode"></Delete>
-    <SecondFolderContainer
+    <SecondFolder
         @refresh="updateSecondFolders(selectedFolderId)"
         :father_id="selectedFolderId"
         :first-folder-name="selectedFolderName"
@@ -99,7 +99,7 @@ onMounted(()=>{
         v-if="folder_show"
         class="second-folder-overlay"
         @click.stop
-    ></SecondFolderContainer>
+    ></SecondFolder>
     <div class="grid_container" :class="{ 'scroll-locked': folder_show }">
       <FirstFolder
           v-for="(item, index) in folders"
