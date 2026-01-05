@@ -2,8 +2,8 @@
 import {onMounted, ref} from "vue";
 import Navigator from "@/components/Navigator.vue";
 import Collection from "@/components/colocate/Collection.vue";
-import Add from "@/components/colocate/Add.vue";
-import Delete from "@/components/colocate/Delete.vue";
+import Add from "@/common/components/Add.vue";
+import Delete from "@/common/components/Delete.vue";
 import {useRoute, useRouter} from "vue-router";
 import axios from "axios";
 

@@ -2,8 +2,8 @@
 import {onMounted, ref} from "vue";
 import FirstFolder from "@/components/colocate/FirstFolder.vue";
 import Navigator from "@/components/Navigator.vue";
-import Add from "@/components/colocate/Add.vue";
-import Delete from "@/components/colocate/Delete.vue";
+import Add from "@/common/components/Add.vue";
+import Delete from "@/common/components/Delete.vue";
 import SecondFolderContainer from "@/components/SecondFolderContainer.vue";
 
 import {useRouter} from "vue-router";
