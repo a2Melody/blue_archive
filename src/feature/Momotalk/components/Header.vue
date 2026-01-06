@@ -38,7 +38,7 @@ const router=useRouter();
   height: 64px;
   background-color: rgb(241 157 170);
   padding-left: 80px;
-  padding-right: 140px;
+  padding-right: 120px;
 }
 .nav ul{
   display: flex;
@@ -76,8 +76,7 @@ const router=useRouter();
   height: 38px;
   line-height: 38px;
   border-radius: 15px;
-  user-select: none;
-  margin-right: 12px;
+  margin-right: 16px;
 }
 .icon_container span{
   font-size: 22px;

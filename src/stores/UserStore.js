@@ -14,13 +14,16 @@ export const userStore = defineStore('userStore', () => {
         profile.value = profileUrl;
     }
     function getUserName(){
-        return user_name;
+        return user_name.value;
     }
     function getUserId(){
-        return user_id;
+        return user_id.value;
     }
     function getMessages(){
         return messages;
+    }
+    function getProfile(){
+        return profile.value;
     }
     function setProfile(url) {
         profile.value = url;
@@ -46,6 +49,7 @@ export const userStore = defineStore('userStore', () => {
         getUserId,
         getUserName,
         getMessages,
+        getProfile,
         setProfile,
         setToken,
         getToken,

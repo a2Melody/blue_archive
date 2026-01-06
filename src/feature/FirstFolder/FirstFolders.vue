@@ -123,9 +123,10 @@ onMounted(()=>{
 <style scoped>
 .body_container {
   position: relative;
-  width:  100%;
-  height: 90vh;
+  width: 100%;
+  height: calc(100vh - 64px);
   background: #E0EAFC;
+  overflow-y: hidden;
   background: -webkit-linear-gradient(to right, #CFDEF3, #E0EAFC);
   background: linear-gradient(to right, #CFDEF3, #E0EAFC);
 }

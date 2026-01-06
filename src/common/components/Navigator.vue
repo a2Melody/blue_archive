@@ -59,6 +59,21 @@ async function copyId(id) {
     console.error('无法复制: ', err);
   }
 }
+
+/*momotalk的抖动*/
+function shake(e) {
+  const el = e.currentTarget;
+  if (!el) return;
+  el.classList.remove('small-shake');
+  void el.offsetWidth; // 强制重绘以保证每次都能重新触发
+  el.classList.add('small-shake');
+
+  const onEnd = () => {
+    el.classList.remove('small-shake');
+    el.removeEventListener('animationend', onEnd);
+  };
+  el.addEventListener('animationend', onEnd);
+}
 </script>
 
 <template>
@@ -73,7 +88,7 @@ async function copyId(id) {
         <!--      RouterLink-->
         <ul class="nav">
           <li style="position: relative">
-            <div class="momotalk" @click="router.push('/momotalk')" :style="{ backgroundImage:`url(${momotalk})`}" ></div>
+            <div class="momotalk" @click="router.push('/momotalk')" :style="{ backgroundImage:`url(${momotalk})`}" @mouseenter="shake"></div>
             <div class="momotalk_numbers" v-if="user.getMessages()===null||user.getMessages()===0">99+</div>
           </li>
           <li><RouterLink to="/videos" class="nav_link" @mouseenter="jump">社交</RouterLink></li>
@@ -110,6 +125,7 @@ async function copyId(id) {
         <i class="iconfont icon-xiangxia" style="color: white; font-size: 16px"></i>
       </div>
     </transition>
+
   </div>
 </template>
 
@@ -158,8 +174,8 @@ async function copyId(id) {
 }
 
 .momotalk{
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0; /* 防止被挤成椭圆 */
   background-repeat: no-repeat;
   background-size: cover;
@@ -175,7 +191,7 @@ async function copyId(id) {
   line-height: 20px;
   position: absolute;
   top: -7px;
-  left: 28px;
+  left: 24px;
   color: red;
   font-size: 13px;
   font-weight: 700;
@@ -309,7 +325,8 @@ async function copyId(id) {
   user-select: none;
   position: absolute;
   top: 100%;
-  left:730px;
+  left: 50vw;     /*730px为我的电脑显示屏的中心位置*/
+  transform: translateX(-50%);
   z-index: 9999;
 }
 .up:hover,.down:hover{
@@ -350,8 +367,21 @@ async function copyId(id) {
   0%   { transform: translateY(-70px); }
   100% { transform: translateY(0); }
 }
-.up-enter-active { animation: up-enter 1s ease; }
+.up-enter-active { animation: up-enter 1.4s ease; }
 
+@keyframes small-shake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-3px); }
+  40%  { transform: translateX(3px); }
+  60%  { transform: translateX(-2px); }
+  80%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
 
+/* 小幅左右晃动，时长可调整（例如 300ms/360ms） */
+.small-shake {
+  animation: small-shake 0.6s ease;
+  will-change: transform;
+}
 
 </style>
