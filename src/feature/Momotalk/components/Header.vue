@@ -17,10 +17,10 @@ const router=useRouter();
 
     <ul class="icons">
       <li class="icon_container">
-        <span class="iconfont icon-shuyi_liaotian" title="消息"></span>
+        <span class="iconfont icon-shuyi_liaotian" title="聊天"></span>
       </li>
       <li class="icon_container">
-        <span class="iconfont icon-weibiaoti--" title="添加好友"></span>
+        <span class="iconfont icon-weibiaoti--" title="好友管理"></span>
       </li>
       <li class="icon_container">
         <span class="iconfont icon-fanhui" @click="router.push('/firstFolders')" title="返回主页"></span>

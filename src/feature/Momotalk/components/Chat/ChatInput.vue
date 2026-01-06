@@ -46,7 +46,6 @@ function onKeydown(e){
   height: 30px;
 }
 .icon_container:hover{
-  cursor: pointer;
   background-color: rgba(255,240,245,1);
 }
 .editor{

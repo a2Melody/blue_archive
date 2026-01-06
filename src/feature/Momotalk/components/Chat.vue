@@ -6,8 +6,8 @@ import Chat from "@/feature/Momotalk/components/Chat/Chat.vue";
 
 <template>
   <div class="message_container">
-    <MessageSideBar style="float: left"></MessageSideBar>
-    <Chat style="float: right;"></Chat>
+    <MessageSideBar></MessageSideBar>
+    <Chat></Chat>
   </div>
 </template>
 
