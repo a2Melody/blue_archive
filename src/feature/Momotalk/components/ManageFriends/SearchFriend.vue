@@ -1,6 +1,6 @@
 <script setup>
 
-import SearchFriendList from "@/feature/Momotalk/components/Friends/SearchFriendList.vue";
+import SearchFriendList from "@/feature/Momotalk/components/ManageFriends/SearchFriendList.vue";
 </script>
 
 <template>

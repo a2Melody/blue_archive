@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from "vue";
-import Header from "@/feature/Momotalk/components/Friends/Header.vue";
-import SearchFriend from "@/feature/Momotalk/components/Friends/SearchFriend.vue";
-import AgreeFriend from "@/feature/Momotalk/components/Friends/AgreeFriend.vue";
+import Header from "@/feature/Momotalk/components/ManageFriends/Header.vue";
+import SearchFriend from "@/feature/Momotalk/components/ManageFriends/SearchFriend.vue";
+import AgreeFriend from "@/feature/Momotalk/components/ManageFriends/AgreeFriend.vue";
 
 const emit=defineEmits(['close']);
 const activeTab = ref("search"); // 默认显示接收的申请

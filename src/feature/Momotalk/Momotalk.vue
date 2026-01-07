@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import Header from "@/feature/Momotalk/components/Header.vue";
 import Chat from "@/feature/Momotalk/components/Chat.vue";
-import Friends from "@/feature/Momotalk/components/Friends.vue";
+import ManageFriends from "@/feature/Momotalk/components/ManageFriends.vue";
 
 const showFriends = ref(false);
 </script>
@@ -11,10 +11,10 @@ const showFriends = ref(false);
   <Header @toggle-friends="showFriends = true"></Header>
   <Chat></Chat>
 
-  <!-- 遮罩 + Friends（v-if 最小渲染） -->
+  <!-- 遮罩 + ManageFriends（v-if 最小渲染） -->
   <div v-if="showFriends" class="overlay" @click="showFriends = false">
     <div class="overlay_inner" @click.stop>
-      <Friends @close="showFriends=false"></Friends>
+      <ManageFriends @close="showFriends=false"></ManageFriends>
     </div>
   </div>
 </template>
@@ -28,9 +28,9 @@ const showFriends = ref(false);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 5vh; /* 让 Friends 与原先 top:5vh 保持一致 */
+  padding-top: 5vh; /* 让 ManageFriends 与原先 top:5vh 保持一致 */
 }
 .overlay_inner{
-  position: relative; /* 保持 Friends 内部定位行为正常 */
+  position: relative; /* 保持 ManageFriends 内部定位行为正常 */
 }
 </style>

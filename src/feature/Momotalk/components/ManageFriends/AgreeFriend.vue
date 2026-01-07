@@ -1,6 +1,6 @@
 <script setup>
 
-import AgreeFriendItem from "@/feature/Momotalk/components/Friends/AgreeFriendItem.vue";
+import AgreeFriendItem from "@/feature/Momotalk/components/ManageFriends/AgreeFriendItem.vue";
 </script>
 
 <template>

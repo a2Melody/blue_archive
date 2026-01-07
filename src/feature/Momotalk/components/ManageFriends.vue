@@ -1,5 +1,5 @@
 <script setup>
-import PhoneContainer from "@/feature/Momotalk/components/Friends/PhoneContainer.vue";
+import PhoneContainer from "@/feature/Momotalk/components/ManageFriends/PhoneContainer.vue";
 const emit=defineEmits(['close'])
 
 </script>

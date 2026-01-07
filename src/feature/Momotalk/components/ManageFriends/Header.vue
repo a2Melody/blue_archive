@@ -66,7 +66,7 @@ const props = defineProps({ active: String });
   font-size: 15px;
   font-weight: 600;
   border-radius: 6px 6px 0 0 ;
-  transition: all 0.5s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
   padding: 10px;
 }
