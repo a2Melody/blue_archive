@@ -3,7 +3,7 @@ import momotalk from "@/assets/images/momotalk.png";
 import {useRouter} from "vue-router";
 
 const router=useRouter();
-
+const emit = defineEmits(['toggle-friends']);
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const router=useRouter();
       <li class="icon_container">
         <span class="iconfont icon-shuyi_liaotian" title="聊天"></span>
       </li>
-      <li class="icon_container">
+      <li class="icon_container" @click="emit('toggle-friends')">
         <span class="iconfont icon-weibiaoti--" title="好友管理"></span>
       </li>
       <li class="icon_container">
