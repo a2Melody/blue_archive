@@ -14,6 +14,7 @@ async function addFriend(){
   const res = await axios.post('/api/chat/friends/request/send', {
     toUserId: props.id
   });
+  console.log(1111);
   const responseData = res.data;
 }
 </script>
