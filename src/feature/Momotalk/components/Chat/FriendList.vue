@@ -6,9 +6,6 @@ import {userChat} from "@/stores/userChat.js";
 const userchat=userChat();
 const friendList=userchat.getFriendList();
 
-console.log("test111");
-console.log(friendList);
-/*sessionType: 'PRIVATE', sessionTargetId: 6, title: 'Mika', lastMessagePreview: '11111', lastMessageTime: '2026-01-08T13:26:59', …}*/
 </script>
 
 <template>

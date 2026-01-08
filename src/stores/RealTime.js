@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {userStore} from "@/stores/UserStore.js";
+import {userChat} from "@/stores/userChat.js";
 
 export const realTime = defineStore('realTime', () => {
     let ws=null;
@@ -33,20 +34,20 @@ export const realTime = defineStore('realTime', () => {
             console.error('[initWs] new WebSocket throw', e);
             return;
         }
-
         ws.onopen = () => {
             connected.value = true;
             console.log('[WS] onopen - connected = true');
         };
         ws.onmessage = (ev) => {
-            let data;
             try {
-                data = JSON.parse(ev.data);
+                const env = JSON.parse(ev.data);
+                console.log("onmessage");
+                handleEnvelope(env);
             } catch (e) {
                 console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
                 return;
             }
-            console.log('[WS] onmessage', data);
+            console.log('[WS] onmessage');
         };
         ws.onclose = (ev) => {
             connected.value = false;
@@ -63,7 +64,22 @@ export const realTime = defineStore('realTime', () => {
         }
     }
 
+/*处理后端给我的消息*/
+    const userchat=userChat()
+    function handleEnvelope(env) {
+        const type = env.type;
+        const p = env.payload;
+        switch(type) {
+            case 'NEW_FRIEND_REQUEST':
+                userchat.updateAgreeingList();
+                console.log("update");
+                break;
+            default:
+                console.debug('Unhandled WS event', type, p);
+        }
+    }
 
+/*发送消息*/
     function sendWsEnvelope(type, payload) {
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             console.warn('[WS SEND] WebSocket 未连接，无法发送', { type, payload });
@@ -77,7 +93,6 @@ export const realTime = defineStore('realTime', () => {
             console.error('[WS SEND] send 出错', e);
         }
     }
-
     function sendPrivateText(targetUserId, content) {
         const payload = {
             conversationType: 'PRIVATE',

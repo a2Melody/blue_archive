@@ -16,17 +16,18 @@ export const userChat = defineStore('userChat', () => {
     async function updateFriendList(){
         const res = await axios.post('/api/chat/sessions/list', {
         });
-        friendList.value=res.data.data.sessions;
         console.log("拉取好友列表:  ")
+        console.log(res);
+        friendList.value=res.data.data.sessions;
 
-        console.log(friendList);
     }
     async function updateAgreeingList(){
         const res = await axios.post('/api/chat/friends/request/list', {
         });
-        agreeingList.value=res.data.data.items;
         console.log("拉取待同意列表:  ");
-        console.log(agreeingList);
+        console.log(res);
+        agreeingList.value=res.data.data.items;
+
     }
 
     return {
