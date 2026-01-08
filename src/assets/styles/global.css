@@ -18,3 +18,28 @@ a {
 ul {
     list-style: none;
 }
+input {
+     border: none;
+     outline: none;
+}
+input:hover {
+    border: none;
+    outline: none;
+}
+button{
+    outline: none;
+    border: none;
+    background-color: transparent;
+}
+.font_color{
+    color: #696969;
+}
+.font_small_size{
+    font-size: 12px;
+}
+.font_small_bold{
+    font-weight: 500;
+}
+.f{
+    user-select: none;
+}
