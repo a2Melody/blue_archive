@@ -1,24 +1,22 @@
 <script setup>
 
 import {ref} from "vue";
-import {userChat} from "@/stores/userChat.js";
+import {realTime} from "@/stores/RealTime.js";
 
 const message=ref('');
-const userchat=userChat();
+const realtime=realTime();
 
 function send(){
-  if (!message.value.trim()) return;
+  if (!message.value) return;
   // 在这里放你真正的发送逻辑
-  console.log('send:', message.value);
-  message.value = '';
+  console.log("test 传输信息为"+message.value);
+  userchat.sendPrivateText(4,message.value);
+  message.value='';
 }
-
 function onKeydown(e){
   if (e.key === 'Enter' && !e.shiftKey){
     e.preventDefault(); // 阻止插入换行
-    console.log("test 传输信息为"+message.value);
-    userchat.sendPrivateText(4,message.value);
-    message.value='';
+    send();
   }
 }
 
@@ -32,7 +30,7 @@ function onKeydown(e){
       </button>
     </div>
     <textarea ref="messageEl" v-model="message" class="editor" @keydown="onKeydown"></textarea>
-    <button class="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 16px" ></span></button>
+    <button class="send" @click="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 16px" ></span></button>
   </div>
 </template>
 

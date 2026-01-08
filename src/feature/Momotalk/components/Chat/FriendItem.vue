@@ -3,14 +3,17 @@
 import {userStore} from "@/stores/UserStore.js";
 
 const props=defineProps({
-  name:{
-    type:String
-  },
-  url:{
-    type:String,
-  }
+  id:Number,
+  name:String,
+  avatar:String,
+  signature:String,
+  status:Boolean,
+  latestMessage:String,
+  LastMessageTime:Date,
+  unreadCount:Number,
 })
 const user=userStore();
+
 
 </script>
 

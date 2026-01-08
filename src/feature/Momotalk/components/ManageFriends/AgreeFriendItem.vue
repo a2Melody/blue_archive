@@ -1,21 +1,46 @@
 <script setup>
 
 import {userStore} from "@/stores/UserStore.js";
+import axios from "axios";
 
 const user=userStore();
+const props=defineProps({
+  requestId:Number,
+  fromUserId:Number,
+  fromUsername:String,
+  fromAvatarUrl:String
+})
+
+async function agree(){
+  const res = await axios.post('/api/chat/friends/request/respond', {
+    requestId: props.requestId,
+    action: "accept"
+  });
+  const responseData = res.data;
+  console.log("同意好友"+responseData);
+}
+
+async function disagree(){
+  const res = await axios.post('/api/chat/friends/request/respond', {
+    requestId: props.requestId,
+    action: "reject"
+  });
+  const responseData = res.data;
+  console.log("不同意好友"+responseData);
+}
 
 </script>
 
 <template>
   <div class="agreeFriendItem">
-    <img :src="user.getProfile()" class="avatar">
+    <img :src="props.fromAvatarUrl" class="avatar">
     <div class="data">
-      <h5 class="name">{{user.getUserName()}}</h5>
-      <span class="uid font_small_size">uid:{{user.getUserId()}}</span>
+      <h5 class="name">{{props.fromUsername}}</h5>
+      <span class="uid font_small_size">uid:{{props.fromUserId}}</span>
       <span class="signature font_small_size" style="margin-top: 2px;">与你的每一天都是奇迹</span>
     </div>
-    <button class="unagree_btn btn"><span class="iconfont icon-yuanquancha"></span></button>
-    <button class="agree_btn btn"><span class="iconfont icon-yuangou" style="font-size: 20px"></span></button>
+    <button class="unagree_btn btn" @click="disagree"><span class="iconfont icon-yuanquancha"></span></button>
+    <button class="agree_btn btn" @click="agree"><span class="iconfont icon-yuangou" style="font-size: 20px"></span></button>
 
   </div>
 </template>

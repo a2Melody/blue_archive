@@ -1,20 +1,20 @@
 <script setup>
 
 import AgreeFriendItem from "@/feature/Momotalk/components/ManageFriends/AgreeFriendItem.vue";
+import {userChat} from "@/stores/userChat.js";
+
+const userchat=userChat();
+const agreeList=userchat.getAgreeingList();
 </script>
 
 <template>
   <div class="agree_container">
     <div class="number font_small_size font_small_bold" style="margin-left: 16px">申请人员<span style="color: pink;font-size: 1rem;margin-left: 4px" >1</span></div>
     <div class="agree_list">
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
-      <AgreeFriendItem></AgreeFriendItem>
+      <AgreeFriendItem
+          v-for="item in agreeList">
+
+      </AgreeFriendItem>
     </div>
   </div>
 </template>

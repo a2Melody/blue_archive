@@ -2,26 +2,21 @@
 
 import SearchFriend from "@/feature/Momotalk/components/ManageFriends/SearchFriend.vue";
 import SearchFriendItem from "@/feature/Momotalk/components/ManageFriends/SearchFriendItem.vue";
+
+const props=defineProps({
+  searchFriendList:Array
+})
 </script>
 
 <template>
   <div class="search_result_container">
     <div class="search_result font_color font_small_size"><span class="iconfont icon-sousuo4" style="margin-right: 2px;font-size: 14px" ></span>0个搜索结果</div>
     <div class="search_result_list">
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
-      <SearchFriendItem></SearchFriendItem>
+      <SearchFriendItem
+        v-for="item in searchFriendList"
+        :id="item.id"
+        :name="item.username"
+      ></SearchFriendItem>
     </div>
   </div>
 </template>

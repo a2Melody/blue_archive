@@ -1,15 +1,29 @@
 <script setup>
 
 import SearchFriendList from "@/feature/Momotalk/components/ManageFriends/SearchFriendList.vue";
+import {ref} from "vue";
+import axios from "axios";
+
+const search_id=ref('');
+const search_result=ref(null);
+async function search(){
+  const res = await axios.post('/api/chat/friends/search', {
+    userId:search_id.value
+  });
+  search_result.value=res.data.data.items;
+  console.log(search_result);
+/*  const responseData = res.data;
+  console.log("SearchFriend.vue中搜索结果:"+responseData);*/
+}
 </script>
 
 <template>
   <div class="search_container">
     <div class="search_input f">
-      <input  type="text" maxlength="16" placeholder="请输入uid">
-      <span class="iconfont icon-sousuo4 search_icon"></span>
+      <input v-model="search_id" type="text" maxlength="16" placeholder="请输入uid" @keydown.enter="search">
+      <span class="iconfont icon-sousuo4 search_icon" @click="search"></span>
     </div>
-    <SearchFriendList></SearchFriendList>
+    <SearchFriendList :search-friend-list="search_result"></SearchFriendList>
   </div>
 </template>
 
