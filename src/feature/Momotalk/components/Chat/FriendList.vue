@@ -6,7 +6,8 @@ import {userChat} from "@/stores/userChat.js";
 const userchat=userChat();
 const friendList=userchat.getFriendList();
 
-
+console.log("test111");
+console.log(friendList);
 /*sessionType: 'PRIVATE', sessionTargetId: 6, title: 'Mika', lastMessagePreview: '11111', lastMessageTime: '2026-01-08T13:26:59', …}*/
 </script>
 
@@ -16,8 +17,12 @@ const friendList=userchat.getFriendList();
         v-for="item in friendList"
         :sessionTargetId="item.sessionTargetId"
         :key="item.sessionTargetId"
-
-
+        :title="item.title"
+        :latest-message="item.lastMessagePreview"
+        :avatar="item.avatarUrl"
+        :latestMessage="item.lastMessageTime"
+        :signature="item.signature"
+        :unread-count="item.unreadCount"
     ></FriendItem>
   </div>
 </template>

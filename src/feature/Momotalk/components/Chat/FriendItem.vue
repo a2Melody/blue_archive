@@ -12,20 +12,20 @@ const props=defineProps({
   LastMessageTime:Date,
   unreadCount:Number,
 })
-const user=userStore();
+
 
 
 </script>
 
 <template>
   <div class="friend_item">
-    <img :src="user.getProfile()" class="avatar">
+    <img :src="props.avatar" class="avatar">
     <div class="status">
       <div class="name_time">
-        <h4 style="font-size: 14px">{{user.getUserName()}}</h4>
-        <span class="time font_color font_small_size font_bold" style="margin-left: 70px">12:45</span>
+        <h4 style="font-size: 14px">{{props.title}}</h4>
+        <span class="time font_color font_small_size font_bold" style="margin-left: 70px">{{props.LastMessageTime}}</span>
       </div>
-      <span class="font_small_size font_color">最新消息test...</span>
+      <span class="font_small_size font_color">{{props.latestMessage}}</span>
     </div>
   </div>
 </template>
