@@ -4,18 +4,23 @@ import SearchFriend from "@/feature/Momotalk/components/ManageFriends/SearchFrie
 import SearchFriendItem from "@/feature/Momotalk/components/ManageFriends/SearchFriendItem.vue";
 
 const props=defineProps({
-  searchFriendList:Array
+  searchFriendList:{
+    type:Array,
+    default: () => []
+  }
 })
 </script>
 
 <template>
   <div class="search_result_container">
-    <div class="search_result font_color font_small_size"><span class="iconfont icon-sousuo4" style="margin-right: 2px;font-size: 14px" ></span>0个搜索结果</div>
+    <div class="search_result font_color font_small_size"><span class="iconfont icon-sousuo4" style="margin-right: 2px;font-size: 14px" ></span> {{ (searchFriendList || []).length }}个搜索结果</div>
     <div class="search_result_list">
       <SearchFriendItem
         v-for="item in searchFriendList"
+        :key="item.id"
         :id="item.id"
         :name="item.username"
+        :avatar-url="item.avatarUrl"
       ></SearchFriendItem>
     </div>
   </div>

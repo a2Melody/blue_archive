@@ -1,15 +1,21 @@
 <script setup>
 import FriendItem from "@/feature/Momotalk/components/Chat/FriendItem.vue";
 import {userChat} from "@/stores/userChat.js";
-const chat=userChat();
-const friendList=chat.getFriendList();
-console.log("获取的数据"+friendList.value);
+
+
+const userchat=userChat();
+const friendList=userchat.getFriendList();
+
+
+/*sessionType: 'PRIVATE', sessionTargetId: 6, title: 'Mika', lastMessagePreview: '11111', lastMessageTime: '2026-01-08T13:26:59', …}*/
 </script>
 
 <template>
   <div class="friends">
     <FriendItem
-        v-for="friend in friendList"
+        v-for="item in friendList"
+        :sessionTargetId="item.sessionTargetId"
+        :key="item.sessionTargetId"
 
 
     ></FriendItem>

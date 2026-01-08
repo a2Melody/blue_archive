@@ -16,7 +16,7 @@ onMounted(()=>{
   userchat.updateAgreeingList();
 });
 onUnmounted(()=>{
-  realTime.closeWs();
+  realtime.closeWs();
 })
 </script>
 
