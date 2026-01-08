@@ -3,7 +3,6 @@
 import {userStore} from "@/stores/UserStore.js";
 import axios from "axios";
 
-const user=userStore();
 const props=defineProps({
   name:String,
   id:Number,
@@ -16,13 +15,12 @@ async function addFriend(){
     toUserId: props.id
   });
   const responseData = res.data;
-  console.log("添加好友:"+responseData);
 }
 </script>
 
 <template>
   <div class="searchFriendItem">
-    <img :src="user.getProfile()" class="avatar">
+    <img :src="props.avatarUrl" class="avatar" title="头像">
     <div class="data">
       <h5 class="name">{{props.name}}</h5>
       <span class="uid font_small_size">uid:{{props.id}}</span>

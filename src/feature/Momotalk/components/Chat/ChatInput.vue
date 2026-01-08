@@ -3,14 +3,14 @@
 import {ref} from "vue";
 import {realTime} from "@/stores/RealTime.js";
 
+
 const message=ref('');
 const realtime=realTime();
 
 function send(){
   if (!message.value) return;
-  // 在这里放你真正的发送逻辑
   console.log("test 传输信息为"+message.value);
-  userchat.sendPrivateText(4,message.value);
+  realtime.sendPrivateText(6,message.value);
   message.value='';
 }
 function onKeydown(e){
@@ -23,7 +23,7 @@ function onKeydown(e){
 </script>
 
 <template>
-  <div class="chat_input">
+  <div class="chat_input f">
     <div class="buttons f">
       <button class="icon_container">
         <span class="iconfont icon-wenjianjia" style="font-size: 22px"></span>

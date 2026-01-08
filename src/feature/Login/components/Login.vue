@@ -35,14 +35,12 @@ async function submit() {
     // 2. 获取嵌套在里面的 data 对象
     if (responseData.isSuccess) {
       const userInfo = responseData.data;
-      console.log(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
+
       user.setUser(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
 
       const newAccess = res.headers.get("New-Access-Token");
-      console.log(newAccess);
       if (newAccess) {
         user.setToken(newAccess);
-        console.log(user.getToken());
       }
       await router.push('/firstFolders');
     } else {

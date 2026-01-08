@@ -1,10 +1,10 @@
 <script setup>
 
 import {userStore} from "@/stores/UserStore.js";
-
+/*sessionType: 'PRIVATE', sessionTargetId: 6, title: 'Mika', lastMessagePreview: '11111', lastMessageTime: '2026-01-08T13:26:59', …}*/
 const props=defineProps({
-  id:Number,
-  name:String,
+  sessionTargetId:Number,
+  title:String,
   avatar:String,
   signature:String,
   status:Boolean,

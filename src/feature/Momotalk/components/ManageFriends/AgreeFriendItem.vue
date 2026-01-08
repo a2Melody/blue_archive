@@ -16,8 +16,8 @@ async function agree(){
     requestId: props.requestId,
     action: "accept"
   });
-  const responseData = res.data;
-  console.log("同意好友"+responseData);
+  console.log("同意好友");
+  console.log(res)
 }
 
 async function disagree(){
@@ -25,8 +25,8 @@ async function disagree(){
     requestId: props.requestId,
     action: "reject"
   });
-  const responseData = res.data;
-  console.log("不同意好友"+responseData);
+  console.log("不同意好友");
+  console.log(res);
 }
 
 </script>

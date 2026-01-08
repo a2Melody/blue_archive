@@ -3,18 +3,32 @@
 import AgreeFriendItem from "@/feature/Momotalk/components/ManageFriends/AgreeFriendItem.vue";
 import {userChat} from "@/stores/userChat.js";
 
+/*
+*  * requestId: 3, fromUserId: 4, fromUsername: 'Melody', fromAvatarUrl: 'http://localhost:9000/test-bucket/attachments/user…4069d3760281d086a81e02f5468dd8af784b502541fec4416', message: null, …}
+length
+:
+1
+[[Prototype]]
+:
+Array(0)
+
+*  */
 const userchat=userChat();
 const agreeList=userchat.getAgreeingList();
 </script>
 
 <template>
   <div class="agree_container">
-    <div class="number font_small_size font_small_bold" style="margin-left: 16px">申请人员<span style="color: pink;font-size: 1rem;margin-left: 4px" >1</span></div>
+    <div class="number font_small_size font_small_bold" style="margin-left: 16px">申请人员<span style="color: pink;font-size: 1rem;margin-left: 4px" >{{ (agreeList || []).length }}</span></div>
     <div class="agree_list">
       <AgreeFriendItem
-          v-for="item in agreeList">
-
-      </AgreeFriendItem>
+          v-for="item in agreeList"
+          :key="item.requestId"
+          :request-id="item.requestId"
+          :from-user-id="item.fromUserId"
+          :from-username="item.fromUsername"
+          :from-avatar-url="item.fromAvatarUrl"
+      ></AgreeFriendItem>
     </div>
   </div>
 </template>

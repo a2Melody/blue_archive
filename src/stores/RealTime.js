@@ -7,7 +7,7 @@ export const realTime = defineStore('realTime', () => {
     let connected = ref(false);
     const user=userStore();
 
-    function initWs(wsBase = 'wss://10.206.43.151:8443') {
+    function initWs(wsBase = 'wss://localhost:8443') {
         const token = user.getToken();
         if (!token) {
             console.warn('[initWs] no token available yet');
@@ -79,7 +79,6 @@ export const realTime = defineStore('realTime', () => {
     }
 
     function sendPrivateText(targetUserId, content) {
-
         const payload = {
             conversationType: 'PRIVATE',
             targetUserId: Number(targetUserId),

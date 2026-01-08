@@ -10,8 +10,9 @@ async function search(){
   const res = await axios.post('/api/chat/friends/search', {
     userId:search_id.value
   });
+  console.log(res.data)
   search_result.value=res.data.data.items;
-  console.log(search_result);
+
 /*  const responseData = res.data;
   console.log("SearchFriend.vue中搜索结果:"+responseData);*/
 }
