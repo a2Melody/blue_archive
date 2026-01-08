@@ -1,8 +1,10 @@
 <script setup>
 
 import {ref} from "vue";
+import {userChat} from "@/stores/userChat.js";
 
 const message=ref('');
+const userchat=userChat();
 
 function send(){
   if (!message.value.trim()) return;
@@ -14,9 +16,12 @@ function send(){
 function onKeydown(e){
   if (e.key === 'Enter' && !e.shiftKey){
     e.preventDefault(); // 阻止插入换行
-    send();
+    console.log("test 传输信息为"+message.value);
+    userchat.sendPrivateText(4,message.value);
+    message.value='';
   }
 }
+
 </script>
 
 <template>

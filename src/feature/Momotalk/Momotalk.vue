@@ -1,10 +1,19 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted,onUnmounted, ref} from "vue";
 import Header from "@/feature/Momotalk/components/Header.vue";
 import Chat from "@/feature/Momotalk/components/Chat.vue";
 import ManageFriends from "@/feature/Momotalk/components/ManageFriends.vue";
+import {userChat} from "@/stores/userChat.js";
 
 const showFriends = ref(false);
+const userchat=userChat();
+
+onMounted(()=>{
+  userchat.initWs();
+});
+onUnmounted(()=>{
+  userchat.closeWs();
+})
 </script>
 
 <template>
