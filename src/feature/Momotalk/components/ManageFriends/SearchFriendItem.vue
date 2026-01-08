@@ -1,20 +1,34 @@
 <script setup>
 
 import {userStore} from "@/stores/UserStore.js";
+import axios from "axios";
 
 const user=userStore();
+const props=defineProps({
+  name:String,
+  id:Number,
+  signature:String,
+  avatarUrl:String,
+})
 
+async function addFriend(){
+  const res = await axios.post('/api/chat/friends/request/send', {
+    toUserId: props.id
+  });
+  const responseData = res.data;
+  console.log("添加好友:"+responseData);
+}
 </script>
 
 <template>
   <div class="searchFriendItem">
     <img :src="user.getProfile()" class="avatar">
     <div class="data">
-      <h5 class="name">{{user.getUserName()}}</h5>
-      <span class="uid font_small_size">uid:{{user.getUserId()}}</span>
+      <h5 class="name">{{props.name}}</h5>
+      <span class="uid font_small_size">uid:{{props.id}}</span>
       <span class="signature font_small_size" style="margin-top: 2px;">与你的每一天都是奇迹</span>
     </div>
-    <button class="add_button"><span class="iconfont icon-tianjiahaoyou" style="font-size: 20px"></span></button>
+    <button class="add_button" @click="addFriend"><span class="iconfont icon-tianjiahaoyou" style="font-size: 20px"></span></button>
   </div>
 </template>
 

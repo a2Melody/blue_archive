@@ -3,16 +3,20 @@ import {onMounted,onUnmounted, ref} from "vue";
 import Header from "@/feature/Momotalk/components/Header.vue";
 import Chat from "@/feature/Momotalk/components/Chat.vue";
 import ManageFriends from "@/feature/Momotalk/components/ManageFriends.vue";
+import { realTime } from "@/stores/RealTime.js";
 import {userChat} from "@/stores/userChat.js";
 
 const showFriends = ref(false);
+const realtime = realTime();
 const userchat=userChat();
 
 onMounted(()=>{
-  userchat.initWs();
+  realtime.initWs();
+  userchat.updateFriendList();
+  userchat.updateAgreeingList();
 });
 onUnmounted(()=>{
-  userchat.closeWs();
+  realTime.closeWs();
 })
 </script>
 

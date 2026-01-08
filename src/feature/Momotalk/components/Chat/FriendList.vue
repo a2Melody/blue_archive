@@ -1,24 +1,18 @@
 <script setup>
 import FriendItem from "@/feature/Momotalk/components/Chat/FriendItem.vue";
-
+import {userChat} from "@/stores/userChat.js";
+const chat=userChat();
+const friendList=chat.getFriendList();
+console.log("获取的数据"+friendList.value);
 </script>
 
 <template>
   <div class="friends">
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
-    <FriendItem></FriendItem>
+    <FriendItem
+        v-for="friend in friendList"
+
+
+    ></FriendItem>
   </div>
 </template>
 
