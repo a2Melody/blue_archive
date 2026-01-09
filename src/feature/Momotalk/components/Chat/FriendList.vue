@@ -6,6 +6,17 @@ import {userChat} from "@/stores/userChat.js";
 const userchat=userChat();
 const friendList=userchat.getFriendList();
 
+
+// 当点击某一项时，映射成包含 id/name/avatarUrl/signature 的对象并选中
+function select(item) {
+  // item.sessionTargetId 是你的 user id 字段（根据你提供的数据）
+  userchat.selectConversation({
+    id: item.sessionTargetId,
+    name: item.title,
+    avatarUrl: item.avatar,     // 与 ChatHeader 里使用的字段名对应
+    signature: item.signature
+  });
+}
 </script>
 
 <template>
@@ -20,6 +31,7 @@ const friendList=userchat.getFriendList();
         :latestMessage="item.lastMessageTime"
         :signature="item.signature"
         :unread-count="item.unreadCount"
+        @select="select(item)"
     ></FriendItem>
   </div>
 </template>

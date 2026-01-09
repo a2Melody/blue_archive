@@ -13,12 +13,16 @@ const props=defineProps({
   unreadCount:Number,
 })
 
-
+// 增：发出 select 事件，父组件用 @select="..." 监听
+const emit = defineEmits(['select']);
+function onClick() {
+  emit('select');
+}
 
 </script>
 
 <template>
-  <div class="friend_item">
+  <div class="friend_item" @click="onClick">
     <img :src="props.avatar" class="avatar">
     <div class="status">
       <div class="name_time">

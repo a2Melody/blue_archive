@@ -12,9 +12,6 @@ async function search(){
   });
   console.log(res.data)
   search_result.value=res.data.data.items;
-
-/*  const responseData = res.data;
-  console.log("SearchFriend.vue中搜索结果:"+responseData);*/
 }
 </script>
 

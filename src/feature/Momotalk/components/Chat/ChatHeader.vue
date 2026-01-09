@@ -1,6 +1,8 @@
 <script setup>
 
 import {userStore} from "@/stores/UserStore.js";
+import {computed} from "vue";
+import {userChat} from "@/stores/userChat.js";
 
 const props=defineProps({
   url:String,
@@ -9,6 +11,21 @@ const props=defineProps({
 });
 const user=userStore();
 
+
+/*ai写的*/
+const userchat=userChat();
+const selected = computed(() => userchat.getSelectedConversation().value || null);
+
+// 如果没有选中会话，仍然显示当前用户自己的信息或占位文本
+const avatar = computed(() => {
+  return selected.value?.avatarUrl || user.getProfile();
+});
+const displayName = computed(() => {
+  return selected.value?.name || user.getUserName();
+});
+const signature = computed(() => {
+  return selected.value?.signature || '与你的每一天都是奇迹';
+});
 </script>
 
 <template>
