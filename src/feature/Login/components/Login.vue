@@ -31,7 +31,6 @@ async function submit() {
       password: pwd.value
     });
     const responseData = res.data;
-    console.log(responseData);
     // 2. 获取嵌套在里面的 data 对象
     if (responseData.isSuccess) {
       const userInfo = responseData.data;

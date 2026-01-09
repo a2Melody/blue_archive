@@ -7,9 +7,7 @@ import ChatInput from "@/feature/Momotalk/components/Chat/ChatInput.vue";
 
 <template>
     <div class="chat_container">
-      <ChatHeader></ChatHeader>
       <ChatWindow></ChatWindow>
-      <ChatInput></ChatInput>
     </div>
 </template>
 

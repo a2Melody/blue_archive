@@ -17,6 +17,7 @@ onMounted(()=>{
 });
 onUnmounted(()=>{
   realtime.closeWs();
+  userchat.selectConversation(null);
 })
 </script>
 

@@ -40,10 +40,8 @@ export const realTime = defineStore('realTime', () => {
         };
         ws.onmessage = (ev) => {
             try {
-                console.log('ev的值',ev);
-                console.log('ev.data的值',ev.data);
+                console.log('[WS] onmessage');
                 const env = JSON.parse(ev.data);
-                console.log("onmessage");
                 handleEnvelope(env);
             } catch (e) {
                 console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
@@ -69,8 +67,10 @@ export const realTime = defineStore('realTime', () => {
 /*处理后端给我的消息*/
     const userchat=userChat()
     function handleEnvelope(env) {
-        const type = env.type;
-        const p = env.payload;
+        const rawType = env && env.type;
+        console.log('[WS] envelope type raw:', JSON.stringify(rawType)); // 调试用，能显示隐藏字符
+        const type = (rawType === null || rawType === undefined) ? '' : String(rawType).trim();
+        const p = env.payload || {};
         switch(type) {
             case 'NEW_FRIEND_REQUEST':
                 userchat.updateAgreeingList();
@@ -81,6 +81,7 @@ export const realTime = defineStore('realTime', () => {
             case 'NEW_PRIVATE_MESSAGE':
             case 'NEW_MESSAGE':
                 try {
+                    console.log("处理接收到的消息","其ev的payload值为",p)
                     // 有些后端会返回高精度的 fractional seconds（超过 3 位），
                     // 先把小数秒裁到毫秒精度再交给 Date 解析，避免部分环境解析失败
                     let created = p.createdAt || null;
@@ -100,14 +101,7 @@ export const realTime = defineStore('realTime', () => {
                         imageUrl: p.imageUrl || null,
                         timestamp: timestamp
                     };
-
                     userchat.appendPrivateMessage(p.fromUserId, p.toUserId, msg);
-
-                    // （可选）自动切换到该会话：按需解注释并确保 friendList 中有对应项
-                    // const otherId = String(p.fromUserId) === String(user.getId()) ? String(p.toUserId) : String(p.fromUserId);
-                    // const target = userchat.getFriendList().value.find(f => String(f.sessionTargetId || f.id) === otherId);
-                    // if (target) userchat.selectConversation({ id: target.sessionTargetId || target.id, name: target.title || target.name, avatarUrl: target.avatarUrl || target.avatar, signature: target.signature });
-
                 } catch (e) {
                     console.error('[WS] 处理 NEW_MESSAGE/NEW_PRIVATE_MESSAGE 出错', e, p);
                 }

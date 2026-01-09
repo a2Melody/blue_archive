@@ -2,6 +2,7 @@
 
 import SearchFriend from "@/feature/Momotalk/components/ManageFriends/SearchFriend.vue";
 import SearchFriendItem from "@/feature/Momotalk/components/ManageFriends/SearchFriendItem.vue";
+import {userStore} from "@/stores/UserStore.js";
 
 const props=defineProps({
   searchFriendList:{
@@ -9,6 +10,8 @@ const props=defineProps({
     default: () => []
   }
 })
+const user=userStore();
+
 </script>
 
 <template>
@@ -20,7 +23,7 @@ const props=defineProps({
         :key="item.id"
         :id="item.id"
         :name="item.username"
-        :avatar-url="item.avatarUrl"
+        :avatar-url="item.avatarUrl??user.getDefaultProfile()"
       ></SearchFriendItem>
     </div>
   </div>

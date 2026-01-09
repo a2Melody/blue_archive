@@ -29,11 +29,11 @@ const signature = computed(() => {
 </script>
 
 <template>
-  <div class="chat_header">
-    <img :src="user.getProfile()" class="avatar f">
+  <div v-if="selected" class="chat_header">
+    <img :src="userchat.getSelectedConversation().value.avatarUrl??user.getDefaultProfile()" class="avatar f">
     <div class="name_signature">
-      <h4>{{user.getUserName()}}</h4>
-      <p class="font_color font_small_size" style="margin-top: 4px">与你的每一天都是奇迹</p>
+      <h4>{{userchat.getSelectedConversation().value.name}}</h4>
+      <p class="font_color font_small_size" style="margin-top: 4px"></p>
     </div>
   </div>
 </template>

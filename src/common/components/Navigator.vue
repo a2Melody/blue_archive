@@ -20,11 +20,7 @@ function input_enter(e){
 function input_focus(e){
     e.target.placeholder='';
 }
-function input_blur(e){
-  if(signature.value===''){
-    e.target.placeholder='与你的每一天都是奇迹';
-  }
-}
+
 function changeShow(){
   show.value=!show.value;
 }
@@ -74,6 +70,8 @@ function shake(e) {
   };
   el.addEventListener('animationend', onEnd);
 }
+
+
 </script>
 
 <template>
@@ -89,7 +87,7 @@ function shake(e) {
         <ul class="nav">
           <li style="position: relative">
             <div class="momotalk" @click="router.push('/momotalk')" :style="{ backgroundImage:`url(${momotalk})`}" @mouseenter="shake"></div>
-            <div class="momotalk_numbers" v-if="user.getMessages()===null||user.getMessages()===0">99+</div>
+            <div class="momotalk_numbers" v-if="user.getUnreadMessageNumbers()===null||user.getUnreadMessageNumbers()===0">99+</div>
           </li>
           <li><RouterLink to="/videos" class="nav_link" @mouseenter="jump">社交</RouterLink></li>
           <li><RouterLink to="/firstFolders" class="nav_link" @mouseenter="jump">收藏</RouterLink></li>
@@ -98,7 +96,7 @@ function shake(e) {
         </ul>
         <!--      头像 profile photo-->
         <div class="profile_wrapper" v-if="isLogin" :class="{ 'no-login': !isLogin }">
-          <div class="profile" :style="user.profile?{ backgroundImage:`url(${user.profile})`}:{}" @click="router.push('/cropProfile')"></div>
+          <img  v-if="user.getProfile()" @click="router.push('/cropProfile')" :src="user.getProfile()" alt="avatar" class="profile-img" />
           <ul class="content" v-if="isLogin">
             <li class="user_name">{{ user.getUserName() }}</li>
             <li class="user_id" @click="copyId(user.getUserId().value)">{{user.getUserId()}}
@@ -113,7 +111,7 @@ function shake(e) {
         </div>
         <!--      个性签名desu-->
         <div class="sentence" v-if="isLogin">
-          <input class="input_sentence" type="text" v-model="signature" placeholder="与你的每一天都是奇迹" @keydown.enter="input_enter" @focus="input_focus" @blur="input_blur">
+          <input class="input_sentence" type="text" v-model="signature" :placeholder="user.getSignature()?'个性签名desu':user.getSignature()" @keydown.enter="input_enter" @focus="input_focus" >
         </div>
         <!--  向上缩小-->
         <div class="up" @click="changeShow">
@@ -203,31 +201,37 @@ function shake(e) {
 /* 头像上传 */
 .profile_wrapper{
   position: relative;
-  z-index: 10;
-  margin-left: 520px;
+  z-index: auto;
+  margin-left: 560px;
   display: inline-block;
+  cursor: pointer;
 }
 .no-login:hover .profile {
   transform: none !important; /* 禁用头像放大 */
 }
-.profile{
+
+
+/* img 样式：填满容器、保持比例、启用 GPU 加速，避免缩放时模糊/锯齿 */
+.profile-img{
   position: relative;
-  z-index: 10;
-  width: 50px;
-  height: 50px;
-  border: 1px solid white;
+  width: 52px;
+  height: 52px;
+  display: block;               /* 去除 inline 元素间隙 */
+  object-fit: cover;            /* 保持纵横比并裁切 */
+  object-position: center;
+  transform: translateZ(0);     /* 强制开启合成层，减少子像素渲染问题 */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+  transition: transform .8s ease;
+  image-rendering: auto;
   border-radius: 50%;
-  transition: all .8s ease;
-  background-size: cover;       /* 或 'contain' 视需求 */
-  background-position: center;
-  background-repeat: no-repeat;
+  z-index: 1000;
 }
-.profile:hover{
-    cursor: pointer;
-}
-/*头像悬浮时可以放大并且显示下拉表*/
-.profile_wrapper:hover .profile{
-  transform:translate(-22px,22px) scale(1.75);
+
+/* hover 放大效果：应用到 img 上而不是容器，以避免圆角/边框渲染问题 */
+.profile_wrapper:hover .profile-img{
+  transform: translate3d(-22px,22px,0) scale(1.75);
 }
 .content{
   display: flex;
@@ -245,6 +249,7 @@ function shake(e) {
   font-size: 14px;
   transition: opacity .8s ease;
   padding: 30px 10px 20px 10px;
+  z-index: 10;
 }
 .user_name{
   color: #696969;
@@ -293,7 +298,7 @@ function shake(e) {
 
 /* 个性签名 */
 .sentence{
-  margin-left: 20px;
+  margin-left: 14px;
 }
 .input_sentence{
   background: transparent;  /* 背景透明 */

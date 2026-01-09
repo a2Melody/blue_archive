@@ -30,52 +30,56 @@ export const userChat = defineStore('userChat', () => {
 
 /*ai紧急敲的  */
     const me = userStore();
-
-    // 新增：当前选中的会话（user 对象或 null）
+    // 当前会话
     const selectedConversation = ref(null);
-    // 新增：按 conversation key 存的消息数组（key 格式： user_<otherId>）
+    // 按 conversation key 存的消息数组（key 格式： user_<otherId>）
     const messages = ref({});
 
+    /*设置当前会话*/
+    function selectConversation(user) {
+        selectedConversation.value = user;
+        if(user===null)return;
+        const key = `user_${String(user.id)}`;
+        messages.value[key] = messages.value[key] || [];
+    }
     function getSelectedConversation(){
         return selectedConversation;
     }
-    // 返回当前选中会话的消息数组（若未初始化则返回空数组）
+
+    // 返回当前选中会话的消息数组（保证返回的是响应式数组引用）
     function getMessagesForSelected(){
         const conv = selectedConversation.value;
         if (!conv) return [];
-        const key = convKey(conv);
+        const key = `user_${String(conv.id)}`;
         messages.value[key] = messages.value[key] || [];
         return messages.value[key];
     }
-// 选中会话（例如在用户列表点击时调用）
-    function selectConversation(user) {
-        selectedConversation.value = user;
-        const key = convKey(user);
+
+    // 追加私聊消息：把消息放到 otherId 的会话数组里
+    function appendPrivateMessage(fromUserId, toUserId, msg) {
+        const myId = String(me.getUserId()); // 确保 userStore.getUserId() 返回 value
+        const from = String(fromUserId);
+        const to = String(toUserId);
+        const otherId = (from === myId) ? to : from;
+        const key = `user_${otherId}`;
         messages.value[key] = messages.value[key] || [];
+        messages.value[key].push(msg);
+
+        // 如果当前打开的是这个会话，可以在这里做额外处理（例如：发送已读回执 / 标记为已读）
+        const sel = selectedConversation.value;
+        if (sel && String(sel.id) === otherId) {
+            // 当前会话就是这个 otherId
+            // e.g. send read receipt (通过 RealTime) 或触发 UI 滚动（ChatWindow 也会监测 messages）
+            // sendReadReceipt(otherId)  // 按需实现
+        } else {
+            // 非当前会话：可以增加 friendList 中对应项的 unreadCount（按需实现）
+        }
     }
 
-    // 以 key 追加消息
+    // 以 key 追加消息（提供给其它逻辑使用）
     function appendMessageByKey(key, msg) {
         messages.value[key] = messages.value[key] || [];
         messages.value[key].push(msg);
-    }
-
-    // 追加私聊消息：根据当前登录用户决定把消息放到哪个 "other" 的会话里
-    // fromUserId, toUserId 是 Number 或 String
-    function appendPrivateMessage(fromUserId, toUserId, msg) {
-        const myId = String(me.getId()); // 依赖 userStore 提供 getId()
-        const from = String(fromUserId);
-        const to = String(toUserId);
-        // otherId 为“另一方”的 id（非我自己）
-        const otherId = (from === myId) ? to : from;
-        const key = `user_${otherId}`;
-        appendMessageByKey(key, msg);
-    }
-
-    // helper: 把 user 对象转成 key（针对私聊）
-    function convKey(user) {
-        if (!user) return '';
-        return `user_${user.id}`;
     }
 
 

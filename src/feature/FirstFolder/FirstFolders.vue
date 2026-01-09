@@ -18,7 +18,6 @@ async function getData(){
   /*第一次上传*/
   try {
     const res = await axios.post('/api/collection/folder/level1/getUserFolders', {});
-    console.log('response (axios):', res.data);
     if (res.data.isSuccess) {
       folders.value = res.data.data;
     }
@@ -39,7 +38,6 @@ async function updateSecondFolders(fatherId) {
     const res = await axios.post('/api/collection/folder/level2/getFoldersByParent', {
       father_id: fatherId
     });
-    console.log(res.data);
     secondFolders.value = res.data.data;
   } catch (e) {
     console.error("刷新二级菜单失败", e);
