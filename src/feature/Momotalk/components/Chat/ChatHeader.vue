@@ -33,7 +33,7 @@ const signature = computed(() => {
     <img :src="userchat.getSelectedConversation().value.avatarUrl??user.getDefaultProfile()" class="avatar f">
     <div class="name_signature">
       <h4>{{userchat.getSelectedConversation().value.name}}</h4>
-      <p class="font_color font_small_size" style="margin-top: 4px"></p>
+      <p class="font_color font_small_size" style="margin-top: 4px">{{userchat.getSelectedConversation().value.signature?userchat.getSelectedConversation().value.signature:'个性签名desu'}}</p>
     </div>
   </div>
 </template>

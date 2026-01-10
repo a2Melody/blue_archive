@@ -1,33 +1,3 @@
-<template>
-  <div class="chat_window f">
-    <!-- Header (只在选中会话时显示，ChatHeader 内部也会做同样判断) -->
-    <ChatHeader />
-
-    <!-- 空状态 -->
-    <div v-if="!selected" class="empty_state" style="padding:20px;color:#999">
-      请选择联系人开始聊天
-    </div>
-
-    <!-- 聊天消息列表 -->
-    <div v-else class="messages" ref="bodyRef">
-      <div
-          v-for="(m, idx) in messages"
-          :key="m.id ?? idx"
-          :class="['msg', isMine(m) ? 'me' : 'them']"
-      >
-        <div
-            class="bubble"
-            :class="isMine(m) ? 'bubble-me' : 'bubble-them'"
-        >
-          {{ m.content }}
-        </div>
-      </div>
-    </div>
-
-    <ChatInput></ChatInput>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { userChat } from '@/stores/userChat.js';
@@ -67,8 +37,37 @@ watch(
     { flush: 'post' }
 );
 
-
 </script>
+
+<template>
+  <div class="chat_window f">
+    <!-- Header (只在选中会话时显示，ChatHeader 内部也会做同样判断) -->
+    <ChatHeader />
+
+    <!-- 空状态 -->
+    <div v-if="!selected" class="empty_state" style="padding:20px;color:#999">
+      请选择联系人开始聊天
+    </div>
+
+    <!-- 聊天消息列表 -->
+    <div v-else class="messages" ref="bodyRef">
+      <div
+          v-for="(m, idx) in messages"
+          :key="m.id ?? idx"
+          :class="['msg', isMine(m) ? 'me' : 'them']"
+      >
+        <div
+            class="bubble"
+            :class="isMine(m) ? 'bubble-me' : 'bubble-them'"
+        >
+          {{ m.content }}
+        </div>
+      </div>
+    </div>
+
+    <ChatInput></ChatInput>
+  </div>
+</template>
 
 <style scoped>
 .chat_window {
@@ -122,40 +121,6 @@ watch(
   background: #fff;
   border: 1px solid #eee;
   margin-right: 8px;
-}
-
-/* 发送区 */
-.composer {
-  display: flex;
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid #eee;
-  align-items: center;
-  background: #fff;
-}
-
-.composer-input {
-  flex: 1;
-  height: 38px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: 1px solid #e6e6e6;
-  outline: none;
-  font-size: 14px;
-}
-
-.send-btn {
-  min-width: 64px;
-  height: 38px;
-  border: none;
-  background: #64cbff;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.send-btn:active {
-  transform: translateY(1px);
 }
 
 /* 空状态 */

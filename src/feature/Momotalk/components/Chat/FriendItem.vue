@@ -7,7 +7,10 @@ const props=defineProps({
   title:String,
   avatar:String,
   signature:String,
-  status:Boolean,
+  status:{
+    type:Boolean,
+    default:false
+  },
   latestMessage:String,
   LastMessageTime:Date,
   unreadCount:Number,
@@ -29,9 +32,9 @@ function onClick() {
     <div class="status">
       <div class="name_time">
         <h4 style="font-size: 14px">{{props.title}}</h4>
-        <span class="time font_color font_small_size font_bold" style="margin-left: 70px">{{props.sessionTargetId}}</span>
+        <span class="time font_color font_small_size font_bold" style="margin-left: 70px">uid:{{props.sessionTargetId}}</span>
       </div>
-      <span class="font_small_size font_color"></span>
+      <span class="font_small_size font_color">{{props.status?'在线':'离线'}}</span>
     </div>
   </div>
 </template>
@@ -60,6 +63,8 @@ function onClick() {
   height: 45px;
   border-radius: 50%;
   object-fit: cover;
+  object-position:center;
+  image-rendering: auto;
 }
 .status{
   margin-left: 7px;

@@ -19,8 +19,8 @@ async function agree(){
     action: "accept"
   });
   console.log("同意好友");
-  console.log(res);
   userchat.updateAgreeingList();
+  userchat.updateFriendList();
 }
 
 async function disagree(){
@@ -29,8 +29,8 @@ async function disagree(){
     action: "reject"
   });
   console.log("不同意好友");
-  console.log(res);
   userchat.updateAgreeingList();
+  userchat.updateFriendList();
 }
 
 </script>

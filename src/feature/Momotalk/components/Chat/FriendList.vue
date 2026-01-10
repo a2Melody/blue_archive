@@ -17,7 +17,7 @@ function select(item) {
     id: item.sessionTargetId,
     name: item.title,
     avatarUrl: item.avatarUrl,     // 与 ChatHeader 里使用的字段名对应
-    signature: item.signature
+    signature: item.signature,
   });
   console.log(userchat.getSelectedConversation().value)
 }
