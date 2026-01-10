@@ -2,6 +2,7 @@
 
 import {userStore} from "@/stores/UserStore.js";
 import axios from "axios";
+import {userChat} from "@/stores/userChat.js";
 
 const user=userStore();
 const props=defineProps({
@@ -11,13 +12,15 @@ const props=defineProps({
   fromAvatarUrl:String
 })
 
+const userchat=userChat();
 async function agree(){
   const res = await axios.post('/api/chat/friends/request/respond', {
     requestId: props.requestId,
     action: "accept"
   });
   console.log("同意好友");
-  console.log(res)
+  userchat.updateAgreeingList();
+  userchat.updateFriendList();
 }
 
 async function disagree(){
@@ -26,7 +29,8 @@ async function disagree(){
     action: "reject"
   });
   console.log("不同意好友");
-  console.log(res);
+  userchat.updateAgreeingList();
+  userchat.updateFriendList();
 }
 
 </script>

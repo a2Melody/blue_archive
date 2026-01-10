@@ -2,17 +2,10 @@
 
 import AgreeFriendItem from "@/feature/Momotalk/components/ManageFriends/AgreeFriendItem.vue";
 import {userChat} from "@/stores/userChat.js";
+import {userStore} from "@/stores/UserStore.js";
 
-/*
-*  * requestId: 3, fromUserId: 4, fromUsername: 'Melody', fromAvatarUrl: 'http://localhost:9000/test-bucket/attachments/user…4069d3760281d086a81e02f5468dd8af784b502541fec4416', message: null, …}
-length
-:
-1
-[[Prototype]]
-:
-Array(0)
 
-*  */
+const user=userStore();
 const userchat=userChat();
 const agreeList=userchat.getAgreeingList();
 </script>
@@ -27,7 +20,7 @@ const agreeList=userchat.getAgreeingList();
           :request-id="item.requestId"
           :from-user-id="item.fromUserId"
           :from-username="item.fromUsername"
-          :from-avatar-url="item.fromAvatarUrl"
+          :from-avatar-url="item.fromAvatarUrl??user.getDefaultProfile()"
       ></AgreeFriendItem>
     </div>
   </div>

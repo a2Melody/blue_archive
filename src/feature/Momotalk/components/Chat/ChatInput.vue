@@ -1,17 +1,58 @@
 <script setup>
 
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {realTime} from "@/stores/RealTime.js";
+import {userChat} from "@/stores/userChat.js";
+import {userStore} from "@/stores/UserStore.js";
 
+const uc = userChat();
+const me = userStore();
+const rt = realTime();
 
-const message=ref('');
-const realtime=realTime();
+const selected = computed(() => uc.getSelectedConversation().value || null);
 
-function send(){
-  if (!message.value) return;
-  console.log("test 传输信息为"+message.value);
-  realtime.sendPrivateText(6,message.value);
-  message.value='';
+/*input中的内容*/
+const draft=ref('');
+
+// 发送消息（最小 optimistic update）
+async function send() {
+  const text = draft.value && draft.value.trim();
+  if (!text) return;
+  if (!selected.value) return;
+
+  const targetId = String(selected.value.id);
+  const myId = String(me.getUserId());
+
+  // 生成临时 client id
+  const clientId = `c-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+  const msg = {
+    id: clientId, // 临时 id，服务器返回后可替换
+    fromUserId: myId,
+    toUserId: targetId,
+    conversationType: 'PRIVATE',
+    messageType: 'TEXT',
+    content: text,
+    timestamp: Date.now(),
+    status: 'sending' // 用于 UI 展示（可选）
+  };
+
+  // optimistic push 到本地 store（确保 key 与后端消息 key 一致）
+  const key = `user_${targetId}`;
+  uc.appendMessageByKey(key, msg);
+
+  // 清空输入并滚动（watch 会处理滚动，也可手动滚）
+  draft.value = '';
+
+  // 通过 WebSocket 发送（RealTime.sendPrivateText 会封装 envelope）
+  try {
+    await rt.sendPrivateText(targetId, text);
+    // 不做立即替换；等后端 NEW_MESSAGE / ACK 到来再处理（后端消息可能含 server id）
+  } catch (e) {
+    console.error('发送消息出错', e);
+    // 可选：把本地临时消息标为 failed
+    // 找到 messages[key] 并设置 status = 'failed' —— 可按需实现
+  }
 }
 function onKeydown(e){
   if (e.key === 'Enter' && !e.shiftKey){
@@ -20,16 +61,17 @@ function onKeydown(e){
   }
 }
 
+
 </script>
 
 <template>
-  <div class="chat_input f">
+  <div v-if="selected" class="chat_input f">
     <div class="buttons f">
       <button class="icon_container">
         <span class="iconfont icon-wenjianjia" style="font-size: 22px"></span>
       </button>
     </div>
-    <textarea ref="messageEl" v-model="message" class="editor" @keydown="onKeydown"></textarea>
+    <textarea ref="messageEl" v-model="draft" class="editor" @keydown="onKeydown"></textarea>
     <button class="send" @click="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 16px" ></span></button>
   </div>
 </template>

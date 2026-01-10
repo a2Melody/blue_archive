@@ -1,6 +1,8 @@
 <script setup>
 
 import {userStore} from "@/stores/UserStore.js";
+import {computed} from "vue";
+import {userChat} from "@/stores/userChat.js";
 
 const props=defineProps({
   url:String,
@@ -9,14 +11,29 @@ const props=defineProps({
 });
 const user=userStore();
 
+
+/*ai写的*/
+const userchat=userChat();
+const selected = computed(() => userchat.getSelectedConversation().value || null);
+
+// 如果没有选中会话，仍然显示当前用户自己的信息或占位文本
+const avatar = computed(() => {
+  return selected.value?.avatarUrl || user.getProfile();
+});
+const displayName = computed(() => {
+  return selected.value?.name || user.getUserName();
+});
+const signature = computed(() => {
+  return selected.value?.signature || '与你的每一天都是奇迹';
+});
 </script>
 
 <template>
-  <div class="chat_header">
-    <img :src="user.getProfile()" class="avatar f">
+  <div v-if="selected" class="chat_header">
+    <img :src="userchat.getSelectedConversation().value.avatarUrl??user.getDefaultProfile()" class="avatar f">
     <div class="name_signature">
-      <h4>{{user.getUserName()}}</h4>
-      <p class="font_color font_small_size" style="margin-top: 4px">与你的每一天都是奇迹</p>
+      <h4>{{userchat.getSelectedConversation().value.name}}</h4>
+      <p class="font_color font_small_size" style="margin-top: 4px">{{userchat.getSelectedConversation().value.signature?userchat.getSelectedConversation().value.signature:'个性签名desu'}}</p>
     </div>
   </div>
 </template>

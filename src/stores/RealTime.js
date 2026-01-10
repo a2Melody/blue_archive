@@ -40,8 +40,8 @@ export const realTime = defineStore('realTime', () => {
         };
         ws.onmessage = (ev) => {
             try {
+                console.log('[WS] onmessage');
                 const env = JSON.parse(ev.data);
-                console.log("onmessage");
                 handleEnvelope(env);
             } catch (e) {
                 console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
@@ -67,13 +67,46 @@ export const realTime = defineStore('realTime', () => {
 /*处理后端给我的消息*/
     const userchat=userChat()
     function handleEnvelope(env) {
-        const type = env.type;
-        const p = env.payload;
+        const rawType = env && env.type;
+        console.log('[WS] envelope type raw:', JSON.stringify(rawType)); // 调试用，能显示隐藏字符
+        const type = (rawType === null || rawType === undefined) ? '' : String(rawType).trim();
+        const p = env.payload || {};
         switch(type) {
             case 'NEW_FRIEND_REQUEST':
                 userchat.updateAgreeingList();
-                console.log("update");
                 break;
+            case 'ACCEPT_FRIEND_REQUEST':
+                userchat.updateFriendList();
+                break;
+            case 'NEW_PRIVATE_MESSAGE':
+            case 'NEW_MESSAGE':
+                try {
+                    console.log("处理接收到的消息","其ev的payload值为",p)
+                    // 有些后端会返回高精度的 fractional seconds（超过 3 位），
+                    // 先把小数秒裁到毫秒精度再交给 Date 解析，避免部分环境解析失败
+                    let created = p.createdAt || null;
+                    if (created && typeof created === 'string') {
+                        created = created.replace(/(\.\d{3})\d+/, '$1'); // 保留到毫秒
+                    }
+                    const timestamp = created ? new Date(created).getTime() : Date.now();
+
+                    const msg = {
+                        id: p.id,
+                        conversationType: p.conversationType,
+                        fromUserId: p.fromUserId,
+                        toUserId: p.toUserId,
+                        groupId: p.groupId || null,
+                        messageType: p.messageType,
+                        content: p.content,
+                        imageUrl: p.imageUrl || null,
+                        timestamp: timestamp
+                    };
+                    userchat.appendPrivateMessage(p.fromUserId, p.toUserId, msg);
+                } catch (e) {
+                    console.error('[WS] 处理 NEW_MESSAGE/NEW_PRIVATE_MESSAGE 出错', e, p);
+                }
+                break;
+
             default:
                 console.debug('Unhandled WS event', type, p);
         }
