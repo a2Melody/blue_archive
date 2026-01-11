@@ -4,6 +4,7 @@ import SearchFriend from "@/feature/Momotalk/components/ManageFriends/SearchFrie
 import SearchFriendItem from "@/feature/Momotalk/components/ManageFriends/SearchFriendItem.vue";
 import {userStore} from "@/stores/UserStore.js";
 
+const emit=defineEmits(['update']);
 const props=defineProps({
   searchFriendList:{
     type:Array,
@@ -23,7 +24,10 @@ const user=userStore();
         :key="item.id"
         :id="item.id"
         :name="item.username"
+        :signature="item.personalSignature"
+        :status="item.status"
         :avatar-url="item.avatarUrl??user.getDefaultProfile()"
+        @update="emit('update')"
       ></SearchFriendItem>
     </div>
   </div>

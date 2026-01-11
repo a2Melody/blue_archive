@@ -1,19 +1,29 @@
 <script setup>
-
-import {userStore} from "@/stores/UserStore.js";
+import {computed} from "vue";
 import axios from "axios";
-
+import {userStore} from "@/stores/UserStore.js";
+const emit=defineEmits(['update']);
 const props=defineProps({
   name:String,
   id:Number,
   signature:String,
   avatarUrl:String,
+  status:String
 })
 
+const user=userStore();
+const isSelf = computed(() => String(props.id) === String(user.getUserId()));
+const isDisabled = computed(() => props.status === 'ALREADY_FRIENDS' || props.status === 'PENDING_REQUEST' || isSelf.value);
+const buttonText = computed(() =>
+    isSelf.value ? '自己' :
+        (props.status === 'ALREADY_FRIENDS' ? '已是好友' : (props.status === 'PENDING_REQUEST' ? '申请中' : ''))
+);
 async function addFriend(){
+  if (props.status !== 'NOT_FRIENDS') return;
   const res = await axios.post('/api/chat/friends/request/send', {
     toUserId: props.id
   });
+  emit('update');
 }
 </script>
 
@@ -23,9 +33,17 @@ async function addFriend(){
     <div class="data">
       <h5 class="name">{{props.name}}</h5>
       <span class="uid font_small_size">uid:{{props.id}}</span>
-      <span class="signature font_small_size" style="margin-top: 2px;">与你的每一天都是奇迹</span>
+      <span class="signature font_small_size" style="margin-top: 2px;">{{props.signature??"对方未写个性签名desu"}}</span>
     </div>
-    <button class="add_button" @click="addFriend"><span class="iconfont icon-tianjiahaoyou" style="font-size: 20px"></span></button>
+    <button
+        class="add_button"
+        @click="addFriend"
+        :disabled="isDisabled"
+        :style="{ backgroundColor: isDisabled ? '#ccc' : 'pink', cursor: isDisabled ? 'not-allowed' : 'pointer' }"
+    >
+      <span v-if="!isDisabled" class="iconfont icon-tianjiahaoyou" style="font-size: 20px"></span>
+      <span v-else>{{ buttonText }}</span>
+    </button>
   </div>
 </template>
 
@@ -53,7 +71,7 @@ async function addFriend(){
   margin-left: 10px;
 }
 .add_button{
-  width: 46px;
+  width: 58px;
   height: 35px;
   margin-left: auto;
   align-self: flex-end;

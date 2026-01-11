@@ -1,13 +1,15 @@
 <script setup>
 import axios from "axios";
+import {onMounted} from "vue";
 
 
 async function pingBackend()
 {
   try {
-    const response = await axios.post('https://192.168.1.5:8443/api/user/ping1', {
+    const response = await axios.post('/api/chat/messages/private/getMessage', {
       // 这里放置你要发送的 POST 数据，如果没有可以传空对象 {}
-      message: 'hello'
+      friendId:'6',
+      page:'0'
     });
 
     console.log('返回数据:', response.data);
@@ -16,10 +18,12 @@ async function pingBackend()
   }
 }
 
+onMounted(()=>{
+  pingBackend();
+})
 </script>
 
 <template>
-  <Momotalk></Momotalk>
 </template>
 
 <style scoped>

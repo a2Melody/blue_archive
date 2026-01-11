@@ -26,14 +26,20 @@ const displayName = computed(() => {
 const signature = computed(() => {
   return selected.value?.signature || '与你的每一天都是奇迹';
 });
+const avatarHref = computed(() => {
+  const sel = userchat.getSelectedConversation().value;
+  return (sel && sel.avatarUrl) ? sel.avatarUrl : user.getDefaultProfile();
+});
 </script>
 
 <template>
   <div v-if="selected" class="chat_header">
-    <img :src="userchat.getSelectedConversation().value.avatarUrl??user.getDefaultProfile()" class="avatar f">
+    <a :href="avatarHref" target="_blank" rel="noopener">
+      <img :src="userchat.getSelectedConversation().value.avatarUrl??user.getDefaultProfile()" class="avatar f">
+    </a>
     <div class="name_signature">
       <h4>{{userchat.getSelectedConversation().value.name}}</h4>
-      <p class="font_color font_small_size" style="margin-top: 4px">{{userchat.getSelectedConversation().value.signature?userchat.getSelectedConversation().value.signature:'个性签名desu'}}</p>
+      <p class="font_color font_small_size" style="margin-top: 7px">{{userchat.getSelectedConversation().value.signature?userchat.getSelectedConversation().value.signature:'个性签名desu'}}</p>
     </div>
   </div>
 </template>
@@ -45,11 +51,11 @@ const signature = computed(() => {
   width: 100%;
   height: 74px;
   border-bottom: 1px solid rgba(255, 179, 217, 0.3);
-  padding: 16px 40px;
+  padding: 14px 40px;
 }
 .avatar{
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgb(255 179 217);
@@ -58,6 +64,6 @@ const signature = computed(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin-left: 10px;
+  margin-left: 20px;
 }
 </style>

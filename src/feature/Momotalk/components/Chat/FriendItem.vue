@@ -7,9 +7,13 @@ const props=defineProps({
   title:String,
   avatar:String,
   signature:String,
-  status:{
+  online:{
     type:Boolean,
     default:false
+  },
+  onlineColor: {         // 新增：在线颜色，父组件可覆盖
+    type: String,
+    default: 'pink'
   },
   latestMessage:String,
   LastMessageTime:Date,
@@ -34,7 +38,9 @@ function onClick() {
         <h4 style="font-size: 14px">{{props.title}}</h4>
         <span class="time font_color font_small_size font_bold" style="margin-left: 70px">uid:{{props.sessionTargetId}}</span>
       </div>
-      <span class="font_small_size font_color">{{props.status?'在线':'离线'}}</span>
+      <span class="font_small_size" :style="{ color: props.online ? props.onlineColor : '#999' }">
+  {{ props.online ? '在线' : '离线' }}
+</span>
     </div>
   </div>
 </template>
@@ -59,8 +65,8 @@ function onClick() {
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.08);
 }
 .avatar{
-  width: 45px;
-  height: 45px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
   object-position:center;

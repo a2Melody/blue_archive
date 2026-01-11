@@ -21,7 +21,10 @@ async function search(){
       <input v-model="search_id" type="text" maxlength="16" placeholder="请输入uid" @keydown.enter="search">
       <span class="iconfont icon-sousuo4 search_icon" @click="search"></span>
     </div>
-    <SearchFriendList :search-friend-list="search_result"></SearchFriendList>
+    <SearchFriendList
+        :search-friend-list="search_result"
+        @update="search"
+    ></SearchFriendList>
   </div>
 </template>
 

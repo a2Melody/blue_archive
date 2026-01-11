@@ -23,30 +23,12 @@ async function send() {
   const targetId = String(selected.value.id);
   const myId = String(me.getUserId());
 
-  // 生成临时 client id
-  const clientId = `c-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-  const msg = {
-    id: clientId, // 临时 id，服务器返回后可替换
-    fromUserId: myId,
-    toUserId: targetId,
-    conversationType: 'PRIVATE',
-    messageType: 'TEXT',
-    content: text,
-    timestamp: Date.now(),
-    status: 'sending' // 用于 UI 展示（可选）
-  };
-
-  // optimistic push 到本地 store（确保 key 与后端消息 key 一致）
-  const key = `user_${targetId}`;
-  uc.appendMessageByKey(key, msg);
-
   // 清空输入并滚动（watch 会处理滚动，也可手动滚）
   draft.value = '';
 
   // 通过 WebSocket 发送（RealTime.sendPrivateText 会封装 envelope）
   try {
-    await rt.sendPrivateText(targetId, text);
+    rt.sendPrivateText(targetId, text);
     // 不做立即替换；等后端 NEW_MESSAGE / ACK 到来再处理（后端消息可能含 server id）
   } catch (e) {
     console.error('发送消息出错', e);
@@ -81,6 +63,7 @@ function onKeydown(e){
   display: flex;
   flex-direction: column;
   padding: 10px 15px;
+  flex: 0 0 184px;
   width: 100%;
   height: 184px;
   border-top: 1px solid rgba(255, 179, 217, 0.3);

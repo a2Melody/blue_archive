@@ -3,6 +3,7 @@ import {ref} from "vue";
 import axios from 'axios';
 import {useRouter} from "vue-router";
 import { userStore } from '@/stores/UserStore.js'
+import {userChat} from "@/stores/userChat.js";
 
 const router = useRouter();
 const user=userStore();
@@ -24,6 +25,7 @@ function button_focus(){
   login_button.value.focus();
 }
 
+const userchat=userChat();
 async function submit() {
   try {
     const res = await axios.post('/api/user/login', {
@@ -31,11 +33,12 @@ async function submit() {
       password: pwd.value
     });
     const responseData = res.data;
+/*    console.log(res.data);*/
     // 2. 获取嵌套在里面的 data 对象
     if (responseData.isSuccess) {
       const userInfo = responseData.data;
 
-      user.setUser(userInfo.id,userInfo.username,userInfo.userAvatarUrl)
+      user.setUser(userInfo.id,userInfo.username,userInfo.userAvatarUrl,userInfo.personalSignature);
 
       const newAccess = res.headers.get("New-Access-Token");
       if (newAccess) {
