@@ -44,7 +44,7 @@ export const realTime = defineStore('realTime', () => {
                 const env = JSON.parse(ev.data);
                 handleEnvelope(env);
             } catch (e) {
-                console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
+                console.warn('[WS] onmessage -111 非 JSON 收到', ev.data);
                 return;
             }
             console.log('[WS] onmessage');
@@ -79,6 +79,7 @@ export const realTime = defineStore('realTime', () => {
                 userchat.updateFriendList();
                 break;
             case 'NEW_PRIVATE_MESSAGE':
+                break;
             case 'NEW_MESSAGE':
                 try {
                     console.log("处理接收到的消息","其ev的payload值为",p)
@@ -106,7 +107,22 @@ export const realTime = defineStore('realTime', () => {
                     console.error('[WS] 处理 NEW_MESSAGE/NEW_PRIVATE_MESSAGE 出错', e, p);
                 }
                 break;
-
+            case 'USER_ONLINE': {
+                const uid = Number(p.userId);
+                if (!isNaN(uid)) {
+                    // 将该好友标为在线
+                    userchat.setFriendOnline(uid, true);
+                }
+                break;
+            }
+            case 'USER_OFFLINE': {
+                const uid = Number(p.userId);
+                if (!isNaN(uid)) {
+                    // 将该好友标为离线
+                    userchat.setFriendOnline(uid, false);
+                }
+                break;
+            }
             default:
                 console.debug('Unhandled WS event', type, p);
         }

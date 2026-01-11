@@ -21,6 +21,7 @@ const agreeList=userchat.getAgreeingList();
           :from-user-id="item.fromUserId"
           :from-username="item.fromUsername"
           :from-avatar-url="item.fromAvatarUrl??user.getDefaultProfile()"
+          :signature="item.signature"
       ></AgreeFriendItem>
     </div>
   </div>

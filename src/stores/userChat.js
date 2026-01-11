@@ -22,10 +22,18 @@ export const userChat = defineStore('userChat', () => {
     async function updateAgreeingList(){
         const res = await axios.post('/api/chat/friends/request/list', {
         });
+        console.log(res);
         agreeingList.value=res.data.data.items;
     }
+    // 最小实现：根据 userId 设置在线状态（保持响应式）
+    function setFriendOnline(userId, online) {
+        const f = friendList.value.find(x => Number(x.sessionTargetId) === Number(userId));
+        if (f) {
+            f.online = !!online;
+        }
+    }
 
-/*ai紧急敲的  */
+
     const me = userStore();
     // 当前会话
     const selectedConversation = ref(null);
@@ -33,6 +41,12 @@ export const userChat = defineStore('userChat', () => {
     const messages = ref({});
 
     /*设置当前会话*/
+/*    userchat.selectConversation({
+        id: item.sessionTargetId,
+        name: item.title,
+        avatarUrl: item.avatarUrl,     // 与 ChatHeader 里使用的字段名对应
+        signature: item.signature,
+    });*/
     function selectConversation(user) {
         selectedConversation.value = user;
         if(user===null)return;
@@ -42,7 +56,11 @@ export const userChat = defineStore('userChat', () => {
     function getSelectedConversation(){
         return selectedConversation;
     }
-
+    function resetForLogout() {
+        selectedConversation.value = null;
+        messages.value = {};
+        // 可选： friendList.value = []; agreeingList.value = [];
+    }
     // 返回当前选中会话的消息数组（保证返回的是响应式数组引用）
     function getMessagesForSelected(){
         const conv = selectedConversation.value;
@@ -79,17 +97,72 @@ export const userChat = defineStore('userChat', () => {
         messages.value[key].push(msg);
     }
 
+    async function loadAllFriendHistories(page = 0) {
+        console.log('loadAllFriendHistories called', friendList.value?.length);
+        if (!friendList.value || friendList.value.length === 0) return;
 
+        // 并行请求每个好友的记录（失败不会中断其它请求）
+        const requests = friendList.value.map(f =>
+            axios.post('/api/chat/messages/private/getMessage', {
+                friendId: f.sessionTargetId,
+                page
+            }).catch(err => ({ __err: err }))
+        );
+
+        const results = await Promise.all(requests);
+
+        results.forEach((res, idx) => {
+            const friend = friendList.value[idx];
+            if (!res || res.__err) {
+                console.warn('[loadAllFriendHistories] 请求失败 friendId=', friend?.sessionTargetId, res && res.__err);
+                return;
+            }
+            // 常见后端结构： res.data.data.messages
+            const msgs = res.data?.data?.messages || res.data?.messages || [];
+            // 后端返回 0 是最新 -> 逆序为从旧到新，便于按顺序 push
+            if (Array.isArray(msgs) && msgs.length > 1) {
+                msgs.reverse();
+            }
+
+            console.log("msg:",msgs);
+            msgs.forEach(p => {
+                // 规范化时间到 timestamp（毫秒）
+                let created = p.createdAt || p.created_at || null;
+                if (created && typeof created === 'string') {
+                    created = created.replace(/(\.\d{3})\d+/, '$1'); // 保留到毫秒
+                }
+                const timestamp = created ? new Date(created).getTime() : (p.timestamp || Date.now());
+
+                const msg = {
+                    id: p.id,
+                    conversationType: p.conversationType || 'PRIVATE',
+                    fromUserId: p.fromUserId,
+                    toUserId: p.toUserId,
+                    groupId: p.groupId || null,
+                    messageType: p.messageType || 'TEXT',
+                    content: p.content,
+                    imageUrl: p.imageUrl || null,
+                    timestamp
+                };
+
+                // 使用现有的 appendPrivateMessage 将消息放入对应会话数组
+                appendPrivateMessage(p.fromUserId, p.toUserId, msg);
+            });
+        });
+    }
     return {
         getAgreeingList,
         getFriendList,
         updateFriendList,
         updateAgreeingList,
+        setFriendOnline,
+        resetForLogout,
         // 新增导出
         getSelectedConversation,
         getMessagesForSelected,
         selectConversation,
         appendMessageByKey,
+        loadAllFriendHistories,
         appendPrivateMessage
     };
 });

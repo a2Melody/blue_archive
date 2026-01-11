@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import mika from "@/assets/images/mika_profile.jpg"
+import defaultPic from "@/assets/images/shiroko_profile.jpg"
 
 export const userStore = defineStore('userStore', () => {
     const user_id = ref(null);
@@ -10,11 +10,11 @@ export const userStore = defineStore('userStore', () => {
     const signature=ref(null);
     const unreadMessageNumbers=ref(null);
 
-    function setUser(id, name, profileUrl) {
+    function setUser(id, name, profileUrl,signatureValue = null) {
         user_id.value = id;
         user_name.value = name;
         profile.value = profileUrl;
-        signature.value=signature;
+        signature.value=signatureValue;
     }
     function getUserId(){
         return user_id.value;
@@ -23,7 +23,7 @@ export const userStore = defineStore('userStore', () => {
         return user_name.value;
     }
     function getProfile(){
-        if(profile===null||profile.value===null)return mika;
+        if(profile===null||profile.value===null)return defaultPic;
         return profile.value;
     }
     function getSignature(){
@@ -36,9 +36,12 @@ export const userStore = defineStore('userStore', () => {
         return accessToken.value;
     }
     function getDefaultProfile(){
-        return mika;
+        return defaultPic;
     }
 
+    function setSignature(signature_value){
+        signature.value=signature_value;
+    }
     function setUnreadMessageNumbers(number){
         unreadMessageNumbers.value=number;
     }
@@ -69,6 +72,7 @@ export const userStore = defineStore('userStore', () => {
         getProfile,
         setProfile,
         setToken,
+        setSignature,
         getToken,
         getDefaultProfile,
         clearAll

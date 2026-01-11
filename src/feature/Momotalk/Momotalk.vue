@@ -10,14 +10,16 @@ const showFriends = ref(false);
 const realtime = realTime();
 const userchat=userChat();
 
-onMounted(()=>{
+onMounted(async ()=>{
+  console.log("onMounted")
   realtime.initWs();
-  userchat.updateFriendList();
-  userchat.updateAgreeingList();
+  await userchat.updateFriendList();
+  await userchat.updateAgreeingList();
+  await userchat.loadAllFriendHistories();
 });
 onUnmounted(()=>{
   realtime.closeWs();
-  userchat.selectConversation(null);
+  userchat.resetForLogout();
 })
 </script>
 

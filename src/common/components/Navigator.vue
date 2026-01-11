@@ -5,21 +5,13 @@ import {ref,computed} from "vue"
 import {userStore} from "@/stores/UserStore.js";
 import {useRouter} from "vue-router";
 import axios from "axios";
+import {userChat} from "@/stores/userChat.js";
 
 const user=userStore();
 const router=useRouter();
 const signature=ref('');
 const show=ref(true);
 const isLogin = computed(() => user.accessToken);
-
-
-function input_enter(e){
-    e.preventDefault();
-    e.target.blur();
-}
-function input_focus(e){
-    e.target.placeholder='';
-}
 
 function changeShow(){
   show.value=!show.value;
@@ -34,6 +26,7 @@ function jump(e){
   el.addEventListener("animationend", clean, { once: true });   //动画结束后调用clean函数，并且触发一次事件后自动删除监听器
 }
 
+const userchat=userChat();
 /*切换账户的函数功能*/
 async function logout(){
   try {
@@ -71,6 +64,27 @@ function shake(e) {
   el.addEventListener('animationend', onEnd);
 }
 
+/*个性签名*/
+async function input_enter(e){
+  e.preventDefault();
+  // 如果本地 signature 为空或仅有空白，则不上传，直接失去焦点
+  if (!signature.value || !signature.value.trim()) {
+    e.target.blur();
+    return;
+  }
+  try {
+    const res = await axios.post('/api/user/signature', {
+      personalSignature: signature.value,
+    });
+    user.setSignature(signature.value);
+    e.target.blur();
+  } catch (err) {
+    console.error('上传个性签名错误', err);
+  }
+}
+function input_focus(e){
+  e.target.placeholder='';
+}
 
 </script>
 
@@ -111,7 +125,7 @@ function shake(e) {
         </div>
         <!--      个性签名desu-->
         <div class="sentence" v-if="isLogin">
-          <input class="input_sentence" type="text" v-model="signature" :placeholder="user.getSignature()?'个性签名desu':user.getSignature()" @keydown.enter="input_enter" @focus="input_focus" >
+          <input class="input_sentence" type="text" v-model="signature" :placeholder="signature || user.getSignature() || '个性签名desu'" @keydown.enter="input_enter" @focus="input_focus" >
         </div>
         <!--  向上缩小-->
         <div class="up" @click="changeShow">

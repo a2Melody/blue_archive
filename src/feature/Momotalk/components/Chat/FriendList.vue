@@ -19,7 +19,6 @@ function select(item) {
     avatarUrl: item.avatarUrl,     // 与 ChatHeader 里使用的字段名对应
     signature: item.signature,
   });
-  console.log(userchat.getSelectedConversation().value)
 }
 </script>
 
@@ -33,9 +32,10 @@ function select(item) {
         :latest-message="item.lastMessagePreview"
         :avatar="item.avatarUrl ?? user.getDefaultProfile()"
         :latestMessage="item.lastMessageTime"
-        :signature="item.signature"
+        :signature="item.signature?? '个性签名desu'"
         :unread-count="item.unreadCount"
         :selected="String(item.sessionTargetId) === selectedId"
+        :online="item.online"
         @select="select(item)"
     ></FriendItem>
   </div>

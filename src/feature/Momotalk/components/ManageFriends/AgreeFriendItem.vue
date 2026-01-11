@@ -9,7 +9,8 @@ const props=defineProps({
   requestId:Number,
   fromUserId:Number,
   fromUsername:String,
-  fromAvatarUrl:String
+  fromAvatarUrl:String,
+  signature:String
 })
 
 const userchat=userChat();
@@ -41,7 +42,7 @@ async function disagree(){
     <div class="data">
       <h5 class="name">{{props.fromUsername}}</h5>
       <span class="uid font_small_size">uid:{{props.fromUserId}}</span>
-      <span class="signature font_small_size" style="margin-top: 2px;">与你的每一天都是奇迹</span>
+      <span class="signature font_small_size" style="margin-top: 2px;">{{props.signature??"对方未写个性签名desu"}}</span>
     </div>
     <button class="unagree_btn btn" @click="disagree"><span class="iconfont icon-yuanquancha"></span></button>
     <button class="agree_btn btn" @click="agree"><span class="iconfont icon-yuangou" style="font-size: 20px"></span></button>
