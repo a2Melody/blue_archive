@@ -98,7 +98,6 @@ export const userChat = defineStore('userChat', () => {
     }
 
     async function loadAllFriendHistories(page = 0) {
-        console.log('loadAllFriendHistories called', friendList.value?.length);
         if (!friendList.value || friendList.value.length === 0) return;
 
         // 并行请求每个好友的记录（失败不会中断其它请求）
@@ -124,7 +123,6 @@ export const userChat = defineStore('userChat', () => {
                 msgs.reverse();
             }
 
-            console.log("msg:",msgs);
             msgs.forEach(p => {
                 // 规范化时间到 timestamp（毫秒）
                 let created = p.createdAt || p.created_at || null;

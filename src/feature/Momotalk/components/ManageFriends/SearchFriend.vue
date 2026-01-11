@@ -10,7 +10,6 @@ async function search(){
   const res = await axios.post('/api/chat/friends/search', {
     userId:search_id.value
   });
-  console.log(res.data)
   search_result.value=res.data.data.items;
 }
 </script>
