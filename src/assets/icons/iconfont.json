@@ -6,6 +6,69 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1710636",
+      "name": "视频通话",
+      "font_class": "shipintonghua3",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "8008795",
+      "name": "视频聊天",
+      "font_class": "shipinliaotian",
+      "unicode": "e650",
+      "unicode_decimal": 58960
+    },
+    {
+      "icon_id": "11966460",
+      "name": "群聊-视频聊天",
+      "font_class": "qunliao-shipinliaotian",
+      "unicode": "e6bb",
+      "unicode_decimal": 59067
+    },
+    {
+      "icon_id": "12760593",
+      "name": "视频聊天",
+      "font_class": "shipinliaotian1",
+      "unicode": "e666",
+      "unicode_decimal": 58982
+    },
+    {
+      "icon_id": "2111466",
+      "name": "视频通话",
+      "font_class": "shipintonghua",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "4553734",
+      "name": "视频通话-填充",
+      "font_class": "shipintonghua-tianchong",
+      "unicode": "e7dd",
+      "unicode_decimal": 59357
+    },
+    {
+      "icon_id": "4841559",
+      "name": "视频通话",
+      "font_class": "shipintonghua1",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "46049374",
+      "name": "视频通话",
+      "font_class": "a-shipintonghuapoppy_icon_video",
+      "unicode": "e649",
+      "unicode_decimal": 58953
+    },
+    {
+      "icon_id": "46074616",
+      "name": "视频通话",
+      "font_class": "shipintonghua2",
+      "unicode": "e6ba",
+      "unicode_decimal": 59066
+    },
+    {
       "icon_id": "3775965",
       "name": "圆勾",
       "font_class": "yuangou",

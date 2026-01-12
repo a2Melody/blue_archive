@@ -133,14 +133,15 @@ export const userChat = defineStore('userChat', () => {
 
                 const msg = {
                     id: p.id,
-                    conversationType: p.conversationType || 'PRIVATE',
+                    conversationType: p.conversationType,
                     fromUserId: p.fromUserId,
                     toUserId: p.toUserId,
                     groupId: p.groupId || null,
-                    messageType: p.messageType || 'TEXT',
+                    messageType: p.messageType,
                     content: p.content,
-                    imageUrl: p.imageUrl || null,
-                    timestamp
+                    // 优先使用后端可能的 imageUrl，若没有再使用 fileUrl（后端示例里是 fileUrl）
+                    imageUrl: p.imageUrl || p.fileUrl || null,
+                    timestamp: timestamp
                 };
 
                 // 使用现有的 appendPrivateMessage 将消息放入对应会话数组
