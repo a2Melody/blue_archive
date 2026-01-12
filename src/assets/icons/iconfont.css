@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4948411 */
-  src: url('iconfont.woff2?t=1767772868722') format('woff2'),
-       url('iconfont.woff?t=1767772868722') format('woff'),
-       url('iconfont.ttf?t=1767772868722') format('truetype');
+  src: url('iconfont.woff2?t=1768194441242') format('woff2'),
+       url('iconfont.woff?t=1768194441242') format('woff'),
+       url('iconfont.ttf?t=1768194441242') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,42 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-shipintonghua3:before {
+  content: "\e64c";
+}
+
+.icon-shipinliaotian:before {
+  content: "\e650";
+}
+
+.icon-qunliao-shipinliaotian:before {
+  content: "\e6bb";
+}
+
+.icon-shipinliaotian1:before {
+  content: "\e666";
+}
+
+.icon-shipintonghua:before {
+  content: "\e668";
+}
+
+.icon-shipintonghua-tianchong:before {
+  content: "\e7dd";
+}
+
+.icon-shipintonghua1:before {
+  content: "\e638";
+}
+
+.icon-a-shipintonghuapoppy_icon_video:before {
+  content: "\e649";
+}
+
+.icon-shipintonghua2:before {
+  content: "\e6ba";
 }
 
 .icon-yuangou:before {

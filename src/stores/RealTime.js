@@ -8,6 +8,25 @@ export const realTime = defineStore('realTime', () => {
     let connected = ref(false);
     const user=userStore();
 
+    /*视频通话部分*/
+// 简单的信令事件发布/订阅（最小实现）
+    const _signalListeners = new Map();
+    function onSignal(type, handler) {
+        if (!_signalListeners.has(type)) _signalListeners.set(type, []);
+        _signalListeners.get(type).push(handler);
+    }
+    function offSignal(type, handler) {
+        const arr = _signalListeners.get(type) || [];
+        _signalListeners.set(type, arr.filter(h => h !== handler));
+    }
+    function _emitSignal(type, payload) {
+        const arr = _signalListeners.get(type) || [];
+        arr.forEach(h => {
+            try { h(payload); } catch (e) { console.error('[onSignal handler] error', e); }
+        });
+    }
+
+
     function initWs(wsBase = 'wss://localhost:8443') {
         const token = user.getToken();
         if (!token) {
@@ -72,6 +91,17 @@ export const realTime = defineStore('realTime', () => {
         const type = (rawType === null || rawType === undefined) ? '' : String(rawType).trim();
         const p = env.payload || {};
         switch(type) {
+            case 'CALL_INVITE':
+            case 'CALL_ANSWER':
+            case 'CALL_ICE':
+            case 'CALL_HANGUP':
+            case 'CALL_REJECT':
+            case 'CALL_FAILED': {
+                // 最小化：把 payload 广播给订阅者，业务方（组件）来处理具体逻辑
+                console.log('[WS] signaling event', type, p);
+                _emitSignal(type, p);
+                break;
+            }
             case 'NEW_FRIEND_REQUEST':
                 userchat.updateAgreeingList();
                 break;
@@ -99,7 +129,8 @@ export const realTime = defineStore('realTime', () => {
                         groupId: p.groupId || null,
                         messageType: p.messageType,
                         content: p.content,
-                        imageUrl: p.imageUrl || null,
+                        // 优先使用后端可能的 imageUrl，若没有再使用 fileUrl（后端示例里是 fileUrl）
+                        imageUrl: p.imageUrl || p.fileUrl || null,
                         timestamp: timestamp
                     };
                     userchat.appendPrivateMessage(p.fromUserId, p.toUserId, msg);
@@ -155,10 +186,14 @@ export const realTime = defineStore('realTime', () => {
     }
 
 
+
+
     return {
         initWs,
         closeWs,
         sendWsEnvelope,
-        sendPrivateText
+        sendPrivateText,
+        onSignal,
+        offSignal,
     };
 });

@@ -98,7 +98,6 @@ export const userChat = defineStore('userChat', () => {
     }
 
     async function loadAllFriendHistories(page = 0) {
-        console.log('loadAllFriendHistories called', friendList.value?.length);
         if (!friendList.value || friendList.value.length === 0) return;
 
         // 并行请求每个好友的记录（失败不会中断其它请求）
@@ -124,7 +123,6 @@ export const userChat = defineStore('userChat', () => {
                 msgs.reverse();
             }
 
-            console.log("msg:",msgs);
             msgs.forEach(p => {
                 // 规范化时间到 timestamp（毫秒）
                 let created = p.createdAt || p.created_at || null;
@@ -135,14 +133,15 @@ export const userChat = defineStore('userChat', () => {
 
                 const msg = {
                     id: p.id,
-                    conversationType: p.conversationType || 'PRIVATE',
+                    conversationType: p.conversationType,
                     fromUserId: p.fromUserId,
                     toUserId: p.toUserId,
                     groupId: p.groupId || null,
-                    messageType: p.messageType || 'TEXT',
+                    messageType: p.messageType,
                     content: p.content,
-                    imageUrl: p.imageUrl || null,
-                    timestamp
+                    // 优先使用后端可能的 imageUrl，若没有再使用 fileUrl（后端示例里是 fileUrl）
+                    imageUrl: p.imageUrl || p.fileUrl || null,
+                    timestamp: timestamp
                 };
 
                 // 使用现有的 appendPrivateMessage 将消息放入对应会话数组

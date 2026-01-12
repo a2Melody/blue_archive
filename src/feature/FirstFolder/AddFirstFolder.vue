@@ -19,6 +19,8 @@ const uploadedFile = ref(null);
 const revokeIfNeeded=(url)=>{
   if(url&&url.startsWith('blob:'))URL.revokeObjectURL(url);
 }
+
+
 /*input上传文件*/
 function onFileChange(e){
   const file = e.target.files?.[0];
@@ -54,7 +56,6 @@ async function uploadToPresigned(putUrl, putHeaders, file, contentType) {
   return true;
 }
 async function onSave(){
-  console.log(1111);
   /*第一次上传*/
   const contentType = uploadedFile.value.type || 'application/octet-stream';
   const presignReq = { originalFilename: uploadedFile.value.name, mimeType: contentType };
