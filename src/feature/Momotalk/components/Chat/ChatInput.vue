@@ -1,10 +1,79 @@
-<script setup>
+<template>
+  <div v-if="selected" class="chat_input f">
+    <div class="buttons f">
+      <button class="icon_container" @click="triggerFileSelect" title="发送文件">
+        <span class="iconfont icon-wenjianjia" style="font-size: 22px"></span>
+      </button>
+      <input ref="fileInput" type="file" style="display:none" @change="onFileChange" />
 
-import {computed, ref, onMounted, onBeforeUnmount} from "vue";
+      <button class="icon_container" style="margin-left: 5px" @click="startVideoCall" title="视频通话">
+        <span class="iconfont icon-qunliao-shipinliaotian" style="font-size: 25px" ></span>
+      </button>
+
+      <!-- Whiteboard button -->
+      <button class="icon_container" style="margin-left: 5px" @click="openWhiteboardForSelected" title="共享白板">
+        <img :src="wbIcon" alt="白板" class="wb-icon" />
+      </button>
+    </div>
+
+    <textarea ref="messageEl" v-model="draft" class="editor" @keydown="onKeydown"></textarea>
+    <button class="send" @click="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 25px" ></span></button>
+
+    <!-- 非阻塞来电 modal -->
+    <div v-if="incomingCall" class="incoming-modal">
+      <div class="incoming-card">
+        <p>来自uid: {{ incomingCall.fromUserId }} 的视频邀请</p>
+        <div class="controls">
+          <button @click="acceptIncomingCall">接听</button>
+          <button @click="rejectIncomingCall">拒绝</button>
+        </div>
+        <small>若长时间未响应将自动拒绝</small>
+      </div>
+    </div>
+
+    <!-- Whiteboard overlay -->
+    <div v-if="showWhiteboard" class="wb-overlay" @click.self="closeWhiteboard">
+      <div class="wb-card">
+        <div class="wb-toolbar">
+          <div class="wb-left">
+            <button class="btn-create" @click="createOrOpenWhiteboard" :disabled="wbCreating">
+              打开白板
+            </button>
+            <button class="btn-ghost" @click="leaveWhiteboard" style="margin-left:10px">退出</button>
+          </div>
+
+          <div class="wb-center">
+            <label class="toolbar-item">工具
+              <select v-model="wbTool">
+                <option value="pen">画笔</option>
+                <option value="eraser">橡皮</option>
+              </select>
+            </label>
+
+            <label class="toolbar-item">颜色
+              <input type="color" v-model="wbColor" />
+            </label>
+          </div>
+
+          <div class="wb-right">
+            <button class="btn-ghost" @click="clearWhiteboard">清空</button>
+            <button class="btn-ghost" @click="closeWhiteboard" style="margin-left:8px">关闭</button>
+          </div>
+        </div>
+
+        <canvas ref="wbCanvas" class="wb-canvas" @pointerdown="wbPointerDown" @pointermove="wbPointerMove" @pointerup="wbPointerUp"></canvas>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import {computed, ref, onMounted, onBeforeUnmount, nextTick} from "vue";
 import {realTime} from "@/stores/RealTime.js";
 import {userChat} from "@/stores/userChat.js";
 import {userStore} from "@/stores/UserStore.js";
 import axios from "axios";
+import wbIcon from '@/assets/images/whiteboard.svg';
 
 const uc = userChat();
 const me = userStore();
@@ -15,38 +84,30 @@ const selected = computed(() => uc.getSelectedConversation().value || null);
 /*input中的内容*/
 const draft=ref('');
 
-// 发送消息（最小 optimistic update）
+// file upload refs
+const fileInput = ref(null);
+
+// send text
 async function send() {
   const text = draft.value && draft.value.trim();
   if (!text) return;
   if (!selected.value) return;
-
   const targetId = String(selected.value.id);
-  const myId = String(me.getUserId());
-
-  // 清空输入并滚动（watch 会处理滚动，也可手动滚）
   draft.value = '';
-
-  // 通过 WebSocket 发送（RealTime.sendPrivateText 会封装 envelope）
   try {
     rt.sendPrivateText(targetId, text);
-    // 不做立即替换；等后端 NEW_MESSAGE / ACK 到来再处理（后端消息可能含 server id）
   } catch (e) {
     console.error('发送消息出错', e);
   }
 }
 function onKeydown(e){
   if (e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault(); // 阻止插入换行
+    e.preventDefault();
     send();
   }
 }
 
-/*上传文件*/
-const fileInput = ref(null);
-const uploadedFile=ref(null);
-
-function triggerFileSelect() {
+async function triggerFileSelect() {
   if (!selected.value) return;
   fileInput.value && fileInput.value.click();
 }
@@ -54,7 +115,6 @@ async function onFileChange(e) {
   const file = e.target.files?.[0];
   if (!file) return;
   e.target.value = null;
-
   const targetId = String(selected.value.id);
 
   const contentType = file.type || 'application/octet-stream';
@@ -98,8 +158,7 @@ async function onFileChange(e) {
   }
 }
 
-
-/*视频通话部分*/
+/* ---------------- 视频通话（保留原有逻辑） ---------------- */
 let pc = null;
 let localStream = null;
 let callId = null;
@@ -182,7 +241,6 @@ function cleanupVideoCall() {
     pendingIce.delete(callId);
     pendingAnswers.delete(callId);
     callId = null;
-    // clear any incoming UI state if present
     incomingCall.value = null;
     clearIncomingTimeout();
   } catch (e) {
@@ -257,7 +315,6 @@ async function startVideoCall() {
     await pc.setLocalDescription(offer);
     const pending = pendingAnswers.get(callId);
     if (pending) {
-      // onAnswer is registered below; pending will be processed there
       await onAnswer(pending);
       pendingAnswers.delete(callId);
     }
@@ -324,7 +381,7 @@ async function startVideoCall() {
   }
 }
 
-// pending buffers
+// pending buffers for video
 const pendingIce = new Map();
 const pendingAnswers = new Map();
 
@@ -347,35 +404,22 @@ function handleSignalIce(payload) {
   pendingIce.set(payload.callId, arr);
 }
 
-// --- 非阻塞来电处理 (替换原 confirm) ---
-const incomingCall = ref(null); // { payload, fromUserId, callId }
+/* 非阻塞来电处理 */
+const incomingCall = ref(null);
 let incomingTimeoutId = null;
 function clearIncomingTimeout() {
   if (incomingTimeoutId) { clearTimeout(incomingTimeoutId); incomingTimeoutId = null; }
 }
 
-// 收到邀请时只设置 UI 状态（不再直接 confirm）
 function handleIncomingInvite(payload) {
-  console.log('[ChatInput] handleIncomingInvite called, payload=', payload);
   if (!payload || !payload.callId) return;
-
-  // 若已有未处理来电或正在通话 -> 自动 busy 拒绝
   if (incomingCall.value || pc) {
-    console.log('[ChatInput] already inbound or in call - auto reject', payload.callId);
     rt.sendWsEnvelope('CALL_REJECT', { callId: payload.callId, reason: 'busy' });
     return;
   }
-
-  incomingCall.value = {
-    payload,
-    fromUserId: payload.fromUserId,
-    callId: payload.callId
-  };
-
-  // 超时自动拒绝，例如 30s
+  incomingCall.value = { payload, fromUserId: payload.fromUserId, callId: payload.callId };
   incomingTimeoutId = setTimeout(() => {
     if (incomingCall.value && incomingCall.value.callId === payload.callId) {
-      console.log('[ChatInput] incoming call auto-reject due to timeout', payload.callId);
       rt.sendWsEnvelope('CALL_REJECT', { callId: payload.callId, reason: 'timeout' });
       incomingCall.value = null;
       incomingTimeoutId = null;
@@ -383,15 +427,12 @@ function handleIncomingInvite(payload) {
   }, 30000);
 }
 
-// 用户点击接听时执行原来的接听逻辑（已从 handleIncomingInvite 中抽出）
 async function acceptIncomingCall() {
   const info = incomingCall.value;
   if (!info || !info.payload) return;
   clearIncomingTimeout();
 
-  // 防止重复接听
   if (pc) {
-    console.warn('already in call, ignore incoming invite');
     incomingCall.value = null;
     return;
   }
@@ -409,7 +450,7 @@ async function acceptIncomingCall() {
             legacyGetUserMedia.call(navigator, { video: true, audio: true }, resolve, reject)
         );
       } else {
-        alert('无法获取摄像头/麦克风：浏览器不支持 getUserMedia 或当前不是安全上下文（HTTPS/localhost）。');
+        alert('无法获取摄像头/麦克风');
         rt.sendWsEnvelope('CALL_REJECT', { callId, reason: 'no_media' });
         incomingCall.value = null;
         return;
@@ -467,7 +508,6 @@ async function acceptIncomingCall() {
           const arr = pendingIce.get(p.callId) || [];
           arr.push(p);
           pendingIce.set(p.callId, arr);
-          console.log('[ChatInput] onIceForThis: pc not ready, buffered candidate for', p.callId);
           return;
         }
         await pc.addIceCandidate(new RTCIceCandidate({
@@ -475,7 +515,6 @@ async function acceptIncomingCall() {
           sdpMid: p.sdpMid,
           sdpMLineIndex: p.sdpMLineIndex
         }));
-        console.log('[ChatInput] onIceForThis: added candidate for', p.callId);
       } catch (err) {
         console.error('callee addIceCandidate error', err, p);
       }
@@ -495,7 +534,6 @@ async function acceptIncomingCall() {
     incomingCall.value = null;
   } catch (e) {
     console.error('error handling incoming call (accept)', e);
-    alert('接听失败：' + (e && e.message ? e.message : String(e)));
     rt.sendWsEnvelope('CALL_REJECT', { callId: info.payload.callId, reason: 'accept_failed' });
     incomingCall.value = null;
     cleanupVideoCall();
@@ -506,69 +544,341 @@ function rejectIncomingCall(reason = 'user_reject') {
   const info = incomingCall.value;
   if (!info || !info.payload) return;
   clearIncomingTimeout();
-  // 发送拒绝信令
   rt.sendWsEnvelope('CALL_REJECT', { callId: info.payload.callId, reason });
-  // 额外再发一个挂断，确保对端无论是否已注册 CALL_REJECT 处理器都能关闭呼叫（最小兼容性修复）
   rt.sendWsEnvelope('CALL_HANGUP', { callId: info.payload.callId, reason });
   incomingCall.value = null;
 }
 
-// 注册与卸载
+/* ---------------- 白板逻辑（基于会话，无 boardId） ---------------- */
+const showWhiteboard = ref(false);
+const wbCreating = ref(false);
+
+// canvas refs/state
+const wbCanvas = ref(null);
+let wbCtx = null;
+
+// whiteboard drawing state
+let wbDrawing = false;
+let wbCurrentStrokeId = null;
+let wbSendBuffer = [];
+let wbCarryPoint = null;
+let wbSendTimer = null;
+let wbLocalLastPoint = null; // local continuity
+const WB_BATCH_MAX_POINTS = 12;
+const WB_BATCH_INTERVAL_MS = 60;
+
+const wbTool = ref('pen');
+const wbColor = ref('#ff3366');
+const wbWidth = ref(3);
+
+// maintain last received point per stroke on receiver side
+const wbLastPointMap = {}; // strokeId -> [x,y]
+
+// ensure canvas context scaled correctly
+function wbResize() {
+  const c = wbCanvas.value;
+  if (!c) return;
+  const rect = c.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.round(rect.width * dpr);
+  const h = Math.round(rect.height * dpr);
+  if (c.width !== w || c.height !== h) {
+    const tmp = document.createElement('canvas');
+    tmp.width = c.width || 1;
+    tmp.height = c.height || 1;
+    tmp.getContext('2d').drawImage(c, 0, 0);
+    c.width = w; c.height = h;
+    wbCtx = c.getContext('2d');
+    wbCtx.setTransform(1,0,0,1,0,0);
+    wbCtx.scale(dpr, dpr);
+    wbCtx.clearRect(0,0,c.width, c.height);
+    wbCtx.drawImage(tmp, 0, 0, tmp.width / dpr, tmp.height / dpr);
+  } else {
+    wbCtx = c.getContext('2d');
+    wbCtx.setTransform(1,0,0,1,0,0);
+    wbCtx.scale(dpr, dpr);
+  }
+}
+
+// convert pointer client coords to normalized [0..1]
+function wbNormalizePoint(clientX, clientY) {
+  const rect = wbCanvas.value.getBoundingClientRect();
+  return [Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)), Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))];
+}
+function wbDenormalizePoint(xNorm, yNorm) {
+  const rect = wbCanvas.value.getBoundingClientRect();
+  return [xNorm * rect.width, yNorm * rect.height];
+}
+
+function wbDrawPoints(points, color, width, composite = 'source-over') {
+  if (!points || points.length === 0) return;
+  wbCtx.save();
+  wbCtx.lineCap = 'round';
+  wbCtx.lineJoin = 'round';
+  wbCtx.strokeStyle = color || '#000';
+  wbCtx.lineWidth = width || 2;
+  wbCtx.globalCompositeOperation = composite;
+  if (points.length === 1) {
+    const [x,y] = wbDenormalizePoint(points[0][0], points[0][1]);
+    wbCtx.beginPath();
+    wbCtx.arc(x, y, Math.max(1, (width || 2) / 2), 0, Math.PI * 2);
+    wbCtx.fillStyle = color || '#000';
+    wbCtx.fill();
+  } else {
+    wbCtx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      const [xn, yn] = points[i];
+      const [x, y] = wbDenormalizePoint(xn, yn);
+      if (i === 0) wbCtx.moveTo(x, y);
+      else wbCtx.lineTo(x, y);
+    }
+    wbCtx.stroke();
+  }
+  wbCtx.restore();
+}
+
+// apply incoming whiteboard event (replay and live)
+function wbApplyEvent(ev) {
+  if (!ev || !ev.type) return;
+
+  // 后端可能将字段作为字符串传递，这里做转换
+  const tool = ev.tool || ev.toolType || 'pen';
+  const color = ev.color || '#000';
+  const width = Number(ev.width || 2);
+  const isEnd = String(ev.isEnd || 'false') === 'true';
+
+  // points 可能是 JSON 字符串
+  let pts = ev.points;
+  if (typeof pts === 'string') {
+    try { pts = JSON.parse(pts); } catch { pts = []; }
+  }
+  if (!Array.isArray(pts)) pts = [];
+
+  if (ev.type === 'WHITEBOARD_STROKE_PART') {
+    const sid = ev.strokeId;
+    if (pts.length === 0) {
+      if (isEnd && sid) delete wbLastPointMap[sid];
+      return;
+    }
+    const last = wbLastPointMap[sid];
+    if (last && (last[0] !== pts[0][0] || last[1] !== pts[0][1])) {
+      pts.unshift(last);
+    }
+    const composite = (tool === 'eraser') ? 'destination-out' : 'source-over';
+    wbDrawPoints(pts, color || '#000', width || 2, composite);
+    wbLastPointMap[sid] = pts[pts.length - 1];
+    if (isEnd && sid) delete wbLastPointMap[sid];
+  } else if (ev.type === 'WHITEBOARD_CLEAR') {
+    const c = wbCanvas.value;
+    if (c) wbCtx.clearRect(0, 0, c.width, c.height);
+    for (const k in wbLastPointMap) delete wbLastPointMap[k];
+  }
+}
+
+// sending batching with carry-over
+function wbFlushBuffer(isEnd = false) {
+  if (!selected.value) return;
+  if (wbSendBuffer.length === 0 && !isEnd) return;
+
+  let pointsToSend = wbSendBuffer.slice();
+  if (wbCarryPoint && pointsToSend.length > 0) {
+    const first = pointsToSend[0];
+    if (first[0] !== wbCarryPoint[0] || first[1] !== wbCarryPoint[1]) {
+      pointsToSend.unshift(wbCarryPoint);
+    }
+  }
+
+  // 注意：不要在 payload 内再带 "type" 字段，后端 WhiteboardStrokePart 不识别该属性
+  const payload = {
+    targetUserId: Number(selected.value.id), // 会话对端
+    strokeId: wbCurrentStrokeId,
+    tool: wbTool.value,
+    color: wbColor.value,
+    width: wbWidth.value || 2,
+    points: pointsToSend,
+    isEnd: !!isEnd,
+    ts: Date.now()
+  };
+  rt.sendWsEnvelope('WHITEBOARD_STROKE_PART', payload);
+
+  if (pointsToSend.length > 0) {
+    wbCarryPoint = pointsToSend[pointsToSend.length - 1];
+    wbSendBuffer = wbCarryPoint ? [wbCarryPoint] : [];
+  } else {
+    wbSendBuffer = [];
+    wbCarryPoint = null;
+  }
+  if (isEnd) {
+    wbCarryPoint = null;
+    wbSendBuffer = [];
+    wbLocalLastPoint = null;
+  }
+}
+
+function wbStartTimer() {
+  if (wbSendTimer) return;
+  wbSendTimer = setInterval(() => { wbFlushBuffer(false); }, WB_BATCH_INTERVAL_MS);
+}
+function wbStopTimer() {
+  if (wbSendTimer) { clearInterval(wbSendTimer); wbSendTimer = null; }
+}
+
+// pointer handlers bound to canvas element
+function wbPointerDown(e) {
+  e.preventDefault();
+  wbResize();
+  wbDrawing = true;
+  wbCurrentStrokeId = crypto.randomUUID ? crypto.randomUUID() : ('s-' + Date.now() + '-' + Math.floor(Math.random()*10000));
+  wbSendBuffer = [];
+  wbCarryPoint = null;
+  wbLocalLastPoint = null;
+  wbStartTimer();
+  const [nx, ny] = wbNormalizePoint(e.clientX, e.clientY);
+  wbSendBuffer.push([nx, ny]);
+  wbLocalLastPoint = [nx, ny];
+  wbDrawPoints([[nx, ny]], wbColor.value, wbWidth.value, wbTool.value === 'eraser' ? 'destination-out' : 'source-over');
+}
+function wbPointerMove(e) {
+  if (!wbDrawing) return;
+  const [nx, ny] = wbNormalizePoint(e.clientX, e.clientY);
+  if (wbLocalLastPoint) {
+    wbDrawPoints([wbLocalLastPoint, [nx, ny]], wbColor.value, wbWidth.value, wbTool.value === 'eraser' ? 'destination-out' : 'source-over');
+  } else {
+    wbDrawPoints([[nx, ny]], wbColor.value, wbWidth.value, wbTool.value === 'eraser' ? 'destination-out' : 'source-over');
+  }
+  wbLocalLastPoint = [nx, ny];
+
+  wbSendBuffer.push([nx, ny]);
+  if (wbSendBuffer.length >= WB_BATCH_MAX_POINTS) wbFlushBuffer(false);
+}
+function wbPointerUp(e) {
+  if (!wbDrawing) return;
+  wbDrawing = false;
+  const [nx, ny] = wbNormalizePoint(e.clientX, e.clientY);
+  if (wbLocalLastPoint) {
+    wbDrawPoints([wbLocalLastPoint, [nx, ny]], wbColor.value, wbWidth.value, wbTool.value === 'eraser' ? 'destination-out' : 'source-over');
+  } else {
+    wbDrawPoints([[nx, ny]], wbColor.value, wbWidth.value, wbTool.value === 'eraser' ? 'destination-out' : 'source-over');
+  }
+  wbLocalLastPoint = null;
+
+  wbSendBuffer.push([nx, ny]);
+  wbFlushBuffer(true);
+  wbStopTimer();
+  wbCurrentStrokeId = null;
+}
+
+// open/join/leave/clear
+function openWhiteboardForSelected() {
+  if (!selected.value) { alert('请先选择好友对话'); return; }
+  showWhiteboard.value = true;
+  // 轻量初始化并加入
+  rt.sendWsEnvelope('WHITEBOARD_OPEN', { targetUserId: Number(selected.value.id) });
+  rt.sendWsEnvelope('WHITEBOARD_JOIN', { targetUserId: Number(selected.value.id) });
+}
+
+function createOrOpenWhiteboard() {
+  if (!selected.value) return;
+  wbCreating.value = true;
+  rt.sendWsEnvelope('WHITEBOARD_OPEN', { targetUserId: Number(selected.value.id) });
+  rt.sendWsEnvelope('WHITEBOARD_JOIN', { targetUserId: Number(selected.value.id) });
+  setTimeout(() => { wbCreating.value = false; }, 800);
+}
+
+function leaveWhiteboard() {
+  if (selected.value) {
+    rt.sendWsEnvelope('WHITEBOARD_LEAVE', { targetUserId: Number(selected.value.id) });
+  }
+  closeWhiteboard();
+}
+
+function onWbOpened(payload) {
+  console.debug('[WB] OPENED', payload);
+}
+
+function onWbInit(payload) {
+  nextTick(() => {
+    wbResize();
+    if (wbCanvas.value) wbCtx.clearRect(0,0,wbCanvas.value.width,wbCanvas.value.height);
+    for (const k in wbLastPointMap) delete wbLastPointMap[k];
+    const evs = payload?.events || [];
+    evs.forEach(e => wbApplyEvent(e));
+    if (wbSendBuffer.length > 0) wbFlushBuffer(false);
+  });
+}
+function onWbEvent(payload) {
+  wbApplyEvent(payload);
+}
+function onWbClear(payload) {
+  if (wbCanvas.value) wbCtx.clearRect(0,0,wbCanvas.value.width,wbCanvas.value.height);
+  for (const k in wbLastPointMap) delete wbLastPointMap[k];
+}
+
+function onWbError(payload) {
+  try {
+    const reason = payload && (payload.reason || payload.message || JSON.stringify(payload));
+    console.warn('WHITEBOARD_ERROR', reason);
+    alert('白板错误：' + (reason || 'unknown'));
+    showWhiteboard.value = false;
+  } catch (e) {
+    console.error('onWbError handling failed', e);
+  }
+}
+function clearWhiteboard() {
+  if (!selected.value) { alert('无选中会话'); return; }
+  rt.sendWsEnvelope('WHITEBOARD_CLEAR', { targetUserId: Number(selected.value.id), ts: Date.now() });
+  if (wbCanvas.value) wbCtx.clearRect(0,0,wbCanvas.value.width,wbCanvas.value.height);
+  for (const k in wbLastPointMap) delete wbLastPointMap[k];
+}
+
+function closeWhiteboard() {
+  showWhiteboard.value = false;
+  wbSendBuffer = [];
+  wbCarryPoint = null;
+  wbStopTimer();
+  for (const k in wbLastPointMap) delete wbLastPointMap[k];
+  if (wbCanvas.value) wbCtx.clearRect(0, 0, wbCanvas.value.width, wbCanvas.value.height);
+}
+
+/* 通过聊天消息点击触发（不再需要 boardId） */
+function onGlobalOpenWhiteboard(e) {
+  if (!selected.value) { alert('请先选择好友对话'); return; }
+  showWhiteboard.value = true;
+  rt.sendWsEnvelope('WHITEBOARD_OPEN', { targetUserId: Number(selected.value.id) });
+  rt.sendWsEnvelope('WHITEBOARD_JOIN', { targetUserId: Number(selected.value.id) });
+}
+
 onMounted(() => {
+  rt.onSignal && rt.onSignal('WHITEBOARD_OPENED', onWbOpened);
+  rt.onSignal && rt.onSignal('WHITEBOARD_INIT', onWbInit);
+  rt.onSignal && rt.onSignal('WHITEBOARD_EVENT', onWbEvent);
+  rt.onSignal && rt.onSignal('WHITEBOARD_CLEAR', onWbClear);
+  rt.onSignal && rt.onSignal('WHITEBOARD_ERROR', onWbError);
+
   rt.onSignal && rt.onSignal('CALL_INVITE', handleIncomingInvite);
-  console.log('[ChatInput] registered CALL_INVITE handler');
   rt.onSignal && rt.onSignal('CALL_ICE', handleSignalIce);
   rt.onSignal && rt.onSignal('CALL_HANGUP', (p) => {
     if (p && p.callId && p.callId === callId) cleanupVideoCall();
   });
+  window.addEventListener('openWhiteboard', onGlobalOpenWhiteboard);
 });
 
 onBeforeUnmount(() => {
+  rt.offSignal && rt.offSignal('WHITEBOARD_OPENED', onWbOpened);
+  rt.offSignal && rt.offSignal('WHITEBOARD_INIT', onWbInit);
+  rt.offSignal && rt.offSignal('WHITEBOARD_EVENT', onWbEvent);
+  rt.offSignal && rt.offSignal('WHITEBOARD_CLEAR', onWbClear);
+  rt.offSignal && rt.offSignal('WHITEBOARD_ERROR', onWbError);
+
   rt.offSignal && rt.offSignal('CALL_INVITE', handleIncomingInvite);
   rt.offSignal && rt.offSignal('CALL_ICE', handleSignalIce);
+
   clearIncomingTimeout();
-
-  if (pc && pc._onSignalHandlers) {
-    const { onAnswer, onIce, onHangup, calleeIce, calleeHangup } = pc._onSignalHandlers;
-    if (onAnswer) rt.offSignal && rt.offSignal('CALL_ANSWER', onAnswer);
-    if (onIce) rt.offSignal && rt.offSignal('CALL_ICE', onIce);
-    if (onHangup) rt.offSignal && rt.offSignal('CALL_HANGUP', onHangup);
-    if (calleeIce) rt.offSignal && rt.offSignal('CALL_ICE', calleeIce);
-    if (calleeHangup) rt.offSignal && rt.offSignal('CALL_HANGUP', calleeHangup);
-  }
-
   cleanupVideoCall();
+
+  window.removeEventListener('openWhiteboard', onGlobalOpenWhiteboard);
 });
 </script>
-
-<template>
-  <div v-if="selected" class="chat_input f">
-    <div class="buttons f">
-      <button class="icon_container" @click="triggerFileSelect">
-        <span class="iconfont icon-wenjianjia" style="font-size: 22px"></span>
-      </button>
-      <input ref="fileInput" type="file" style="display:none" @change="onFileChange" />
-
-      <button class="icon_container" style="margin-left: 5px" @click="startVideoCall">
-        <span class="iconfont icon-qunliao-shipinliaotian" style="font-size: 25px" ></span>
-      </button>
-    </div>
-    <textarea ref="messageEl" v-model="draft" class="editor" @keydown="onKeydown"></textarea>
-    <button class="send" @click="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 16px" ></span></button>
-
-    <!-- 非阻塞来电 modal -->
-    <div v-if="incomingCall" class="incoming-modal">
-      <div class="incoming-card">
-        <p>来自uid: {{ incomingCall.fromUserId }} 的视频邀请</p>
-        <div class="controls">
-          <button @click="acceptIncomingCall">接听</button>
-          <button @click="rejectIncomingCall">拒绝</button>
-        </div>
-        <small>若长时间未响应将自动拒绝</small>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .chat_input{
@@ -583,6 +893,7 @@ onBeforeUnmount(() => {
 }
 .buttons{
   display: flex;
+  gap:8px;
 }
 .icon_container{
   display: flex;
@@ -594,11 +905,16 @@ onBeforeUnmount(() => {
 .icon_container:hover{
   background-color: rgba(255,240,245,1);
 }
+.wb-icon{
+  width:24px;
+  height:24px;
+  display:block;
+}
 .editor{
-  flex: 1;              /* 占据剩余的垂直空间 */
+  flex: 1;
   width: 100%;
   resize: none;
-  overflow-y: auto;     /* 消息内容超出时可滚动 */
+  overflow-y: auto;
   padding: 8px 5px;
   border: none;
   outline: none;
@@ -623,7 +939,7 @@ onBeforeUnmount(() => {
   background-color: rgba(241,157,170,0.7);
 }
 
-/* incoming modal 简单样式 */
+/* incoming modal */
 .incoming-modal {
   position: fixed;
   left: 50%;
@@ -653,4 +969,71 @@ onBeforeUnmount(() => {
 }
 .incoming-card button:first-child { background:pink; color:white; }
 .incoming-card button:last-child { background: #c1c1c1; color:white; }
+
+/* whiteboard overlay */
+.wb-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+.wb-card{
+  width: 90%;
+  max-width: 1200px;
+  height: 82%;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  display:flex;
+  flex-direction: column;
+  gap:8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+.wb-toolbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding-bottom:8px;
+  border-bottom: 1px solid #eee;
+}
+.wb-left { display:flex; align-items:center; gap:8px; }
+.wb-center { display:flex; align-items:center; gap:12px; margin-left: 16px; }
+.wb-right { display:flex; align-items:center; gap:8px; margin-left:auto; }
+
+.wb-canvas{
+  flex: 1;
+  border: 1px solid #eee;
+  width: 100%;
+  height: calc(100% - 120px);
+  touch-action: none;
+  background: #fff;
+}
+.toolbar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #333;
+}
+.btn-create {
+  background: #ff6f91;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255,111,145,0.12);
+}
+.btn-create:disabled { opacity: .6; cursor: not-allowed; }
+.btn-ghost {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
 </style>

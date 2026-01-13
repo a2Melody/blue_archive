@@ -149,6 +149,23 @@ export const userChat = defineStore('userChat', () => {
             });
         });
     }
+
+    // 获取 conversation 对应的缓存 boardId（key: user_<otherId>.boardId）
+    function getConversationBoardId(otherId) {
+        const key = `user_${String(otherId)}`;
+        // 存储在 messages.value[key]._boardId 或单独 map 也行；这里用一个轻量方案
+        const obj = messages.value[key] || {};
+        return obj._boardId || null;
+    }
+
+    function setConversationBoardId(otherId, boardId) {
+        const key = `user_${String(otherId)}`;
+        messages.value[key] = messages.value[key] || [];
+        // 我们把缓存放到该数组的扩展属性（不会影响序列化），或可以用另一个 map 存储
+        // 为简洁，使用隐藏属性
+        messages.value[key]._boardId = boardId;
+    }
+
     return {
         getAgreeingList,
         getFriendList,
@@ -162,6 +179,8 @@ export const userChat = defineStore('userChat', () => {
         selectConversation,
         appendMessageByKey,
         loadAllFriendHistories,
-        appendPrivateMessage
+        appendPrivateMessage,
+        getConversationBoardId,
+        setConversationBoardId
     };
 });
