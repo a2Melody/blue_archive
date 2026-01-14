@@ -25,7 +25,7 @@ export const userChat = defineStore('userChat', () => {
 
     const me = userStore();
     const selectedConversation = ref(null);
-    const messages = ref({}); // key: user_<otherId> -> array of msgs
+    const messages = ref({});
 
     function getSelectedConversation(){ return selectedConversation; }
     function resetForLogout() { selectedConversation.value = null; messages.value = {}; }
@@ -38,27 +38,41 @@ export const userChat = defineStore('userChat', () => {
         return messages.value[key];
     }
 
-    // append a private message to conversation with otherId
+    // 追加私聊消息：把消息放到 otherId 的会话数组里
     function appendPrivateMessage(fromUserId, toUserId, msg) {
         const myId = String(me.getUserId());
-        const otherId = (String(fromUserId) === myId) ? String(toUserId) : String(fromUserId);
+        const from = String(fromUserId);
+        const to   = String(toUserId);
+        const otherId = (from === myId) ? to : from;
         const key = `user_${otherId}`;
         messages.value[key] = messages.value[key] || [];
 
-        // ensure logic id present (front-end uses it for recall/delete cross-user sync)
+        // 保留 logicMessageId（用于撤回匹配）
         if (msg && msg.logicMessageId == null) {
             msg.logicMessageId = msg.id;
         }
-        // my-sent messages carry read receipt flag (default false)
-        if (String(msg?.fromUserId) === myId && typeof msg._read === 'undefined') {
-            msg._read = false;
+        // 给我发出的消息初始化已读标记（首次可能为 false，后续由 PRIVATE_MESSAGES_READ 推送置 true）
+        if (String(msg?.fromUserId) === myId) {
+            if (typeof msg._read === 'undefined') msg._read = false;
         }
 
+        messages.value[key].push(msg);
+
+        const sel = selectedConversation.value;
+        if (sel && String(sel.id) === otherId) {
+            // 可按需发送已读回执
+        }
+    }
+
+    function appendMessageByKey(key, msg) {
+        messages.value[key] = messages.value[key] || [];
         messages.value[key].push(msg);
     }
 
     async function loadAllFriendHistories(page = 0) {
         if (!friendList.value || friendList.value.length === 0) return;
+
+        const myId = String(me.getUserId());
 
         const requests = friendList.value.map(f =>
             axios.post('/api/chat/messages/private/getMessage', {
@@ -72,11 +86,13 @@ export const userChat = defineStore('userChat', () => {
         results.forEach((res, idx) => {
             const friend = friendList.value[idx];
             if (!res || res.__err) {
-                console.warn('[loadAllFriendHistories] failed friendId=', friend?.sessionTargetId, res && res.__err);
+                console.warn('[loadAllFriendHistories] 请求失败 friendId=', friend?.sessionTargetId, res && res.__err);
                 return;
             }
             const msgs = res.data?.data?.messages || res.data?.messages || [];
-            if (Array.isArray(msgs) && msgs.length > 1) msgs.reverse();
+            if (Array.isArray(msgs) && msgs.length > 1) {
+                msgs.reverse();
+            }
 
             msgs.forEach(p => {
                 let created = p.createdAt || p.created_at || null;
@@ -84,6 +100,7 @@ export const userChat = defineStore('userChat', () => {
                     created = created.replace(/(\.\d{3})\d+/, '$1');
                 }
                 const timestamp = created ? new Date(created).getTime() : (p.timestamp || Date.now());
+
                 const logicMessageId =
                     p.logicMessageId ??
                     p.logic_message_id ??
@@ -92,7 +109,7 @@ export const userChat = defineStore('userChat', () => {
                     p.id;
 
                 const msg = {
-                    id: logicMessageId,                 // keep logic id for cross-user consistency
+                    id: p.id,
                     logicMessageId,
                     conversationType: p.conversationType,
                     fromUserId: p.fromUserId,
@@ -104,20 +121,35 @@ export const userChat = defineStore('userChat', () => {
                     timestamp
                 };
 
+                // 首次加载：用服务端 isRead 为“我发出的消息”设置本地读回执
+                if (String(p.fromUserId) === myId) {
+                    msg._read = Number(p.isRead) === 1;
+                }
+
                 appendPrivateMessage(p.fromUserId, p.toUserId, msg);
             });
         });
     }
 
-    function selectConversation(user) {
-        selectedConversation.value = user;
-        if (!user) return;
-        const key = `user_${String(user.id)}`;
+    function getConversationBoardId(otherId) {
+        const key = `user_${String(otherId)}`;
+        const obj = messages.value[key] || {};
+        return obj._boardId || null;
+    }
+    function setConversationBoardId(otherId, boardId) {
+        const key = `user_${String(otherId)}`;
         messages.value[key] = messages.value[key] || [];
-        // 不在此立即标记已读；改为由 ChatWindow 在“滚动到底部且窗口激活”时触发
+        messages.value[key]._boardId = boardId;
     }
 
-    // session preview helpers
+    function selectConversation(user) {
+        selectedConversation.value = user;
+        if (user === null) return;
+        const key = `user_${String(user.id)}`;
+        messages.value[key] = messages.value[key] || [];
+        markConversationRead(user.id);
+    }
+
     function buildPreview(messageType, content) {
         const t = String(messageType || '').toUpperCase();
         if (t === 'IMAGE') return '[图片]';
@@ -151,13 +183,15 @@ export const userChat = defineStore('userChat', () => {
 
     function updateSessionOnNewPrivateMessage(fromUserId, toUserId, msg) {
         const myId = String(me.getUserId());
-        const otherId = (String(fromUserId) === myId) ? String(toUserId) : String(fromUserId);
+        const from = String(fromUserId);
+        const to   = String(toUserId);
+        const otherId = (from === myId) ? to : from;
         const item = ensureSessionItemForFriend(otherId);
 
         item.lastMessageTime = msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString();
         item.lastMessagePreview = buildPreview(msg.messageType, msg.content);
 
-        const isIncoming = (String(toUserId) === myId);
+        const isIncoming = (to === myId);
         const isActive = (selectedConversation.value && String(selectedConversation.value.id) === String(otherId));
         if (isIncoming && !isActive) {
             item.unreadCount = (item.unreadCount || 0) + 1;
@@ -170,13 +204,10 @@ export const userChat = defineStore('userChat', () => {
         });
     }
 
-    // 后端“标记已读”接口：把对方发给我的未读全部标记为已读
     async function markConversationRead(otherId) {
         const idNum = Number(otherId);
-        // 左侧会话未读清零（本地）
         const item = friendList.value.find(x => Number(x.sessionTargetId) === idNum);
         if (item) item.unreadCount = 0;
-        // 后端持久化（避免多次重复调用，具体节流在调用方做）
         try {
             await axios.post('/api/chat/messages/private/markRead', { friendId: idNum });
         } catch (e) {
@@ -206,40 +237,35 @@ export const userChat = defineStore('userChat', () => {
         });
     }
 
-    // 已读回执：对方 readerId 读取了我的消息 -> 标记“我发给 readerId 的消息”为已读
+    // 已读：对方 readerId 打开后端确认已读 -> 本端把“我发给 readerId 的消息”全部标记为已读
     function markMyMessagesReadByReader(readerId) {
-        console.log('read' + readerId);
-        const myId = String(me.getUserId());
         const key = `user_${String(readerId)}`;
         const arr = messages.value[key] || [];
+        const myId = String(me.getUserId());
         arr.forEach(m => {
             if (String(m.fromUserId) === myId) m._read = true;
         });
     }
 
     return {
-        // lists
         getAgreeingList,
         getFriendList,
         updateFriendList,
         updateAgreeingList,
         setFriendOnline,
-
-        // conv/messages
         resetForLogout,
         getSelectedConversation,
         getMessagesForSelected,
         selectConversation,
+        appendMessageByKey,
         loadAllFriendHistories,
         appendPrivateMessage,
+        getConversationBoardId,
+        setConversationBoardId,
         updateSessionOnNewPrivateMessage,
-
-        // read/unread + receipts
         markConversationRead,
-        markMyMessagesReadByReader,
-
-        // misc
         getPendingRequestsCount,
         recallMessageByLogicId,
+        markMyMessagesReadByReader,
     };
 });
