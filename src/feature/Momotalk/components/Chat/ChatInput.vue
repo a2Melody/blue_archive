@@ -158,60 +158,212 @@ async function onFileChange(e) {
   }
 }
 
-/* ---------------- 视频通话（保留原有逻辑） ---------------- */
+/* ---------------- 视频通话（飞书/微信式：对方全屏 + 本地PIP） ---------------- */
 let pc = null;
 let localStream = null;
 let callId = null;
-let localVideoEl = null;
-let remoteVideoEl = null;
-let videoContainer = null;
 
-const pcConfig = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' }
-  ]
+// DOM refs for video UI
+let videoContainer = null;
+let remoteWrap = null;
+let remoteVideoEl = null;
+let pipWrap = null;
+let localVideoEl = null;
+let controlsBar = null;
+
+// layout constants
+const ASPECT = 0.75;          // 4:3
+const PIP_RATIO = 0.28;       // pip宽度 = 容器宽度 * 比例
+const MIN_PIP_W = 120;        // pip 最小宽度
+const MIN_CONTAINER_W = 320;
+const MIN_CONTAINER_H = 220;
+
+// container state + drag/resize states
+let vcState = {
+  left: 0,
+  top: 0,
+  width: 420,
+  height: 280
 };
+let isDragging = false;
+let dragStart = null;
+let isResizing = false;
+let resizeStart = null;
+let lastContainerSize = null;
+
+function layoutContainerAndPip() {
+  if (!videoContainer || !pipWrap || !localVideoEl || !remoteVideoEl) return;
+
+  // pip大小 = 宽度 * 比例，但不小于最小宽度
+  const pipW = Math.max(MIN_PIP_W, Math.round(vcState.width * PIP_RATIO));
+  const pipH = Math.round(pipW * ASPECT);
+
+  // 容器尺寸
+  videoContainer.style.width = `${vcState.width}px`;
+  videoContainer.style.height = `${vcState.height}px`;
+
+  // 远端全屏占位（remoteVideoEl 宽高 100%，cover）
+  remoteWrap.style.left = '0';
+  remoteWrap.style.top = '0';
+  remoteWrap.style.right = '0';
+  remoteWrap.style.bottom = '0';
+  remoteVideoEl.style.width = '100%';
+  remoteVideoEl.style.height = '100%';
+  remoteVideoEl.style.objectFit = 'cover';
+
+  // pip 右下角
+  pipWrap.style.width = `${pipW}px`;
+  pipWrap.style.height = `${pipH}px`;
+  pipWrap.style.right = '8px';
+  pipWrap.style.bottom = '8px';
+  localVideoEl.style.width = '100%';
+  localVideoEl.style.height = '100%';
+  localVideoEl.style.objectFit = 'cover';
+}
+
+function onDocMouseMove(ev) {
+  if (!videoContainer) return;
+  if (isDragging && dragStart) {
+    const dx = ev.clientX - dragStart.x;
+    const dy = ev.clientY - dragStart.y;
+    vcState.left += dx;
+    vcState.top  += dy;
+    dragStart = { x: ev.clientX, y: ev.clientY };
+    videoContainer.style.left = `${vcState.left}px`;
+    videoContainer.style.top  = `${vcState.top}px`;
+  } else if (isResizing && resizeStart) {
+    const dx = ev.clientX - resizeStart.x;
+    const dy = ev.clientY - resizeStart.y;
+    vcState.width  = Math.max(MIN_CONTAINER_W, (lastContainerSize?.w || vcState.width) + dx);
+    vcState.height = Math.max(MIN_CONTAINER_H, (lastContainerSize?.h || vcState.height) + dy);
+    layoutContainerAndPip();
+  }
+}
+function onDocMouseUp() {
+  isDragging = false;
+  dragStart = null;
+  isResizing = false;
+  resizeStart = null;
+  lastContainerSize = null;
+}
+function attachDocEvents() {
+  document.addEventListener('mousemove', onDocMouseMove);
+  document.addEventListener('mouseup', onDocMouseUp);
+}
+function detachDocEvents() {
+  document.removeEventListener('mousemove', onDocMouseMove);
+  document.removeEventListener('mouseup', onDocMouseUp);
+}
 
 function createVideoContainer() {
   if (videoContainer) return;
-  videoContainer = document.createElement('div');
-  videoContainer.style.position = 'fixed';
-  videoContainer.style.right = '20px';
-  videoContainer.style.bottom = '20px';
-  videoContainer.style.zIndex = 9999;
-  videoContainer.style.background = 'rgba(255,255,255,0.95)';
-  videoContainer.style.border = '1px solid #eee';
-  videoContainer.style.borderRadius = '8px';
-  videoContainer.style.padding = '8px';
-  videoContainer.style.display = 'flex';
-  videoContainer.style.gap = '8px';
-  videoContainer.style.alignItems = 'center';
 
+  // 初始定位到右下角（20px 边距）
+  const W = window.innerWidth || document.documentElement.clientWidth || 1280;
+  const H = window.innerHeight || document.documentElement.clientHeight || 720;
+  vcState.left = Math.max(20, W - vcState.width - 20);
+  vcState.top  = Math.max(20, H - vcState.height - 20);
+
+  videoContainer = document.createElement('div');
+  videoContainer.style.position   = 'fixed';
+  videoContainer.style.left       = `${vcState.left}px`;
+  videoContainer.style.top        = `${vcState.top}px`;
+  videoContainer.style.zIndex     = 9999;
+  videoContainer.style.background = 'rgba(255,255,255,0.95)';
+  videoContainer.style.border     = '1px solid #eee';
+  videoContainer.style.borderRadius = '8px';
+  videoContainer.style.padding    = '0'; // 内部用绝对定位，容器不用额外 padding
+  videoContainer.style.display    = 'block';
+  videoContainer.style.boxShadow  = '0 4px 16px rgba(0,0,0,0.12)';
+  videoContainer.style.userSelect = 'none';
+  videoContainer.style.cursor     = 'default';
+  videoContainer.style.overflow   = 'hidden'; // 所有内容保持在框内
+  videoContainer.style.width      = `${vcState.width}px`;
+  videoContainer.style.height     = `${vcState.height}px`;
+
+  // 拖拽条（左上角）
+  const dragBar = document.createElement('div');
+  dragBar.textContent = '视频通话';
+  dragBar.style.position   = 'absolute';
+  dragBar.style.left       = '8px';
+  dragBar.style.top        = '6px';
+  dragBar.style.fontSize   = '12px';
+  dragBar.style.color      = '#666';
+  dragBar.style.cursor     = 'move';
+  dragBar.style.padding    = '2px 6px';
+  dragBar.style.borderRadius = '4px';
+  dragBar.style.background = 'rgba(240,240,240,0.7)';
+  dragBar.addEventListener('mousedown', (ev) => {
+    isDragging = true;
+    dragStart = { x: ev.clientX, y: ev.clientY };
+    ev.preventDefault();
+  });
+
+  // 远端全屏容器
+  remoteWrap = document.createElement('div');
+  remoteWrap.style.position = 'absolute';
+  remoteWrap.style.inset = '0'; // fill
+  remoteVideoEl = document.createElement('video');
+  remoteVideoEl.autoplay = true;
+  remoteVideoEl.style.borderRadius = '8px';
+  remoteWrap.appendChild(remoteVideoEl);
+
+  // 本地 pip 容器
+  pipWrap = document.createElement('div');
+  pipWrap.style.position = 'absolute';
+  pipWrap.style.borderRadius = '8px';
+  pipWrap.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+  pipWrap.style.overflow = 'hidden';
   localVideoEl = document.createElement('video');
   localVideoEl.autoplay = true;
   localVideoEl.muted = true;
-  localVideoEl.style.width = '120px';
-  localVideoEl.style.height = '90px';
-  localVideoEl.style.objectFit = 'cover';
-  localVideoEl.style.borderRadius = '6px';
+  pipWrap.appendChild(localVideoEl);
 
-  remoteVideoEl = document.createElement('video');
-  remoteVideoEl.autoplay = true;
-  remoteVideoEl.style.width = '200px';
-  remoteVideoEl.style.height = '150px';
-  remoteVideoEl.style.objectFit = 'cover';
-  remoteVideoEl.style.borderRadius = '6px';
+  // 控件条（右上角）
+  controlsBar = document.createElement('div');
+  controlsBar.style.position = 'absolute';
+  controlsBar.style.top = '6px';
+  controlsBar.style.right = '8px';
+  controlsBar.style.display = 'flex';
+  controlsBar.style.gap = '6px';
 
   const hangupBtn = document.createElement('button');
   hangupBtn.textContent = '挂断';
-  hangupBtn.style.height = '32px';
+  hangupBtn.style.height = '28px';
+  hangupBtn.style.padding = '0 10px';
+  hangupBtn.style.cursor = 'pointer';
+  hangupBtn.style.borderRadius = '6px';
   hangupBtn.onclick = () => { hangupVideoCall('user_hangup'); };
+  controlsBar.appendChild(hangupBtn);
 
-  videoContainer.appendChild(localVideoEl);
-  videoContainer.appendChild(remoteVideoEl);
-  videoContainer.appendChild(hangupBtn);
+  // 缩放把手（右下角）
+  const resizeHandle = document.createElement('div');
+  resizeHandle.style.position = 'absolute';
+  resizeHandle.style.right = '6px';
+  resizeHandle.style.bottom = '6px';
+  resizeHandle.style.width = '14px';
+  resizeHandle.style.height = '14px';
+  resizeHandle.style.borderRadius = '3px';
+  resizeHandle.style.background = '#ddd';
+  resizeHandle.style.cursor = 'nwse-resize';
+  resizeHandle.title = '拖拽缩放';
+  resizeHandle.addEventListener('mousedown', (ev) => {
+    isResizing = true;
+    resizeStart = { x: ev.clientX, y: ev.clientY };
+    lastContainerSize = { w: vcState.width, h: vcState.height };
+    ev.preventDefault();
+  });
+
+  // 组装
+  videoContainer.appendChild(remoteWrap);
+  videoContainer.appendChild(pipWrap);
+  videoContainer.appendChild(controlsBar);
+  videoContainer.appendChild(dragBar);
+  videoContainer.appendChild(resizeHandle);
 
   document.body.appendChild(videoContainer);
+  attachDocEvents();
+  layoutContainerAndPip();
 }
 
 function cleanupVideoCall() {
@@ -235,9 +387,19 @@ function cleanupVideoCall() {
     if (videoContainer) {
       videoContainer.remove();
       videoContainer = null;
+      remoteWrap = null;
+      pipWrap = null;
       localVideoEl = null;
       remoteVideoEl = null;
+      controlsBar = null;
     }
+    detachDocEvents();
+    isDragging = false;
+    isResizing = false;
+    dragStart = null;
+    resizeStart = null;
+    lastContainerSize = null;
+
     pendingIce.delete(callId);
     pendingAnswers.delete(callId);
     callId = null;
@@ -291,7 +453,9 @@ async function startVideoCall() {
     createVideoContainer();
     if (localVideoEl) localVideoEl.srcObject = localStream;
 
-    pc = new RTCPeerConnection(pcConfig);
+    pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
 
     pc.onicecandidate = (ev) => {
       if (ev.candidate) {
@@ -336,10 +500,8 @@ async function startVideoCall() {
         }
         if (pc.signalingState === 'have-local-offer' || pc.signalingState === 'have-local-pranswer') {
           await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          console.log('[call] setRemoteDescription(answer) OK');
         } else {
           pendingAnswers.set(payload.callId, payload);
-          console.warn('[call] onAnswer: unexpected signalingState', pc.signalingState);
         }
       } catch (e) {
         console.error('setRemoteDescription failed', e);
@@ -359,7 +521,6 @@ async function startVideoCall() {
 
     const onReject = (payload) => {
       if (payload.callId !== callId) return;
-      console.log('[call] received CALL_REJECT', payload);
       cleanupVideoCall();
     };
 
@@ -460,7 +621,9 @@ async function acceptIncomingCall() {
     createVideoContainer();
     if (localVideoEl) localVideoEl.srcObject = localStream;
 
-    pc = new RTCPeerConnection(pcConfig);
+    pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
 
     pc.onicecandidate = (ev) => {
       if (ev.candidate) {
@@ -489,7 +652,7 @@ async function acceptIncomingCall() {
           sdpMid: item.sdpMid,
           sdpMLineIndex: item.sdpMLineIndex
         }));
-      } catch (e) { console.warn('adding cached candidate failed', e); }
+      } catch (e) { /* ignore */ }
     }
     pendingIce.delete(callId);
 
@@ -549,7 +712,7 @@ function rejectIncomingCall(reason = 'user_reject') {
   incomingCall.value = null;
 }
 
-/* ---------------- 白板逻辑（基于会话，无 boardId） ---------------- */
+/* ---------------- 白板逻辑（集成版，保持不变） ---------------- */
 const showWhiteboard = ref(false);
 const wbCreating = ref(false);
 
@@ -641,13 +804,11 @@ function wbDrawPoints(points, color, width, composite = 'source-over') {
 function wbApplyEvent(ev) {
   if (!ev || !ev.type) return;
 
-  // 后端可能将字段作为字符串传递，这里做转换
   const tool = ev.tool || ev.toolType || 'pen';
   const color = ev.color || '#000';
   const width = Number(ev.width || 2);
   const isEnd = String(ev.isEnd || 'false') === 'true';
 
-  // points 可能是 JSON 字符串
   let pts = ev.points;
   if (typeof pts === 'string') {
     try { pts = JSON.parse(pts); } catch { pts = []; }
@@ -688,9 +849,8 @@ function wbFlushBuffer(isEnd = false) {
     }
   }
 
-  // 注意：不要在 payload 内再带 "type" 字段，后端 WhiteboardStrokePart 不识别该属性
   const payload = {
-    targetUserId: Number(selected.value.id), // 会话对端
+    targetUserId: Number(selected.value.id),
     strokeId: wbCurrentStrokeId,
     tool: wbTool.value,
     color: wbColor.value,
@@ -772,7 +932,6 @@ function wbPointerUp(e) {
 function openWhiteboardForSelected() {
   if (!selected.value) { alert('请先选择好友对话'); return; }
   showWhiteboard.value = true;
-  // 轻量初始化并加入
   rt.sendWsEnvelope('WHITEBOARD_OPEN', { targetUserId: Number(selected.value.id) });
   rt.sendWsEnvelope('WHITEBOARD_JOIN', { targetUserId: Number(selected.value.id) });
 }
@@ -793,7 +952,7 @@ function leaveWhiteboard() {
 }
 
 function onWbOpened(payload) {
-  console.debug('[WB] OPENED', payload);
+  // noop
 }
 
 function onWbInit(payload) {
@@ -817,7 +976,6 @@ function onWbClear(payload) {
 function onWbError(payload) {
   try {
     const reason = payload && (payload.reason || payload.message || JSON.stringify(payload));
-    console.warn('WHITEBOARD_ERROR', reason);
     alert('白板错误：' + (reason || 'unknown'));
     showWhiteboard.value = false;
   } catch (e) {
@@ -840,8 +998,8 @@ function closeWhiteboard() {
   if (wbCanvas.value) wbCtx.clearRect(0, 0, wbCanvas.value.width, wbCanvas.value.height);
 }
 
-/* 通过聊天消息点击触发（不再需要 boardId） */
-function onGlobalOpenWhiteboard(e) {
+/* 通过聊天消息点击触发 */
+function onGlobalOpenWhiteboard() {
   if (!selected.value) { alert('请先选择好友对话'); return; }
   showWhiteboard.value = true;
   rt.sendWsEnvelope('WHITEBOARD_OPEN', { targetUserId: Number(selected.value.id) });

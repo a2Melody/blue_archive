@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import axios from 'axios';
 import { userChat } from '@/stores/userChat.js';
 import { userStore } from '@/stores/UserStore.js';
 import { realTime } from '@/stores/RealTime.js';
@@ -21,7 +22,7 @@ function isMine(m) {
   return String(m.fromUserId) === String(me.getUserId());
 }
 
-// Normalize/format content, keep newlines etc.
+// Normalize/format content
 function formatContent(text) {
   if (!text && text !== 0) return '';
   let s = String(text);
@@ -32,14 +33,12 @@ function formatContent(text) {
   return s;
 }
 
-/* ===== Image helpers (fix for your error) =====
-   These must exist in script scope because template calls them.
-*/
-const MAX_THUMB_WIDTH = 200;   // 缩略图最大宽
-const MAX_THUMB_HEIGHT = 200;  // 缩略图最大高
+/* ===== Image helpers ===== */
+const MAX_THUMB_WIDTH = 200;
+const MAX_THUMB_HEIGHT = 200;
 const DEFAULT_THUMB_WIDTH = 100;
 const DEFAULT_THUMB_HEIGHT = 100;
-const MIN_THUMB_SIDE = 40;     // 最小边长，防止过小
+const MIN_THUMB_SIDE = 40;
 
 function isImageUrl(url, messageType) {
   if (!url) return false;
@@ -85,87 +84,120 @@ function onImageLoad(ev, m) {
   m._displayHeight = h;
 }
 
-/* ===== Whiteboard invite helpers ===== */
-function parseBoardIdFromInvite(m) {
-  try {
-    if (m.messageType === 'WHITEBOARD_INVITE') {
-      if (m.content) {
-        try {
-          const obj = typeof m.content === 'string' ? JSON.parse(m.content) : m.content;
-          if (obj && (obj.boardId || (obj.type === 'WHITEBOARD_INVITE' && obj.boardId))) {
-            return obj.boardId;
-          }
-        } catch (e) { /* ignore */ }
-      }
-    }
-    if (m.extra) {
-      try {
-        const ex = typeof m.extra === 'string' ? JSON.parse(m.extra) : m.extra;
-        if (ex && (ex.type === 'WHITEBOARD_INVITE' || ex.boardId)) {
-          return ex.boardId;
-        }
-      } catch (e) { /* ignore */ }
-    }
-    if (m.content && typeof m.content === 'string') {
-      try {
-        const obj = JSON.parse(m.content);
-        if (obj && (obj.boardId || obj.type === 'WHITEBOARD_INVITE')) {
-          return obj.boardId;
-        }
-      } catch (e) { /* ignore */ }
-    }
-    if (m.content && String(m.content).startsWith('whiteboard_invite:')) {
-      return String(m.content).split(':', 2)[1] || null;
-    }
-  } catch (err) {
-    console.warn('parseBoardIdFromInvite error', err);
+/* ===== Recall/Delete helpers ===== */
+const RECALL_WINDOW_MS = 3 * 60 * 1000;
+
+function getMsgTimestamp(m) {
+  if (m.timestamp) return Number(m.timestamp);
+  if (m.createdAt) {
+    try { return new Date(m.createdAt).getTime(); } catch { /* ignore */ }
   }
   return null;
 }
-
-function getInviteText(m) {
+function canRecall(m) {
+  if (!isMine(m)) return false;
+  const t = getMsgTimestamp(m);
+  if (!t || Number.isNaN(t)) return false;
+  return (Date.now() - t) <= RECALL_WINDOW_MS;
+}
+function removeMessageLocally(messageId) {
+  const arr = uc.getMessagesForSelected();
+  const idx = arr.findIndex(x => String(x.id) === String(messageId));
+  if (idx >= 0) arr.splice(idx, 1);
+}
+async function onDeleteMessage(m) {
   try {
-    if (m.messageType === 'WHITEBOARD_INVITE') {
-      if (m.content) {
-        try {
-          const obj = typeof m.content === 'string' ? JSON.parse(m.content) : m.content;
-          if (obj && obj.message) return obj.message;
-        } catch (e) { /* ignore */ }
-      }
-      return '点击加入白板';
-    }
-    return formatContent(m.content);
+    await axios.post('/api/chat/messages/delete', { messageId: m.id });
+    removeMessageLocally(m.id);
   } catch (e) {
-    return formatContent(m.content);
+    const msg = e?.response?.data?.message || e?.response?.data || e?.message || '删除失败';
+    alert(msg);
+  }
+}
+async function onRecallMessage(m) {
+  try {
+    const res = await axios.post('/api/chat/messages/recall', { messageId: m.id });
+    const data = res?.data?.data || {};
+    if (data.allowed) {
+      removeMessageLocally(m.id);
+    } else {
+      alert('撤回失败：' + (data.reason || '不允许撤回'));
+    }
+  } catch (e) {
+    const msg = e?.response?.data?.message || e?.response?.data || e?.message || '撤回失败';
+    alert(msg);
   }
 }
 
-function onJoinWhiteboard(m) {
-  const boardId = parseBoardIdFromInvite(m);
-  if (!boardId) {
-    alert('无效的白板邀请（缺少 boardId）');
-    return;
+/* ===== Auto READ logic (UX similar to major IM apps) =====
+   Mark current conversation as read only when:
+   - Conversation is selected
+   - Window is focused (document.hasFocus() === true)
+   - Message list is scrolled to bottom (latest incoming messages visible)
+   Debounced to avoid spamming the server.
+*/
+let lastReadTs = 0;
+function isAtBottom(el, tolerance = 12) {
+  if (!el) return false;
+  return el.scrollTop + el.clientHeight >= el.scrollHeight - tolerance;
+}
+function markReadDebounced() {
+  const now = Date.now();
+  if (now - lastReadTs < 800) return; // debounce ~0.8s
+  lastReadTs = now;
+  if (selected.value) {
+    uc.markConversationRead(selected.value.id);
   }
-  // dispatch global event; ChatInput listens and will send WHITEBOARD_JOIN
-  window.dispatchEvent(new CustomEvent('openWhiteboard', { detail: { boardId } }));
-  setTimeout(() => {
-    const el = bodyRef.value;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, 50);
+}
+function onScroll() {
+  const el = bodyRef.value;
+  if (!el || !selected.value) return;
+  if (document.hasFocus() && isAtBottom(el)) {
+    markReadDebounced();
+  }
+}
+function onWindowFocus() {
+  const el = bodyRef.value;
+  if (!el || !selected.value) return;
+  if (isAtBottom(el)) markReadDebounced();
+}
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    onWindowFocus();
+  }
 }
 
-/* autoscroll when messages change */
+// when messages change, keep autoscroll and possibly mark read if at bottom
 watch(
     messages,
     async () => {
       await nextTick();
       const el = bodyRef.value;
       if (el) {
+        // autoscroll to bottom on new messages in selected conversation
         el.scrollTop = el.scrollHeight;
+        // if focused, mark read (only when scrolled to bottom)
+        if (document.hasFocus() && isAtBottom(el)) {
+          markReadDebounced();
+        }
       }
     },
     { flush: 'post', deep: true }
 );
+
+onMounted(() => {
+  const el = bodyRef.value;
+  if (el) el.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('focus', onWindowFocus);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+});
+
+onBeforeUnmount(() => {
+  const el = bodyRef.value;
+  if (el) el.removeEventListener('scroll', onScroll);
+  window.removeEventListener('focus', onWindowFocus);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+});
 </script>
 
 <template>
@@ -181,49 +213,68 @@ watch(
           v-for="(m, idx) in messages"
           :key="m.id ?? idx"
           :class="['msg', isMine(m) ? 'me' : 'them']"
+          :data-mid="m.id"
       >
-        <div
-            class="bubble"
-            :class="isMine(m) ? 'bubble-me' : 'bubble-them'"
-        >
-          <template v-if="m.imageUrl">
-            <a v-if="isImageUrl(m.imageUrl, m.messageType)" :href="m.imageUrl" target="_blank" rel="noopener noreferrer" :download="m.content || ''">
-              <img
-                  :src="m.imageUrl"
-                  alt="attachment"
-                  @load="onImageLoad($event, m)"
-                  :style="{
-                  width: (m._displayWidth || DEFAULT_THUMB_WIDTH) + 'px',
-                  height: (m._displayHeight || DEFAULT_THUMB_HEIGHT) + 'px',
-                  objectFit: 'cover',
-                  borderRadius: '6px'
-                }"
-              />
-            </a>
-            <div v-else class="file-card">
-              <div class="file-icon">{{ getFileExt(m.content || m.imageUrl) || 'FILE' }}</div>
-              <div class="file-info">
-                <div class="file-name" :title="m.content || m.imageUrl">{{ m.content || '下载文件' }}</div>
-                <a :href="m.imageUrl" target="_blank" rel="noopener noreferrer" class="file-download">打开</a>
+        <div class="msg-line" :class="isMine(m) ? 'line-me' : 'line-them'">
+          <div
+              class="bubble"
+              :class="isMine(m) ? 'bubble-me' : 'bubble-them'"
+          >
+            <template v-if="m.imageUrl">
+              <a
+                  v-if="isImageUrl(m.imageUrl, m.messageType)"
+                  :href="m.imageUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :download="m.content || ''"
+                  class="media-wrap"
+              >
+                <img
+                    :src="m.imageUrl"
+                    alt="attachment"
+                    @load="onImageLoad($event, m)"
+                    class="bubble-img"
+                    :style="{
+                    maxWidth: '100%',
+                    width: (m._displayWidth || DEFAULT_THUMB_WIDTH) + 'px',
+                    height: 'auto',
+                    borderRadius: '6px',
+                    display: 'block'
+                  }"
+                />
+              </a>
+              <div v-else class="file-card">
+                <div class="file-icon">{{ getFileExt(m.content || m.imageUrl) || 'FILE' }}</div>
+                <div class="file-info">
+                  <div class="file-name" :title="m.content || m.imageUrl">{{ m.content || '下载文件' }}</div>
+                  <a :href="m.imageUrl" target="_blank" rel="noopener noreferrer" class="file-download">打开</a>
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
 
-          <template v-else>
-            <div v-if="m.messageType === 'WHITEBOARD_INVITE' || (m.content && String(m.content).startsWith('whiteboard_invite:'))" class="whiteboard-invite">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <strong>白板邀请</strong>
-                <span style="color:#666;font-size:12px;">{{ getInviteText(m) }}</span>
+            <template v-else>
+              <div v-if="m.messageType === 'WHITEBOARD_INVITE' || (m.content && String(m.content).startsWith('whiteboard_invite:'))" class="whiteboard-invite">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <strong>白板邀请</strong>
+                  <span style="color:#666;font-size:12px;">{{ formatContent(m.content) }}</span>
+                </div>
+                <div style="margin-top:8px; display:flex; gap:8px;">
+                  <button @click="$emit('joinWhiteboard', m)" class="pill primary">加入白板</button>
+                  <button @click="$event.stopPropagation()" class="pill">忽略</button>
+                </div>
               </div>
-              <div style="margin-top:8px; display:flex; gap:8px;">
-                <button @click="onJoinWhiteboard(m)" style="padding:6px 10px; border-radius:6px; background:#ff9db2; color:#fff; border:none;">加入白板</button>
-                <button @click="$event.stopPropagation()" style="padding:6px 10px; border-radius:6px; background:#f0f0f0; border:none;">忽略</button>
+              <div v-else>
+                {{ formatContent(m.content) }}
               </div>
-            </div>
-            <div v-else>
-              {{ formatContent(m.content) }}
-            </div>
-          </template>
+            </template>
+          </div>
+
+          <!-- 操作按钮 + 读回执 -->
+          <div class="msg-actions" :class="isMine(m) ? 'actions-me' : 'actions-them'">
+            <span class="action-text" title="删除" @click="onDeleteMessage(m)">删除</span>
+            <span v-if="canRecall(m)" class="action-text" title="撤回" @click="onRecallMessage(m)">撤回</span>
+            <span v-if="isMine(m)" class="read-receipt">{{ m._read ? '已读' : '未读' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -240,9 +291,11 @@ watch(
   min-height: 0;
 }
 
+/* vertical scroll only */
 .messages {
   flex: 1 1 auto;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px;
   background: #fafafa;
 }
@@ -251,14 +304,17 @@ watch(
   display: flex;
   margin-bottom: 8px;
 }
+.msg.me { justify-content: flex-end; }
+.msg.them { justify-content: flex-start; }
 
-.msg.me {
-  justify-content: flex-end;
+.msg-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 80%;
 }
-
-.msg.them {
-  justify-content: flex-start;
-}
+.line-me { flex-direction: row-reverse; }
+.line-them { flex-direction: row; }
 
 .bubble {
   max-width: 70%;
@@ -267,19 +323,40 @@ watch(
   color: #000;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow: hidden;
+}
+.bubble-me { background: #f7d6e0; margin-left: 8px; }
+.bubble-them { background: #fff; border: 1px solid #eee; margin-right: 8px; }
+
+.media-wrap { display: inline-block; max-width: 100%; }
+.bubble-img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
+
+/* action texts */
+.msg-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  user-select: none;
+}
+.actions-me { justify-content: flex-start; }
+.actions-them { justify-content: flex-start; }
+.action-text {
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+}
+.action-text:hover {
+  color: #666;
+  text-decoration: underline;
+}
+.read-receipt {
+  color: #aaa;
+  font-size: 12px;
 }
 
-.bubble-me {
-  background: #f7d6e0;
-  margin-left: 8px;
-}
-
-.bubble-them {
-  background: #fff;
-  border: 1px solid #eee;
-  margin-right: 8px;
-}
-
+/* whiteboard invite */
 .whiteboard-invite {
   background: #fff7f9;
   border: 1px dashed #ffb6c1;
@@ -288,6 +365,16 @@ watch(
   display:flex;
   flex-direction:column;
 }
+.pill {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 12px;
+}
+.pill.primary { background: #ff9db2; color: #fff; }
 
 /* file card */
 .file-card{
@@ -298,7 +385,7 @@ watch(
   border-radius:6px;
   background:#fff;
   border:1px solid #eee;
-  max-width: 240px;
+  max-width: 100%;
 }
 .file-icon{
   width:48px;
@@ -312,23 +399,7 @@ watch(
   color:#666;
   font-size:12px;
 }
-.file-info{
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-}
-.file-name{
-  font-size:13px;
-  color:#333;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width:160px;
-}
-.file-download{
-  margin-top:4px;
-  font-size:12px;
-  color:#1890ff;
-  text-decoration:none;
-}
+.file-info{ display:flex; flex-direction:column; min-width:0; }
+.file-name{ font-size:13px; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+.file-download{ margin-top:4px; font-size:12px; color:#1890ff; text-decoration:none; }
 </style>

@@ -1,67 +1,35 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import axios from "axios";
-import {userStore} from "@/stores/UserStore.js";
+import { userStore } from "@/stores/UserStore.js";
 
 export const userChat = defineStore('userChat', () => {
     const friendList = ref([]);
     const agreeingList = ref([]);
 
-    function getFriendList(){
-        return friendList;
-    }
-    function getAgreeingList(){
-        return agreeingList;
-    }
+    function getFriendList(){ return friendList; }
+    function getAgreeingList(){ return agreeingList; }
 
     async function updateFriendList(){
-        const res = await axios.post('/api/chat/sessions/list', {
-        });
-        friendList.value=res.data.data.sessions;
+        const res = await axios.post('/api/chat/sessions/list', {});
+        friendList.value = res.data.data.sessions;
     }
     async function updateAgreeingList(){
-        const res = await axios.post('/api/chat/friends/request/list', {
-        });
-        console.log(res);
-        agreeingList.value=res.data.data.items;
+        const res = await axios.post('/api/chat/friends/request/list', {});
+        agreeingList.value = res.data.data.items;
     }
-    // 最小实现：根据 userId 设置在线状态（保持响应式）
     function setFriendOnline(userId, online) {
         const f = friendList.value.find(x => Number(x.sessionTargetId) === Number(userId));
-        if (f) {
-            f.online = !!online;
-        }
+        if (f) f.online = !!online;
     }
-
 
     const me = userStore();
-    // 当前会话
     const selectedConversation = ref(null);
-    // 按 conversation key 存的消息数组（key 格式： user_<otherId>）
-    const messages = ref({});
+    const messages = ref({}); // key: user_<otherId> -> array of msgs
 
-    /*设置当前会话*/
-/*    userchat.selectConversation({
-        id: item.sessionTargetId,
-        name: item.title,
-        avatarUrl: item.avatarUrl,     // 与 ChatHeader 里使用的字段名对应
-        signature: item.signature,
-    });*/
-    function selectConversation(user) {
-        selectedConversation.value = user;
-        if(user===null)return;
-        const key = `user_${String(user.id)}`;
-        messages.value[key] = messages.value[key] || [];
-    }
-    function getSelectedConversation(){
-        return selectedConversation;
-    }
-    function resetForLogout() {
-        selectedConversation.value = null;
-        messages.value = {};
-        // 可选： friendList.value = []; agreeingList.value = [];
-    }
-    // 返回当前选中会话的消息数组（保证返回的是响应式数组引用）
+    function getSelectedConversation(){ return selectedConversation; }
+    function resetForLogout() { selectedConversation.value = null; messages.value = {}; }
+
     function getMessagesForSelected(){
         const conv = selectedConversation.value;
         if (!conv) return [];
@@ -70,37 +38,28 @@ export const userChat = defineStore('userChat', () => {
         return messages.value[key];
     }
 
-    // 追加私聊消息：把消息放到 otherId 的会话数组里
+    // append a private message to conversation with otherId
     function appendPrivateMessage(fromUserId, toUserId, msg) {
-        const myId = String(me.getUserId()); // 确保 userStore.getUserId() 返回 value
-        const from = String(fromUserId);
-        const to = String(toUserId);
-        const otherId = (from === myId) ? to : from;
+        const myId = String(me.getUserId());
+        const otherId = (String(fromUserId) === myId) ? String(toUserId) : String(fromUserId);
         const key = `user_${otherId}`;
         messages.value[key] = messages.value[key] || [];
-        messages.value[key].push(msg);
 
-        // 如果当前打开的是这个会话，可以在这里做额外处理（例如：发送已读回执 / 标记为已读）
-        const sel = selectedConversation.value;
-        if (sel && String(sel.id) === otherId) {
-            // 当前会话就是这个 otherId
-            // e.g. send read receipt (通过 RealTime) 或触发 UI 滚动（ChatWindow 也会监测 messages）
-            // sendReadReceipt(otherId)  // 按需实现
-        } else {
-            // 非当前会话：可以增加 friendList 中对应项的 unreadCount（按需实现）
+        // ensure logic id present (front-end uses it for recall/delete cross-user sync)
+        if (msg && msg.logicMessageId == null) {
+            msg.logicMessageId = msg.id;
         }
-    }
+        // my-sent messages carry read receipt flag (default false)
+        if (String(msg?.fromUserId) === myId && typeof msg._read === 'undefined') {
+            msg._read = false;
+        }
 
-    // 以 key 追加消息（提供给其它逻辑使用）
-    function appendMessageByKey(key, msg) {
-        messages.value[key] = messages.value[key] || [];
         messages.value[key].push(msg);
     }
 
     async function loadAllFriendHistories(page = 0) {
         if (!friendList.value || friendList.value.length === 0) return;
 
-        // 并行请求每个好友的记录（失败不会中断其它请求）
         const requests = friendList.value.map(f =>
             axios.post('/api/chat/messages/private/getMessage', {
                 friendId: f.sessionTargetId,
@@ -113,74 +72,174 @@ export const userChat = defineStore('userChat', () => {
         results.forEach((res, idx) => {
             const friend = friendList.value[idx];
             if (!res || res.__err) {
-                console.warn('[loadAllFriendHistories] 请求失败 friendId=', friend?.sessionTargetId, res && res.__err);
+                console.warn('[loadAllFriendHistories] failed friendId=', friend?.sessionTargetId, res && res.__err);
                 return;
             }
-            // 常见后端结构： res.data.data.messages
             const msgs = res.data?.data?.messages || res.data?.messages || [];
-            // 后端返回 0 是最新 -> 逆序为从旧到新，便于按顺序 push
-            if (Array.isArray(msgs) && msgs.length > 1) {
-                msgs.reverse();
-            }
+            if (Array.isArray(msgs) && msgs.length > 1) msgs.reverse();
 
             msgs.forEach(p => {
-                // 规范化时间到 timestamp（毫秒）
                 let created = p.createdAt || p.created_at || null;
                 if (created && typeof created === 'string') {
-                    created = created.replace(/(\.\d{3})\d+/, '$1'); // 保留到毫秒
+                    created = created.replace(/(\.\d{3})\d+/, '$1');
                 }
                 const timestamp = created ? new Date(created).getTime() : (p.timestamp || Date.now());
+                const logicMessageId =
+                    p.logicMessageId ??
+                    p.logic_message_id ??
+                    p.logicId ??
+                    p.logic_id ??
+                    p.id;
 
                 const msg = {
-                    id: p.id,
+                    id: logicMessageId,                 // keep logic id for cross-user consistency
+                    logicMessageId,
                     conversationType: p.conversationType,
                     fromUserId: p.fromUserId,
                     toUserId: p.toUserId,
                     groupId: p.groupId || null,
                     messageType: p.messageType,
                     content: p.content,
-                    // 优先使用后端可能的 imageUrl，若没有再使用 fileUrl（后端示例里是 fileUrl）
                     imageUrl: p.imageUrl || p.fileUrl || null,
-                    timestamp: timestamp
+                    timestamp
                 };
 
-                // 使用现有的 appendPrivateMessage 将消息放入对应会话数组
                 appendPrivateMessage(p.fromUserId, p.toUserId, msg);
             });
         });
     }
 
-    // 获取 conversation 对应的缓存 boardId（key: user_<otherId>.boardId）
-    function getConversationBoardId(otherId) {
-        const key = `user_${String(otherId)}`;
-        // 存储在 messages.value[key]._boardId 或单独 map 也行；这里用一个轻量方案
-        const obj = messages.value[key] || {};
-        return obj._boardId || null;
+    function selectConversation(user) {
+        selectedConversation.value = user;
+        if (!user) return;
+        const key = `user_${String(user.id)}`;
+        messages.value[key] = messages.value[key] || [];
+        // 不在此立即标记已读；改为由 ChatWindow 在“滚动到底部且窗口激活”时触发
     }
 
-    function setConversationBoardId(otherId, boardId) {
-        const key = `user_${String(otherId)}`;
-        messages.value[key] = messages.value[key] || [];
-        // 我们把缓存放到该数组的扩展属性（不会影响序列化），或可以用另一个 map 存储
-        // 为简洁，使用隐藏属性
-        messages.value[key]._boardId = boardId;
+    // session preview helpers
+    function buildPreview(messageType, content) {
+        const t = String(messageType || '').toUpperCase();
+        if (t === 'IMAGE') return '[图片]';
+        if (t === 'FILE')  return '[文件]';
+        if (t === 'VIDEO') return '[视频]';
+        if (t === 'AUDIO') return '[音频]';
+        if (!content) return '';
+        const s = String(content);
+        return s.length <= 10 ? s : s.slice(0, 10) + '...';
+    }
+
+    function ensureSessionItemForFriend(otherId) {
+        const idNum = Number(otherId);
+        let item = friendList.value.find(x => Number(x.sessionTargetId) === idNum);
+        if (!item) {
+            item = {
+                sessionType: 'PRIVATE',
+                sessionTargetId: idNum,
+                title: String(idNum),
+                lastMessagePreview: '',
+                lastMessageTime: null,
+                unreadCount: 0,
+                signature: '',
+                avatarUrl: null,
+                online: false
+            };
+            friendList.value.push(item);
+        }
+        return item;
+    }
+
+    function updateSessionOnNewPrivateMessage(fromUserId, toUserId, msg) {
+        const myId = String(me.getUserId());
+        const otherId = (String(fromUserId) === myId) ? String(toUserId) : String(fromUserId);
+        const item = ensureSessionItemForFriend(otherId);
+
+        item.lastMessageTime = msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString();
+        item.lastMessagePreview = buildPreview(msg.messageType, msg.content);
+
+        const isIncoming = (String(toUserId) === myId);
+        const isActive = (selectedConversation.value && String(selectedConversation.value.id) === String(otherId));
+        if (isIncoming && !isActive) {
+            item.unreadCount = (item.unreadCount || 0) + 1;
+        }
+
+        friendList.value.sort((a, b) => {
+            const ta = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+            const tb = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+            return tb - ta;
+        });
+    }
+
+    // 后端“标记已读”接口：把对方发给我的未读全部标记为已读
+    async function markConversationRead(otherId) {
+        const idNum = Number(otherId);
+        // 左侧会话未读清零（本地）
+        const item = friendList.value.find(x => Number(x.sessionTargetId) === idNum);
+        if (item) item.unreadCount = 0;
+        // 后端持久化（避免多次重复调用，具体节流在调用方做）
+        try {
+            await axios.post('/api/chat/messages/private/markRead', { friendId: idNum });
+        } catch (e) {
+            console.warn('[markConversationRead] api failed', e?.message);
+        }
+    }
+
+    function getPendingRequestsCount() {
+        return (agreeingList.value || []).length;
+    }
+
+    // 撤回：按 logicMessageId 移除所有会话里的该条消息（A/B 两端皆适用）
+    function recallMessageByLogicId(logicId) {
+        if (logicId === undefined || logicId === null) return;
+        const logicStr = String(logicId);
+        Object.keys(messages.value).forEach(k => {
+            const arr = messages.value[k];
+            if (!Array.isArray(arr) || arr.length === 0) return;
+            const filtered = arr.filter(m => {
+                const mid = String(m.id);
+                const lid = m.logicMessageId != null ? String(m.logicMessageId) : '';
+                return mid !== logicStr && lid !== logicStr;
+            });
+            if (filtered.length !== arr.length) {
+                messages.value[k].splice(0, arr.length, ...filtered);
+            }
+        });
+    }
+
+    // 已读回执：对方 readerId 读取了我的消息 -> 标记“我发给 readerId 的消息”为已读
+    function markMyMessagesReadByReader(readerId) {
+        console.log('read' + readerId);
+        const myId = String(me.getUserId());
+        const key = `user_${String(readerId)}`;
+        const arr = messages.value[key] || [];
+        arr.forEach(m => {
+            if (String(m.fromUserId) === myId) m._read = true;
+        });
     }
 
     return {
+        // lists
         getAgreeingList,
         getFriendList,
         updateFriendList,
         updateAgreeingList,
         setFriendOnline,
+
+        // conv/messages
         resetForLogout,
-        // 新增导出
         getSelectedConversation,
         getMessagesForSelected,
         selectConversation,
-        appendMessageByKey,
         loadAllFriendHistories,
         appendPrivateMessage,
-        getConversationBoardId,
-        setConversationBoardId
+        updateSessionOnNewPrivateMessage,
+
+        // read/unread + receipts
+        markConversationRead,
+        markMyMessagesReadByReader,
+
+        // misc
+        getPendingRequestsCount,
+        recallMessageByLogicId,
     };
 });

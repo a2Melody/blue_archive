@@ -1,136 +1,136 @@
-// updated RealTime.js - add whiteboard signaling routing
+// RealTime.js — handle PRIVATE_MESSAGES_READ and MESSAGE_RECALLED, plus normal routing
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import {userStore} from "@/stores/UserStore.js";
-import {userChat} from "@/stores/userChat.js";
+import { userStore } from "@/stores/UserStore.js";
+import { userChat } from "@/stores/userChat.js";
 
 export const realTime = defineStore('realTime', () => {
-    let ws=null;
-    let connected = ref(false);
-    const user=userStore();
+    let ws = null;
+    const connected = ref(false);
+    const user = userStore();
+    const uc = userChat();
 
-    /*视频通话部分*/
-    // 简单的信令事件发布/订阅（最小实现）
-    const _signalListeners = new Map();
+    // lightweight pub/sub for WebRTC and whiteboard signals
+    const listeners = new Map();
     function onSignal(type, handler) {
-        if (!_signalListeners.has(type)) _signalListeners.set(type, []);
-        _signalListeners.get(type).push(handler);
+        if (!listeners.has(type)) listeners.set(type, []);
+        listeners.get(type).push(handler);
     }
     function offSignal(type, handler) {
-        const arr = _signalListeners.get(type) || [];
-        _signalListeners.set(type, arr.filter(h => h !== handler));
+        const arr = listeners.get(type) || [];
+        listeners.set(type, arr.filter(h => h !== handler));
     }
-    function _emitSignal(type, payload) {
-        const arr = _signalListeners.get(type) || [];
-        console.debug('[RT] _emitSignal', type, 'listeners=', arr.length, 'payload=', payload);
-        arr.forEach(h => {
-            try { h(payload); } catch (e) { console.error('[onSignal handler] error', e); }
-        });
+    function emitSignal(type, payload) {
+        const arr = listeners.get(type) || [];
+        arr.forEach(h => { try { h(payload); } catch (e) { console.error('[onSignal] error', e); } });
     }
 
     function initWs(wsBase = 'wss://localhost:8443') {
         const token = user.getToken();
         if (!token) {
-            console.warn('[initWs] no token available yet');
+            console.warn('[RT] initWs: no token, skip');
             return;
         }
         const base = wsBase.replace(/\/+$/, '');
         const url = `${base}/ws/chat?token=${encodeURIComponent(token)}`;
-        console.log('[initWs] ws url =', url);
-        //防止重复创建
-        if (ws && ws.readyState === WebSocket.OPEN && ws._url === url) {
-            console.log('[initWs] already connected to same url, skip');
-            return;
-        }
-        //关闭旧连接
+
+        // reuse if same URL
+        if (ws && ws.readyState === WebSocket.OPEN && ws._url === url) return;
+
+        // close previous
         if (ws) {
-            try { ws.close(); } catch (e) { /* ignore */ }
+            try { ws.close(); } catch {}
             ws = null;
         }
         try {
             ws = new WebSocket(url);
             ws._url = url;
         } catch (e) {
-            console.error('[initWs] new WebSocket throw', e);
+            console.error('[RT] new WebSocket failed', e);
             return;
         }
+
         ws.onopen = () => {
             connected.value = true;
-            console.log('[WS] onopen - connected = true');
+            console.log('[WS] open');
         };
         ws.onmessage = (ev) => {
-            try {
-                console.log('[WS] onmessage');
-                const env = JSON.parse(ev.data);
-                handleEnvelope(env);
-            } catch (e) {
-                console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
+            let env;
+            try { env = JSON.parse(ev.data); } catch {
+                console.warn('[WS] non-JSON message', ev.data);
                 return;
             }
-            console.log('[WS] onmessage end');
+            handleEnvelope(env);
         };
         ws.onclose = (ev) => {
             connected.value = false;
-            console.warn('[WS] onclose', ev.code, ev.reason, 'wasClean=', ev.wasClean);
+            console.warn('[WS] close', ev.code, ev.reason);
         };
         ws.onerror = (ev) => {
-            console.error('[WS] onerror', ev);
+            console.error('[WS] error', ev);
         };
     }
 
     function closeWs() {
-        if (ws) {
-            ws.close();
-        }
+        if (ws) try { ws.close(); } catch {}
     }
 
-    /*处理后端给我的消息*/
-    const userchat=userChat()
     function handleEnvelope(env) {
-        const rawType = env && env.type;
-        console.log('[WS] envelope type raw:', JSON.stringify(rawType)); // 调试用
-        const type = (rawType === null || rawType === undefined) ? '' : String(rawType).trim();
-        const p = env.payload || {};
-        switch(type) {
+        const type = String(env?.type ?? '').trim();
+        const p = env?.payload || {};
+        console.debug('[WS] envelope', p);
+        switch (type) {
+            // WebRTC signaling
             case 'CALL_INVITE':
             case 'CALL_ANSWER':
             case 'CALL_ICE':
             case 'CALL_HANGUP':
             case 'CALL_REJECT':
-            case 'CALL_FAILED': {
-                console.log('[WS] signaling event', type, p);
-                _emitSignal(type, p);
+            case 'CALL_FAILED':
+                emitSignal(type, p);
                 break;
-            }
-            // Whiteboard signals - forward to listeners
+
+            // Whiteboard events
             case 'WHITEBOARD_OPENED':
             case 'WHITEBOARD_INIT':
             case 'WHITEBOARD_EVENT':
             case 'WHITEBOARD_CLEAR':
-            case 'WHITEBOARD_ERROR': {
-                console.log('[WS] whiteboard event', type, p);
-                _emitSignal(type, p);
+            case 'WHITEBOARD_ERROR':
+                emitSignal(type, p);
                 break;
-            }
+
+            // Friends
             case 'NEW_FRIEND_REQUEST':
-                userchat.updateAgreeingList();
+                uc.updateAgreeingList();
                 break;
             case 'ACCEPT_FRIEND_REQUEST':
-                userchat.updateFriendList();
+                uc.updateFriendList();
+                uc.updateAgreeingList();
                 break;
+            case 'REJECT_FRIEND_REQUEST':
+                uc.updateAgreeingList();
+                break;
+
+            // Chat messages
             case 'NEW_PRIVATE_MESSAGE':
-                break;
-            case 'NEW_MESSAGE':
+            case 'NEW_MESSAGE': {
                 try {
-                    console.log("处理接收到的消息","其ev的payload值为",p)
                     let created = p.createdAt || null;
                     if (created && typeof created === 'string') {
-                        created = created.replace(/(\.\d{3})\d+/, '$1'); // 保留到毫秒
+                        created = created.replace(/(\.\d{3})\d+/, '$1');
                     }
                     const timestamp = created ? new Date(created).getTime() : Date.now();
 
+                    const logicMessageId =
+                        p.logicMessageId ??
+                        p.logic_message_id ??
+                        p.logicId ??
+                        p.logic_id ??
+                        p.id;
+
                     const msg = {
-                        id: p.id,
+                        id: logicMessageId,                       // use logic id for cross-user matching
+                        logicMessageId,
                         conversationType: p.conversationType,
                         fromUserId: p.fromUserId,
                         toUserId: p.toUserId,
@@ -138,46 +138,77 @@ export const realTime = defineStore('realTime', () => {
                         messageType: p.messageType,
                         content: p.content,
                         imageUrl: p.imageUrl || p.fileUrl || null,
-                        timestamp: timestamp
+                        timestamp
                     };
-                    userchat.appendPrivateMessage(p.fromUserId, p.toUserId, msg);
+
+                    uc.appendPrivateMessage(p.fromUserId, p.toUserId, msg);
+
+                    if (String(p.conversationType).toUpperCase() === 'PRIVATE') {
+                        uc.updateSessionOnNewPrivateMessage(p.fromUserId, p.toUserId, msg);
+                    }
                 } catch (e) {
-                    console.error('[WS] 处理 NEW_MESSAGE/NEW_PRIVATE_MESSAGE 出错', e, p);
+                    console.error('[WS] NEW_MESSAGE handling failed', e, p);
                 }
                 break;
+            }
+
+            // Recall events sent to all affected users: { logicMessageId, conversationType, senderId }
+            case 'MESSAGE_RECALLED': {
+                const logicId =
+                    p.logicMessageId ??
+                    p.logic_message_id ??
+                    p.logicId ??
+                    p.logic_id ??
+                    null;
+                if (logicId == null) {
+                    console.warn('[WS] MESSAGE_RECALLED missing logicMessageId', p);
+                    break;
+                }
+                uc.recallMessageByLogicId(String(logicId));
+                break;
+            }
+
+            // Peer read receipts: sent to the sender when the other party marks PRIVATE messages read
+            // payload: { conversationType:"PRIVATE", readerId, friendId, lastReadMessageId }
+            case 'PRIVATE_MESSAGES_READ': {
+                try {
+                    console.error('[WS] PRIVATE_MESSAGES_READ');
+                    uc.markMyMessagesReadByReader(p.readerId);
+                } catch (e) {
+                    console.error('[WS] PRIVATE_MESSAGES_READ handling failed', e, p);
+                }
+                break;
+            }
+
+            // presence
             case 'USER_ONLINE': {
                 const uid = Number(p.userId);
-                if (!isNaN(uid)) {
-                    userchat.setFriendOnline(uid, true);
-                }
+                if (!isNaN(uid)) uc.setFriendOnline(uid, true);
                 break;
             }
             case 'USER_OFFLINE': {
                 const uid = Number(p.userId);
-                if (!isNaN(uid)) {
-                    userchat.setFriendOnline(uid, false);
-                }
+                if (!isNaN(uid)) uc.setFriendOnline(uid, false);
                 break;
             }
+
             default:
                 console.debug('Unhandled WS event', type, p);
         }
     }
 
-    /*发送消息*/
     function sendWsEnvelope(type, payload) {
         if (!ws || ws.readyState !== WebSocket.OPEN) {
-            console.warn('[WS SEND] WebSocket 未连接，无法发送', { type, payload });
+            console.warn('[WS SEND] not connected', { type, payload });
             return;
         }
-        const msg = { type, payload };
-        console.log('WS SEND', msg);
         try {
-            ws.send(JSON.stringify(msg));
+            ws.send(JSON.stringify({ type, payload }));
         } catch (e) {
-            console.error('[WS SEND] send 出错', e);
+            console.error('[WS SEND] send failed', e);
         }
     }
+
     function sendPrivateText(targetUserId, content) {
         const payload = {
             conversationType: 'PRIVATE',
@@ -197,5 +228,6 @@ export const realTime = defineStore('realTime', () => {
         sendPrivateText,
         onSignal,
         offSignal,
+        connected,
     };
 });

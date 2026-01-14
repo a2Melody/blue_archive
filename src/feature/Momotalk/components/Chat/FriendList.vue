@@ -26,18 +26,18 @@ function select(item) {
   <div class="friends">
     <FriendItem
         v-for="item in friendList"
-        :sessionTargetId="item.sessionTargetId"
         :key="item.sessionTargetId"
+        :sessionTargetId="item.sessionTargetId"
         :title="item.title"
-        :latest-message="item.lastMessagePreview"
         :avatar="item.avatarUrl ?? user.getDefaultProfile()"
-        :latestMessage="item.lastMessageTime"
-        :signature="item.signature?? '个性签名desu'"
-        :unread-count="item.unreadCount"
+        :signature="item.signature ?? '个性签名desu'"
+        :lastMessagePreview="item.lastMessagePreview"
+        :lastMessageTime="item.lastMessageTime"
+        :unreadCount="item.unreadCount"
         :selected="String(item.sessionTargetId) === selectedId"
         :online="item.online"
         @select="select(item)"
-    ></FriendItem>
+    />
   </div>
 </template>
 
