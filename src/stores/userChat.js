@@ -55,11 +55,6 @@ export const userChat = defineStore('userChat', () => {
         }
 
         messages.value[key].push(msg);
-
-        const sel = selectedConversation.value;
-        if (sel && String(sel.id) === otherId) {
-            // 当前会话：可在此发送已读回执（按需）
-        }
     }
 
     function appendMessageByKey(key, msg) {
@@ -97,7 +92,6 @@ export const userChat = defineStore('userChat', () => {
                 }
                 const timestamp = created ? new Date(created).getTime() : (p.timestamp || Date.now());
 
-                // 若后端未返回 isRead，在后续显示逻辑中默认 false/true 按 fromUserId 判断
                 const msg = {
                     id: p.id,
                     logicMessageId:
@@ -114,7 +108,7 @@ export const userChat = defineStore('userChat', () => {
                     content: p.content,
                     imageUrl: p.imageUrl || p.fileUrl || null,
                     timestamp,
-                    isRead: p.isRead, // 新增：用于初始化气泡的读回执（仅对我发出的消息有意义）
+                    isRead: p.isRead,
                 };
 
                 appendPrivateMessage(p.fromUserId, p.toUserId, msg);
@@ -138,7 +132,11 @@ export const userChat = defineStore('userChat', () => {
         if (user === null) return;
         const key = `user_${String(user.id)}`;
         messages.value[key] = messages.value[key] || [];
-        markConversationRead(user.id);
+
+        // 不在这里立即调用 markConversationRead，改为交给 ChatWindow 的“窗口激活 + 底部可见 + 防抖”逻辑
+        // 可选：仅 UI 上把该会话未读数清零
+        const item = friendList.value.find(x => Number(x.sessionTargetId) === Number(user.id));
+        if (item) item.unreadCount = 0;
     }
 
     function buildPreview(messageType, content) {
@@ -195,10 +193,20 @@ export const userChat = defineStore('userChat', () => {
         });
     }
 
+    // 简单节流：同一个对话 <800ms 内重复上报直接忽略，避免抖动
+    const _lastReadSentAt = {};
     async function markConversationRead(otherId) {
+        const oid = String(otherId);
+        const now = Date.now();
+        if (_lastReadSentAt[oid] && now - _lastReadSentAt[oid] < 800) {
+            return;
+        }
+        _lastReadSentAt[oid] = now;
+
         const idNum = Number(otherId);
         const item = friendList.value.find(x => Number(x.sessionTargetId) === idNum);
         if (item) item.unreadCount = 0;
+
         try {
             await axios.post('/api/chat/messages/private/markRead', { friendId: idNum });
         } catch (e) {
@@ -243,7 +251,6 @@ export const userChat = defineStore('userChat', () => {
     function setPeerTyping(otherId, isTyping) {
         const oid = String(otherId);
         peerTypingMap.value[oid] = !!isTyping;
-        // Auto clear after 5s if no subsequent typing
         if (peerTypingTimers[oid]) {
             clearTimeout(peerTypingTimers[oid]);
             peerTypingTimers[oid] = null;

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import { userChat } from '@/stores/userChat.js';
 import { userStore } from '@/stores/UserStore.js';
@@ -125,16 +125,75 @@ const showPeerTyping = computed(() => {
   return uc.isPeerTyping(sel.id);
 });
 
-/* autoscroll */
+/* ---------- 已读上报：窗口激活 + 列表在底部 + 防抖 ---------- */
+const isWindowActive = ref(document.visibilityState === 'visible' && document.hasFocus());
+let markTimer = null;
+
+function isAtBottom() {
+  const el = bodyRef.value;
+  if (!el) return false;
+  const threshold = 12; // 容差
+  return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+}
+function maybeMarkRead() {
+  if (!selected.value) return;
+  if (!isWindowActive.value) return;
+  if (!isAtBottom()) return;
+  uc.markConversationRead(selected.value.id);
+}
+function scheduleMarkRead(delay = 800) {
+  if (markTimer) clearTimeout(markTimer);
+  markTimer = setTimeout(maybeMarkRead, delay);
+}
+function onScroll() {
+  scheduleMarkRead(600);
+}
+function onWindowFocus() {
+  isWindowActive.value = true;
+  scheduleMarkRead(200);
+}
+function onWindowBlur() {
+  isWindowActive.value = false;
+}
+function onVisibilityChange() {
+  isWindowActive.value = (document.visibilityState === 'visible') && document.hasFocus();
+  if (isWindowActive.value) scheduleMarkRead(200);
+}
+
+/* autoscroll + 触发判定 */
 watch(
     messages,
     async () => {
       await nextTick();
       const el = bodyRef.value;
-      if (el) el.scrollTop = el.scrollHeight;
+      if (el) {
+        // 保持原有自动滚到底部
+        el.scrollTop = el.scrollHeight;
+        // 若窗口处于激活状态，判断是否需要标记已读
+        scheduleMarkRead(200);
+      }
     },
     { flush: 'post', deep: true }
 );
+
+/* 切换会话时，也尝试判定一次 */
+watch(selected, async () => {
+  await nextTick();
+  scheduleMarkRead(200);
+});
+
+onMounted(() => {
+  window.addEventListener('focus', onWindowFocus);
+  window.addEventListener('blur', onWindowBlur);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', onWindowFocus);
+  window.removeEventListener('blur', onWindowBlur);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  if (markTimer) clearTimeout(markTimer);
+});
 </script>
 
 <template>
@@ -145,7 +204,7 @@ watch(
       请选择联系人开始聊天
     </div>
 
-    <div v-else class="messages" ref="bodyRef">
+    <div v-else class="messages" ref="bodyRef" @scroll="onScroll">
       <!-- 对方正在输入提示 -->
       <div v-if="showPeerTyping" class="peer-typing">
         对方正在输入…

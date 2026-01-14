@@ -1,4 +1,4 @@
-// RealTime.js - add PEER_TYPING handling and typing start/stop senders
+// RealTime.js - 使用基于 location 的 websocket URL（支持通过 Vite proxy 转发 /ws）
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { userStore } from "@/stores/UserStore.js";
@@ -20,21 +20,41 @@ export const realTime = defineStore('realTime', () => {
     }
     function _emitSignal(type, payload) {
         const arr = _signalListeners.get(type) || [];
-        console.debug('[RT] _emitSignal', type, 'listeners=', arr.length, 'payload=', payload);
         arr.forEach(h => {
             try { h(payload); } catch (e) { console.error('[onSignal handler] error', e); }
         });
     }
 
-    function initWs(wsBase = 'wss://localhost:8443') {
+    /**
+     * initWs:
+     * - 如果传入 wsBase（显式基础 URL），使用它（保持向后兼容）
+     * - 否则根据当前页面 location 自动构造 websocket URL（便于在局域网通过 Vite proxy 使用）
+     *
+     * 使用示例：
+     *   rt.initWs(); // 自动使用 location.host -> ws://<host>:<port>/ws/chat?token=...
+     *   rt.initWs('wss://your-backend:8443'); // 强制某个 backend url
+     */
+    function initWs(wsBase) {
         const token = user.getToken();
         if (!token) {
             console.warn('[initWs] no token available yet');
             return;
         }
-        const base = wsBase.replace(/\/+$/, '');
-        const url = `${base}/ws/chat?token=${encodeURIComponent(token)}`;
+
+        let url;
+        if (wsBase && typeof wsBase === 'string' && wsBase.trim() !== '') {
+            const base = wsBase.replace(/\/+$/, '');
+            url = `${base}/ws/chat?token=${encodeURIComponent(token)}`;
+        } else {
+            // 根据当前页面协议和 host 构造。使用 /ws 路径（与 vite.proxy '/ws' 对应）
+            const proto = (window.location.protocol === 'https:') ? 'wss' : 'ws';
+            const host = window.location.host; // 包含 hostname:port
+            url = `${proto}://${host}/ws/chat?token=${encodeURIComponent(token)}`;
+        }
+
         console.log('[initWs] ws url =', url);
+
+        // 防止重复创建连接到相同 url
         if (ws && ws.readyState === WebSocket.OPEN && ws._url === url) {
             console.log('[initWs] already connected to same url, skip');
             return;
@@ -43,6 +63,7 @@ export const realTime = defineStore('realTime', () => {
             try { ws.close(); } catch (e) { /* ignore */ }
             ws = null;
         }
+
         try {
             ws = new WebSocket(url);
             ws._url = url;
@@ -50,6 +71,7 @@ export const realTime = defineStore('realTime', () => {
             console.error('[initWs] new WebSocket throw', e);
             return;
         }
+
         ws.onopen = () => {
             connected.value = true;
             console.log('[WS] onopen - connected = true');
@@ -60,7 +82,6 @@ export const realTime = defineStore('realTime', () => {
                 handleEnvelope(env);
             } catch (e) {
                 console.warn('[WS] onmessage - 非 JSON 收到', ev.data);
-                return;
             }
         };
         ws.onclose = (ev) => {
@@ -87,18 +108,18 @@ export const realTime = defineStore('realTime', () => {
             case 'CALL_ICE':
             case 'CALL_HANGUP':
             case 'CALL_REJECT':
-            case 'CALL_FAILED': {
+            case 'CALL_FAILED':
                 _emitSignal(type, p);
                 break;
-            }
+
             case 'WHITEBOARD_OPENED':
             case 'WHITEBOARD_INIT':
             case 'WHITEBOARD_EVENT':
             case 'WHITEBOARD_CLEAR':
-            case 'WHITEBOARD_ERROR': {
+            case 'WHITEBOARD_ERROR':
                 _emitSignal(type, p);
                 break;
-            }
+
             case 'NEW_FRIEND_REQUEST':
                 userchat.updateAgreeingList();
                 break;
@@ -106,6 +127,7 @@ export const realTime = defineStore('realTime', () => {
                 userchat.updateFriendList();
                 userchat.updateAgreeingList();
                 break;
+
             case 'NEW_PRIVATE_MESSAGE':
             case 'NEW_MESSAGE': {
                 try {
@@ -145,6 +167,7 @@ export const realTime = defineStore('realTime', () => {
                 }
                 break;
             }
+
             case 'MESSAGE_RECALLED': {
                 try {
                     const logicId =
@@ -163,15 +186,14 @@ export const realTime = defineStore('realTime', () => {
                 }
                 break;
             }
+
             case 'PRIVATE_MESSAGES_READ': {
                 try {
                     const readerId = Number(p.readerId);
                     const friendId = Number(p.friendId);
-                    // 对端读了“我发给TA”的消息 -> 在该会话将我方消息标记为已读
                     if (!Number.isNaN(readerId)) {
                         userchat.markMyMessagesReadByReader(readerId);
                     } else if (!Number.isNaN(friendId)) {
-                        // 兼容字段名（有时会用 friendId 表示对端）
                         userchat.markMyMessagesReadByReader(friendId);
                     }
                 } catch (e) {
@@ -179,6 +201,7 @@ export const realTime = defineStore('realTime', () => {
                 }
                 break;
             }
+
             case 'PEER_TYPING': {
                 try {
                     const otherId = Number(p.fromUserId);
@@ -191,19 +214,23 @@ export const realTime = defineStore('realTime', () => {
                 }
                 break;
             }
+
             case 'USER_ONLINE': {
                 const uid = Number(p.userId);
                 if (!isNaN(uid)) userchat.setFriendOnline(uid, true);
                 break;
             }
+
             case 'USER_OFFLINE': {
                 const uid = Number(p.userId);
                 if (!isNaN(uid)) userchat.setFriendOnline(uid, false);
                 break;
             }
+
             case 'REJECT_FRIEND_REQUEST':
                 userchat.updateAgreeingList();
                 break;
+
             default:
                 console.debug('Unhandled WS event', type, p);
         }
@@ -214,33 +241,27 @@ export const realTime = defineStore('realTime', () => {
             console.warn('[WS SEND] WebSocket 未连接，无法发送', { type, payload });
             return;
         }
-        const msg = { type, payload };
         try {
-            ws.send(JSON.stringify(msg));
+            ws.send(JSON.stringify({ type, payload }));
         } catch (e) {
             console.error('[WS SEND] send 出错', e);
         }
     }
 
     function sendPrivateText(targetUserId, content) {
-        const payload = {
+        sendWsEnvelope('SEND_MESSAGE', {
             conversationType: 'PRIVATE',
             targetUserId: Number(targetUserId),
             groupId: null,
             messageType: 'TEXT',
             content: String(content),
             attachmentId: null
-        };
-        sendWsEnvelope('SEND_MESSAGE', payload);
+        });
     }
 
-    // Typing indicator senders
-    function startTyping(targetUserId) {
-        sendWsEnvelope('TYPING_START', { targetUserId: Number(targetUserId) });
-    }
-    function stopTyping(targetUserId) {
-        sendWsEnvelope('TYPING_STOP', { targetUserId: Number(targetUserId) });
-    }
+    // Typing indicator
+    function startTyping(targetUserId) { sendWsEnvelope('TYPING_START', { targetUserId: Number(targetUserId) }); }
+    function stopTyping(targetUserId) { sendWsEnvelope('TYPING_STOP', { targetUserId: Number(targetUserId) }); }
 
     return {
         initWs,
