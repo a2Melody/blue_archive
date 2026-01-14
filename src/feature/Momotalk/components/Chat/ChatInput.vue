@@ -16,7 +16,16 @@
       </button>
     </div>
 
-    <textarea ref="messageEl" v-model="draft" class="editor" @keydown="onKeydown"></textarea>
+    <textarea
+        ref="messageEl"
+        v-model="draft"
+        class="editor"
+        @keydown="onKeydown"
+        @focus="onEditorFocus"
+        @blur="onEditorBlur"
+        @input="onEditorInput"
+        placeholder="输入消息…"
+    ></textarea>
     <button class="send" @click="send">发送<span class="iconfont icon-fasong1" style="margin-left: 4px;font-size: 25px" ></span></button>
 
     <!-- 非阻塞来电 modal -->
@@ -90,12 +99,13 @@ const fileInput = ref(null);
 // send text
 async function send() {
   const text = draft.value && draft.value.trim();
-  if (!text) return;
-  if (!selected.value) return;
+  if (!text || !selected.value) return;
   const targetId = String(selected.value.id);
   draft.value = '';
   try {
     rt.sendPrivateText(targetId, text);
+    // 发送后停止“正在输入”
+    stopTypingNow();
   } catch (e) {
     console.error('发送消息出错', e);
   }
@@ -1036,6 +1046,53 @@ onBeforeUnmount(() => {
 
   window.removeEventListener('openWhiteboard', onGlobalOpenWhiteboard);
 });
+
+/* -------- Typing indicator (微信式) -------- */
+const TYPING_INACTIVITY_MS = 2000; // 无输入 2s 后认为停止
+let typingActive = false;
+let typingStopTimer = null;
+
+function startTypingNow() {
+  if (!selected.value) return;
+  if (!typingActive) {
+    typingActive = true;
+    rt.startTyping(selected.value.id);
+  }
+  resetTypingTimer();
+}
+
+function stopTypingNow() {
+  if (!selected.value) return;
+  if (typingActive) {
+    typingActive = false;
+    rt.stopTyping(selected.value.id);
+  }
+  clearTypingTimer();
+}
+
+function resetTypingTimer() {
+  clearTypingTimer();
+  typingStopTimer = setTimeout(() => {
+    stopTypingNow();
+  }, TYPING_INACTIVITY_MS);
+}
+function clearTypingTimer() {
+  if (typingStopTimer) {
+    clearTimeout(typingStopTimer);
+    typingStopTimer = null;
+  }
+}
+
+function onEditorFocus() {
+  startTypingNow();
+}
+function onEditorBlur() {
+  stopTypingNow();
+}
+function onEditorInput() {
+  // 每次输入重置定时器，避免频繁发送
+  startTypingNow();
+}
 </script>
 
 <style scoped>
@@ -1049,25 +1106,15 @@ onBeforeUnmount(() => {
   border-top: 1px solid rgba(255, 179, 217, 0.3);
   overflow-y: auto;
 }
-.buttons{
-  display: flex;
-  gap:8px;
-}
+.buttons{ display: flex; gap:8px; }
 .icon_container{
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
 }
-.icon_container:hover{
-  background-color: rgba(255,240,245,1);
-}
-.wb-icon{
-  width:24px;
-  height:24px;
-  display:block;
-}
+.icon_container:hover{ background-color: rgba(255,240,245,1); }
+.wb-icon{ width:24px; height:24px; display:block; }
 .editor{
   flex: 1;
   width: 100%;
@@ -1077,25 +1124,14 @@ onBeforeUnmount(() => {
   border: none;
   outline: none;
 }
-.editor:focus{
-  outline: none;
-}
 .send{
-  width: 80px;
-  height: 32px;
+  width: 80px; height: 32px;
   background-color: rgb(241 157 170);
-  color: white;
-  border-radius: 20px;
-  transition: all 0.5s ease;
-  font-size: 16px;
-  align-self: flex-end;
-  margin-top: 8px;
+  color: white; border-radius: 20px;
+  transition: all 0.5s ease; font-size: 16px;
+  align-self: flex-end; margin-top: 8px;
 }
-.send:hover{
-  cursor: pointer;
-  transform: scale(1.02);
-  background-color: rgba(241,157,170,0.7);
-}
+.send:hover{ cursor: pointer; transform: scale(1.02); background-color: rgba(241,157,170,0.7); }
 
 /* incoming modal */
 .incoming-modal {

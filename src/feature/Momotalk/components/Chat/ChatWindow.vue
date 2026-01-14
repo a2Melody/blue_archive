@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
 import { userChat } from '@/stores/userChat.js';
 import { userStore } from '@/stores/UserStore.js';
@@ -15,14 +15,12 @@ const selectedRef = uc.getSelectedConversation();
 const selected = computed(() => selectedRef.value);
 
 const messages = computed(() => uc.getMessagesForSelected());
-
 const bodyRef = ref(null);
 
 function isMine(m) {
   return String(m.fromUserId) === String(me.getUserId());
 }
 
-// Normalize/format content
 function formatContent(text) {
   if (!text && text !== 0) return '';
   let s = String(text);
@@ -33,7 +31,7 @@ function formatContent(text) {
   return s;
 }
 
-/* ===== Image helpers ===== */
+/* image helpers */
 const MAX_THUMB_WIDTH = 200;
 const MAX_THUMB_HEIGHT = 200;
 const DEFAULT_THUMB_WIDTH = 100;
@@ -46,13 +44,11 @@ function isImageUrl(url, messageType) {
   const path = String(url).split('?')[0].toLowerCase();
   return /\.(png|jpe?g|gif|webp|svg)$/i.test(path);
 }
-
 function getFileExt(nameOrUrl) {
   const s = String(nameOrUrl || '').split('?')[0];
   const m = s.match(/\.([a-z0-9]+)$/i);
   return m ? m[1].toUpperCase() : '';
 }
-
 function onImageLoad(ev, m) {
   const iw = ev.target.naturalWidth || 0;
   const ih = ev.target.naturalHeight || 0;
@@ -61,32 +57,25 @@ function onImageLoad(ev, m) {
     m._displayHeight = DEFAULT_THUMB_HEIGHT;
     return;
   }
-
   const ratio = iw / ih;
   const NEAR_SQUARE_MIN = 0.8;
   const NEAR_SQUARE_MAX = 1.2;
-
   let maxW = MAX_THUMB_WIDTH;
   let maxH = MAX_THUMB_HEIGHT;
   if (ratio >= NEAR_SQUARE_MIN && ratio <= NEAR_SQUARE_MAX) {
-    maxW = 100;
-    maxH = 100;
+    maxW = 100; maxH = 100;
   }
-
   const scale = Math.min(1, maxW / iw, maxH / ih);
   let w = Math.round(iw * scale);
   let h = Math.round(ih * scale);
-
   if (w < MIN_THUMB_SIDE) w = MIN_THUMB_SIDE;
   if (h < MIN_THUMB_SIDE) h = MIN_THUMB_SIDE;
-
   m._displayWidth = w;
   m._displayHeight = h;
 }
 
-/* ===== Recall/Delete helpers ===== */
+/* recall/delete helpers */
 const RECALL_WINDOW_MS = 3 * 60 * 1000;
-
 function getMsgTimestamp(m) {
   if (m.timestamp) return Number(m.timestamp);
   if (m.createdAt) {
@@ -129,75 +118,23 @@ async function onRecallMessage(m) {
   }
 }
 
-/* ===== Auto READ logic (UX similar to major IM apps) =====
-   Mark current conversation as read only when:
-   - Conversation is selected
-   - Window is focused (document.hasFocus() === true)
-   - Message list is scrolled to bottom (latest incoming messages visible)
-   Debounced to avoid spamming the server.
-*/
-let lastReadTs = 0;
-function isAtBottom(el, tolerance = 12) {
-  if (!el) return false;
-  return el.scrollTop + el.clientHeight >= el.scrollHeight - tolerance;
-}
-function markReadDebounced() {
-  const now = Date.now();
-  if (now - lastReadTs < 800) return; // debounce ~0.8s
-  lastReadTs = now;
-  if (selected.value) {
-    uc.markConversationRead(selected.value.id);
-  }
-}
-function onScroll() {
-  const el = bodyRef.value;
-  if (!el || !selected.value) return;
-  if (document.hasFocus() && isAtBottom(el)) {
-    markReadDebounced();
-  }
-}
-function onWindowFocus() {
-  const el = bodyRef.value;
-  if (!el || !selected.value) return;
-  if (isAtBottom(el)) markReadDebounced();
-}
-function onVisibilityChange() {
-  if (document.visibilityState === 'visible') {
-    onWindowFocus();
-  }
-}
+/* typing indicator: whether peer is typing in current conversation */
+const showPeerTyping = computed(() => {
+  const sel = selected.value;
+  if (!sel) return false;
+  return uc.isPeerTyping(sel.id);
+});
 
-// when messages change, keep autoscroll and possibly mark read if at bottom
+/* autoscroll */
 watch(
     messages,
     async () => {
       await nextTick();
       const el = bodyRef.value;
-      if (el) {
-        // autoscroll to bottom on new messages in selected conversation
-        el.scrollTop = el.scrollHeight;
-        // if focused, mark read (only when scrolled to bottom)
-        if (document.hasFocus() && isAtBottom(el)) {
-          markReadDebounced();
-        }
-      }
+      if (el) el.scrollTop = el.scrollHeight;
     },
     { flush: 'post', deep: true }
 );
-
-onMounted(() => {
-  const el = bodyRef.value;
-  if (el) el.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('focus', onWindowFocus);
-  document.addEventListener('visibilitychange', onVisibilityChange);
-});
-
-onBeforeUnmount(() => {
-  const el = bodyRef.value;
-  if (el) el.removeEventListener('scroll', onScroll);
-  window.removeEventListener('focus', onWindowFocus);
-  document.removeEventListener('visibilitychange', onVisibilityChange);
-});
 </script>
 
 <template>
@@ -209,11 +146,15 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-else class="messages" ref="bodyRef">
+      <!-- 对方正在输入提示 -->
+      <div v-if="showPeerTyping" class="peer-typing">
+        对方正在输入…
+      </div>
+
       <div
           v-for="(m, idx) in messages"
           :key="m.id ?? idx"
           :class="['msg', isMine(m) ? 'me' : 'them']"
-          :data-mid="m.id"
       >
         <div class="msg-line" :class="isMine(m) ? 'line-me' : 'line-them'">
           <div
@@ -236,7 +177,7 @@ onBeforeUnmount(() => {
                     class="bubble-img"
                     :style="{
                     maxWidth: '100%',
-                    width: (m._displayWidth || DEFAULT_THUMB_WIDTH) + 'px',
+                    width: (m._displayWidth || 100) + 'px',
                     height: 'auto',
                     borderRadius: '6px',
                     display: 'block'
@@ -269,7 +210,6 @@ onBeforeUnmount(() => {
             </template>
           </div>
 
-          <!-- 操作按钮 + 读回执 -->
           <div class="msg-actions" :class="isMine(m) ? 'actions-me' : 'actions-them'">
             <span class="action-text" title="删除" @click="onDeleteMessage(m)">删除</span>
             <span v-if="canRecall(m)" class="action-text" title="撤回" @click="onRecallMessage(m)">撤回</span>
@@ -284,121 +224,39 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.chat_window {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-/* vertical scroll only */
-.messages {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px;
-  background: #fafafa;
-}
-
-.msg {
-  display: flex;
+.chat_window { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.messages { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 12px; background: #fafafa; }
+.peer-typing {
+  position: sticky;
+  top: 0;
+  background: #fffbe8;
+  color: #9a8700;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid #f1e1a6;
+  border-radius: 6px;
   margin-bottom: 8px;
 }
+.msg { display: flex; margin-bottom: 8px; }
 .msg.me { justify-content: flex-end; }
 .msg.them { justify-content: flex-start; }
-
-.msg-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  max-width: 80%;
-}
+.msg-line { display: flex; align-items: flex-start; gap: 6px; max-width: 80%; }
 .line-me { flex-direction: row-reverse; }
 .line-them { flex-direction: row; }
-
-.bubble {
-  max-width: 70%;
-  padding: 8px;
-  border-radius: 8px;
-  color: #000;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow: hidden;
-}
+.bubble { max-width: 70%; padding: 8px; border-radius: 8px; color: #000; white-space: pre-wrap; word-break: break-word; overflow: hidden; }
 .bubble-me { background: #f7d6e0; margin-left: 8px; }
 .bubble-them { background: #fff; border: 1px solid #eee; margin-right: 8px; }
-
 .media-wrap { display: inline-block; max-width: 100%; }
 .bubble-img { max-width: 100%; height: auto; display: block; border-radius: 6px; }
-
-/* action texts */
-.msg-actions {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  flex: 0 0 auto;
-  margin-top: 2px;
-  user-select: none;
-}
-.actions-me { justify-content: flex-start; }
-.actions-them { justify-content: flex-start; }
-.action-text {
-  color: #888;
-  font-size: 12px;
-  cursor: pointer;
-}
-.action-text:hover {
-  color: #666;
-  text-decoration: underline;
-}
-.read-receipt {
-  color: #aaa;
-  font-size: 12px;
-}
-
-/* whiteboard invite */
-.whiteboard-invite {
-  background: #fff7f9;
-  border: 1px dashed #ffb6c1;
-  padding: 10px;
-  border-radius: 8px;
-  display:flex;
-  flex-direction:column;
-}
-.pill {
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #f0f0f0;
-  border: none;
-  color: #555;
-  cursor: pointer;
-  font-size: 12px;
-}
+.msg-actions { display: inline-flex; gap: 8px; align-items: center; flex: 0 0 auto; margin-top: 2px; user-select: none; }
+.action-text { color: #888; font-size: 12px; cursor: pointer; }
+.action-text:hover { color: #666; text-decoration: underline; }
+.read-receipt { color: #aaa; font-size: 12px; }
+.whiteboard-invite { background: #fff7f9; border: 1px dashed #ffb6c1; padding: 10px; border-radius: 8px; display:flex; flex-direction:column; }
+.pill { padding: 6px 10px; border-radius: 6px; background: #f0f0f0; border: none; color: #555; cursor: pointer; font-size: 12px; }
 .pill.primary { background: #ff9db2; color: #fff; }
-
-/* file card */
-.file-card{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 8px;
-  border-radius:6px;
-  background:#fff;
-  border:1px solid #eee;
-  max-width: 100%;
-}
-.file-icon{
-  width:48px;
-  height:48px;
-  background:#f5f5f7;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:6px;
-  font-weight:700;
-  color:#666;
-  font-size:12px;
-}
+.file-card{ display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; background:#fff; border:1px solid #eee; max-width: 100%; }
+.file-icon{ width:48px; height:48px; background:#f5f5f7; display:flex; align-items:center; justify-content:center; border-radius:6px; font-weight:700; color:#666; font-size:12px; }
 .file-info{ display:flex; flex-direction:column; min-width:0; }
 .file-name{ font-size:13px; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
 .file-download{ margin-top:4px; font-size:12px; color:#1890ff; text-decoration:none; }
