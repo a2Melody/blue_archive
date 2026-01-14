@@ -1,13 +1,15 @@
 <script setup>
 import SearchBox from "@/feature/Momotalk/components/Chat/SearchBox.vue";
 import FriendList from "@/feature/Momotalk/components/Chat/FriendList.vue";
+import { ref } from "vue";
 
+const searchText = ref('');
 </script>
 
 <template>
   <div class="sidebar">
-    <SearchBox></SearchBox>
-    <FriendList></FriendList>
+    <SearchBox v-model:search="searchText" />
+    <FriendList :search-text="searchText" />
   </div>
 </template>
 

@@ -11,8 +11,27 @@ const props = defineProps({
   unreadCount: { type: Number, default: 0 },
   selected: Boolean,
 });
-const emit = defineEmits(['select']);
+
+const emit = defineEmits(['select', 'drag-start', 'drag-enter', 'drag-end']);
+
 function onClick() { emit('select'); }
+
+function onDragStart(e) {
+  emit('drag-start');
+}
+
+function onDragEnter(e) {
+  e.preventDefault();
+  emit('drag-enter');
+}
+
+function onDragOver(e) {
+  e.preventDefault(); // 允许 drop
+}
+
+function onDragEnd() {
+  emit('drag-end');
+}
 
 function fmtTime(iso) {
   if (!iso) return '';
@@ -21,7 +40,6 @@ function fmtTime(iso) {
   const dd = String(d.getDate()).padStart(2,'0');
   const hh = String(d.getHours()).padStart(2,'0');
   const mi = String(d.getMinutes()).padStart(2,'0');
-  // 同一天显示 HH:mm，跨天显示 MM-DD HH:mm（可按需优化）
   const today = new Date();
   const sameDay = d.toDateString() === today.toDateString();
   return sameDay ? `${hh}:${mi}` : `${mm}-${dd} ${hh}:${mi}`;
@@ -29,7 +47,16 @@ function fmtTime(iso) {
 </script>
 
 <template>
-  <div class="friend_item" @click="onClick" :class="{ 'friend_item--selected': props.selected }">
+  <div
+      class="friend_item"
+      :class="{ 'friend_item--selected': props.selected }"
+      @click="onClick"
+      draggable="true"
+      @dragstart.stop="onDragStart"
+      @dragenter.stop="onDragEnter"
+      @dragover.prevent="onDragOver"
+      @dragend="onDragEnd"
+  >
     <div class="avatar_wrap">
       <img :src="props.avatar" class="avatar" />
       <span class="badge" v-if="props.unreadCount > 0">{{ props.unreadCount > 99 ? '99+' : props.unreadCount }}</span>
@@ -55,7 +82,9 @@ function fmtTime(iso) {
   border-bottom:1px solid rgba(255,179,217,0.3); user-select:none;
 }
 .friend_item--selected{ background:#FFF0F5; }
-.friend_item:not(.friend_item--selected):hover{ cursor:pointer; background:rgba(255,240,245,0.8); box-shadow:2px 2px 5px rgba(0,0,0,0.08); }
+.friend_item:not(.friend_item--selected):hover{
+  cursor:pointer; background:rgba(255,240,245,0.8); box-shadow:2px 2px 5px rgba(0,0,0,0.08);
+}
 
 .avatar_wrap{ position:relative; }
 .avatar{ width:52px; height:52px; border-radius:50%; object-fit:cover; }

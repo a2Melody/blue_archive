@@ -1,15 +1,21 @@
 <script setup>
-
+const emit = defineEmits(['update:search']);
+const onInput = (e) => {
+  emit('update:search', e.target.value);
+};
 </script>
 
 <template>
   <div class="search_container">
-    <input class="name_search" placeholder="搜索好友...">
+    <input
+        class="name_search"
+        placeholder="搜索好友..."
+        @input="onInput"
+    />
   </div>
 </template>
 
 <style scoped>
-
 .search_container{
   width: 100%;
   height: 76px;
@@ -31,7 +37,7 @@
   outline-offset: 0;
 }
 .name_search::placeholder {
-  color: rgba(255, 179, 217, 0.8); /* 设置为你想要的粉色系或灰色 */
-  font-size: 1rem; /* 也可以单独调整占位符的大小 */
+  color: rgba(255, 179, 217, 0.8);
+  font-size: 1rem;
 }
 </style>
