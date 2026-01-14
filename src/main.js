@@ -1,30 +1,37 @@
 import './assets/styles/global.css'
 import './assets/icons/iconfont.css'
 import 'animate.css'
-import { userStore } from '@/stores/UserStore.js';
-import axios from 'axios';
 
 import { createApp } from 'vue';
-import {createPinia} from "pinia";
+import { createPinia } from 'pinia';
 import App from './App.vue';
-import router from './router'; // 你自己创建的 router 实例 (vue-router v4)
+import router from './router';
+import axios from 'axios';
+import { userStore } from '@/stores/UserStore.js';
+
+// Element Plus 全量引入（最简单用法）
+// 如果你已经在别处用按需引入，可以删掉这两行，保持你的原有配置。
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css';
 
 const app = createApp(App);
-const pinia=createPinia();
+const pinia = createPinia();
+
 app.use(pinia);
-app.use(router); // <--- 关键：全局注册 vue-router 的组件 (RouterLink / RouterView)
+app.use(router);
+app.use(ElementPlus);
+
 app.mount('#app');
 
-// 添加请求拦截器
-axios.interceptors.request.use(config => {
-    const store = userStore();
-    const token = store.getToken();
-
-    if (token) {
-        // 将 Token 注入到 Authorization 头中
-        config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
+// 请求拦截器：自动注入 Authorization
+axios.interceptors.request.use(
+    (config) => {
+        const store = userStore();
+        const token = store.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
