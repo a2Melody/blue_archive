@@ -99,14 +99,14 @@ function input_focus(e){
         </div>
         <!--      RouterLink-->
         <ul class="nav">
-          <li style="position: relative">
+<!--          <li style="position: relative">
             <div class="momotalk" @click="router.push('/momotalk')" :style="{ backgroundImage:`url(${momotalk})`}" @mouseenter="shake"></div>
             <div class="momotalk_numbers" v-if="user.getUnreadMessageNumbers()===null||user.getUnreadMessageNumbers()===0">99+</div>
           </li>
           <li><RouterLink to="/videos" class="nav_link" @mouseenter="jump">社交</RouterLink></li>
           <li><RouterLink to="/firstFolders" class="nav_link" @mouseenter="jump">收藏</RouterLink></li>
           <li><RouterLink to="/diary" class="nav_link" @mouseenter="jump">日记</RouterLink></li>
-          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试</RouterLink></li>
+          <li><RouterLink to="/test" class="nav_link" @mouseenter="jump">测试</RouterLink></li>-->
         </ul>
         <!--      头像 profile photo-->
         <div class="profile_wrapper" v-if="isLogin" :class="{ 'no-login': !isLogin }">

@@ -4,6 +4,7 @@ import {ref} from "vue";
 const member1=ref(true);
 const member2=ref(true);
 const member3=ref(true);
+const member4=ref(true);
 </script>
 
 <template>
@@ -43,6 +44,14 @@ const member3=ref(true);
                     leave-active-class="animate__animated animate__bounceOut slow-anim-in">
           <span v-if="member3" key="member3"  class="member3" >小白</span>
           <span v-else key="member3_words"  class="member3_words">木有什么想说的，你们说就好</span>
+        </transition>
+      </li>
+      <li class="member4" style="margin-left: 20px" @click="member4=!member4">
+        <transition mode="out-in"
+                    enter-active-class="animate__animated animate__bounceIn  slow-anim-out"
+                    leave-active-class="animate__animated animate__bounceOut slow-anim-in">
+          <span v-if="member4" key="member4"  class="member4" >原神牛逼</span>
+          <span v-else key="member4_words"  class="member4_words">鸣潮牛逼</span>
         </transition>
       </li>
     </ul>
@@ -93,8 +102,12 @@ const member3=ref(true);
     color: #ffd1de;
     cursor: pointer;
   }
-  .member1_words,.member1,.member2,.member2_words,.member3,.member3_words{
+  .member1_words,.member1,.member2,.member2_words,.member3,.member3_words,.member4,.member4_words{
     display: inline-block;          /*动画效果出现的话得该标签为display:inline-block*/
+  }
+  .member4:hover,.member4_words:hover{
+    cursor: pointer;
+    color: #fc94a7;
   }
   .member2:hover,.member2_words:hover{
     color: #27f3b4;

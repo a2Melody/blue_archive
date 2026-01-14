@@ -278,6 +278,14 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibilityChange);
   if (markTimer) clearTimeout(markTimer);
 });
+
+/**
+ * 临时头像 URL：
+ * - 对方头像：从会话 selected.value.avatarUrl（如果你已经在会话里放了 avatar 字段，可直接用）
+ * - 自己头像：me.getAvatarUrl() 之类，如果还没有，可以先写死一张
+ */
+const myAvatar = computed(() => me.getAvatarUrl());
+const peerAvatar = computed(() => selected.value?.userAvatarUrl || selected.value?.avatarUrl || '');
 </script>
 
 <template>
@@ -305,87 +313,195 @@ onBeforeUnmount(() => {
 
         <!-- 普通消息 -->
         <div v-else class="msg-row" :class="isMine(item) ? 'me' : 'them'">
-          <div class="msg-line" :class="isMine(item) ? 'line-me' : 'line-them'">
-            <div
-                class="bubble"
-                :class="isMine(item) ? 'bubble-me' : 'bubble-them'"
-            >
-              <template v-if="item.imageUrl">
-                <a
-                    v-if="isImageUrl(item.imageUrl, item.messageType)"
-                    :href="item.imageUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    :download="item.content || ''"
-                    class="media-wrap"
-                >
-                  <img
-                      :src="item.imageUrl"
-                      alt="attachment"
-                      @load="onImageLoad($event, item)"
-                      class="bubble-img"
-                      :style="{
-                      maxWidth: '100%',
-                      width: (item._displayWidth || 100) + 'px',
-                      height: 'auto',
-                      borderRadius: '6px',
-                      display: 'block'
-                    }"
-                  />
-                </a>
-                <div v-else class="file-card">
-                  <div class="file-icon">{{ getFileExt(item.content || item.imageUrl) || 'FILE' }}</div>
-                  <div class="file-info">
-                    <div class="file-name" :title="item.content || item.imageUrl">{{ item.content || '下载文件' }}</div>
-                    <a :href="item.imageUrl" target="_blank" rel="noopener noreferrer" class="file-download">打开</a>
-                  </div>
-                </div>
-              </template>
-
-              <template v-else>
-                <div
-                    v-if="item.messageType === 'WHITEBOARD_INVITE' ||
-                         (item.content && String(item.content).startsWith('whiteboard_invite:'))"
-                    class="whiteboard-invite"
-                >
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <strong>白板邀请</strong>
-                    <span style="color:#666;font-size:12px;">{{ formatContent(item.content) }}</span>
-                  </div>
-                  <div style="margin-top:8px; display:flex; gap:8px;">
-                    <button @click="$emit('joinWhiteboard', item)" class="pill primary">加入白板</button>
-                    <button @click="$event.stopPropagation()" class="pill">忽略</button>
-                  </div>
-                </div>
-                <div v-else>
-                  {{ formatContent(item.content) }}
-                </div>
-              </template>
+          <!-- 对方消息：左边头像 + 中间气泡 + 右侧操作 -->
+          <template v-if="!isMine(item)">
+            <div class="avatar-col">
+              <img
+                  v-if="peerAvatar"
+                  :src="peerAvatar"
+                  alt=""
+                  class="avatar-img"
+              />
             </div>
 
-            <div class="msg-actions">
-              <el-button
-                  class="msg-action-btn"
-                  type="danger"
-                  link
-                  :icon="Delete"
-                  size="small"
-                  title="删除"
-                  @click="confirmDelete(item)"
-              />
-              <el-button
-                  v-if="canRecall(item)"
-                  class="msg-action-btn"
-                  type="warning"
-                  link
-                  :icon="RefreshLeft"
-                  size="small"
-                  title="撤回"
-                  @click="confirmRecall(item)"
-              />
-              <span v-if="isMine(item)" class="read-receipt">{{ item._read ? '已读' : '未读' }}</span>
+            <div class="msg-main line-them">
+              <div
+                  class="bubble bubble-them"
+              >
+                <template v-if="item.imageUrl">
+                  <a
+                      v-if="isImageUrl(item.imageUrl, item.messageType)"
+                      :href="item.imageUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :download="item.content || ''"
+                      class="media-wrap"
+                  >
+                    <img
+                        :src="item.imageUrl"
+                        alt="attachment"
+                        @load="onImageLoad($event, item)"
+                        class="bubble-img"
+                        :style="{
+                        maxWidth: '100%',
+                        width: (item._displayWidth || 100) + 'px',
+                        height: 'auto',
+                        borderRadius: '6px',
+                        display: 'block'
+                      }"
+                    />
+                  </a>
+                  <div v-else class="file-card">
+                    <div class="file-icon">{{ getFileExt(item.content || item.imageUrl) || 'FILE' }}</div>
+                    <div class="file-info">
+                      <div class="file-name" :title="item.content || item.imageUrl">{{ item.content || '下载文件' }}</div>
+                      <a :href="item.imageUrl" target="_blank" rel="noopener noreferrer" class="file-download">打开</a>
+                    </div>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <div
+                      v-if="item.messageType === 'WHITEBOARD_INVITE' ||
+                           (item.content && String(item.content).startsWith('whiteboard_invite:'))"
+                      class="whiteboard-invite"
+                  >
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <strong>白板邀请</strong>
+                      <span style="color:#666;font-size:12px;">{{ formatContent(item.content) }}</span>
+                    </div>
+                    <div style="margin-top:8px; display:flex; gap:8px;">
+                      <button @click="$emit('joinWhiteboard', item)" class="pill primary">加入白板</button>
+                      <button @click="$event.stopPropagation()" class="pill">忽略</button>
+                    </div>
+                  </div>
+                  <div v-else>
+                    {{ formatContent(item.content) }}
+                  </div>
+                </template>
+              </div>
+
+              <div class="msg-actions">
+                <el-button
+                    class="msg-action-btn"
+                    type="danger"
+                    link
+                    :icon="Delete"
+                    size="small"
+                    title="删除"
+                    @click="confirmDelete(item)"
+                />
+                <el-button
+                    v-if="canRecall(item)"
+                    class="msg-action-btn"
+                    type="warning"
+                    link
+                    :icon="RefreshLeft"
+                    size="small"
+                    title="撤回"
+                    @click="confirmRecall(item)"
+                />
+                <span v-if="isMine(item)" class="read-receipt">{{ item._read ? '已读' : '未读' }}</span>
+              </div>
             </div>
-          </div>
+
+            <div class="avatar-col avatar-col-placeholder"></div>
+          </template>
+
+          <!-- 我方消息：左占位 + 中间气泡 + 右边头像 -->
+          <template v-else>
+            <div class="avatar-col avatar-col-placeholder"></div>
+
+            <div class="msg-main line-me">
+              <div
+                  class="bubble bubble-me"
+              >
+                <template v-if="item.imageUrl">
+                  <a
+                      v-if="isImageUrl(item.imageUrl, item.messageType)"
+                      :href="item.imageUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :download="item.content || ''"
+                      class="media-wrap"
+                  >
+                    <img
+                        :src="item.imageUrl"
+                        alt="attachment"
+                        @load="onImageLoad($event, item)"
+                        class="bubble-img"
+                        :style="{
+                        maxWidth: '100%',
+                        width: (item._displayWidth || 100) + 'px',
+                        height: 'auto',
+                        borderRadius: '6px',
+                        display: 'block'
+                      }"
+                    />
+                  </a>
+                  <div v-else class="file-card">
+                    <div class="file-icon">{{ getFileExt(item.content || item.imageUrl) || 'FILE' }}</div>
+                    <div class="file-info">
+                      <div class="file-name" :title="item.content || item.imageUrl">{{ item.content || '下载文件' }}</div>
+                      <a :href="item.imageUrl" target="_blank" rel="noopener noreferrer" class="file-download">打开</a>
+                    </div>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <div
+                      v-if="item.messageType === 'WHITEBOARD_INVITE' ||
+                           (item.content && String(item.content).startsWith('whiteboard_invite:'))"
+                      class="whiteboard-invite"
+                  >
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <strong>白板邀请</strong>
+                      <span style="color:#666;font-size:12px;">{{ formatContent(item.content) }}</span>
+                    </div>
+                    <div style="margin-top:8px; display:flex; gap:8px;">
+                      <button @click="$emit('joinWhiteboard', item)" class="pill primary">加入白板</button>
+                      <button @click="$event.stopPropagation()" class="pill">忽略</button>
+                    </div>
+                  </div>
+                  <div v-else>
+                    {{ formatContent(item.content) }}
+                  </div>
+                </template>
+              </div>
+
+              <div class="msg-actions">
+                <el-button
+                    class="msg-action-btn"
+                    type="danger"
+                    link
+                    :icon="Delete"
+                    size="small"
+                    title="删除"
+                    @click="confirmDelete(item)"
+                />
+                <el-button
+                    v-if="canRecall(item)"
+                    class="msg-action-btn"
+                    type="warning"
+                    link
+                    :icon="RefreshLeft"
+                    size="small"
+                    title="撤回"
+                    @click="confirmRecall(item)"
+                />
+                <span v-if="isMine(item)" class="read-receipt">{{ item._read ? '已读' : '未读' }}</span>
+              </div>
+            </div>
+
+            <div class="avatar-col">
+              <img
+                  v-if="myAvatar"
+                  :src="myAvatar"
+                  alt=""
+                  class="avatar-img"
+              />
+            </div>
+          </template>
         </div>
       </template>
     </div>
@@ -437,34 +553,32 @@ onBeforeUnmount(() => {
   margin-bottom: 8px;
 }
 
-/* 一条消息所在的整行：负责左右对齐 */
+/* 每一行消息：三列（左头像，中间内容，右头像） */
 .msg-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: flex-start;
+  column-gap: 8px;
   margin-bottom: 8px;
 }
-.msg-row.me {
-  justify-content: flex-end;
-}
-.msg-row.them {
-  justify-content: flex-start;
-}
 
-/* 内容行：控制最大宽度 + 头像/气泡/操作区排布 */
-.msg-line {
+/* 中间内容区域：气泡 + 操作 */
+.msg-main {
+  max-width: 70%;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  max-width: 70%; /* 整条消息的最大宽度 */
 }
-.line-me {
-  flex-direction: row-reverse;
+.msg-row.me .msg-main {
+  margin-left: auto; /* 右侧对齐一点点，整体更靠右 */
 }
-.line-them {
-  flex-direction: row;
+.msg-row.them .msg-main {
+  margin-right: auto;
 }
 
-/* 气泡本身 */
+/* 气泡 */
 .bubble {
+  width: auto;
   max-width: 100%;
   padding: 8px;
   border-radius: 8px;
@@ -475,12 +589,12 @@ onBeforeUnmount(() => {
 }
 .bubble-me {
   background: #f7d6e0;
-  margin-left: 8px;
+  align-self: flex-end;
 }
 .bubble-them {
   background: #fff;
   border: 1px solid #eee;
-  margin-right: 8px;
+  align-self: flex-start;
 }
 
 .media-wrap {
@@ -492,6 +606,21 @@ onBeforeUnmount(() => {
   height: auto;
   display: block;
   border-radius: 6px;
+}
+
+/* 头像列 */
+.avatar-col {
+  display: flex;
+  justify-content: center;
+}
+.avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar-col-placeholder {
+  /* 保持网格占位，不显示内容 */
 }
 
 /* 操作按钮：默认透明，悬浮整行时出现 */

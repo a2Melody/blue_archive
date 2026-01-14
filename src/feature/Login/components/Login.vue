@@ -44,7 +44,7 @@ async function submit() {
       if (newAccess) {
         user.setToken(newAccess);
       }
-      await router.push('/firstFolders');
+      await router.push('/momotalk');
     } else {
       // 处理业务逻辑错误（如密码错误）
       console.warn('登录失败：', responseData.message);

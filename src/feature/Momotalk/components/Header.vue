@@ -2,21 +2,39 @@
 import momotalk from "@/assets/images/momotalk.png";
 import { useRouter } from "vue-router";
 import { computed, onMounted } from "vue";
+import axios from "axios";
 import { userChat } from "@/stores/userChat.js";
+import { userStore } from "@/stores/UserStore.js";
 
 const router = useRouter();
-const emit = defineEmits(['toggle-friends']);
+// 事件：好友管理、编辑个人信息
+const emit = defineEmits(['toggle-friends', 'edit-profile']);
 
 const uc = userChat();
-// 红点数量：未处理好友申请数
-const pendingCount = computed(() => uc.getPendingRequestsCount?.() ?? (uc.getAgreeingList()?.value?.length || 0));
+const me = userStore();
 
-// 首次进入时拉一次，避免刷新后红点不显示
+// 红点数量：未处理好友申请数
+const pendingCount = computed(
+    () => uc.getPendingRequestsCount?.() ?? (uc.getAgreeingList()?.value?.length || 0)
+);
+
 onMounted(() => {
   if (uc.updateAgreeingList) {
-    uc.updateAgreeingList().catch(()=>{});
+    uc.updateAgreeingList().catch(() => {});
   }
 });
+
+// 返回主页 = 调用后端登出 + 清前端状态 + 回到登录页
+async function handleLogoutAndBack() {
+  try {
+    await axios.post('/api/user/logout', {}, { withCredentials: true });
+  } catch (e) {
+    console.warn('logout api failed, still clear local state', e?.response?.data || e?.message);
+  }
+  me.clearAll && me.clearAll();
+  uc.resetForLogout && uc.resetForLogout();
+  router.push('/');
+}
 </script>
 
 <template>
@@ -29,8 +47,14 @@ onMounted(() => {
     </ul>
 
     <ul class="icons">
+      <!-- 当前就是聊天页，这个图标只是视觉提示 -->
       <li class="icon_container">
         <span class="iconfont icon-shuyi_liaotian" title="聊天"></span>
+      </li>
+
+      <!-- 个人资料：点击打开自定义信息编辑弹窗 -->
+      <li class="icon_container" @click="emit('edit-profile')">
+        <span class="iconfont icon-yonghu" title="个人资料"></span>
       </li>
 
       <!-- 好友管理按钮 + 红点 -->
@@ -41,8 +65,9 @@ onMounted(() => {
         </span>
       </li>
 
-      <li class="icon_container">
-        <span class="iconfont icon-fanhui" @click="router.push('/firstFolders')" title="返回主页"></span>
+      <!-- 返回主页：登出并返回登录页 -->
+      <li class="icon_container" @click="handleLogoutAndBack">
+        <span class="iconfont icon-fanhui" title="退出到登录"></span>
       </li>
     </ul>
   </div>
@@ -63,7 +88,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
-/*左侧的momotalk的logo*/
+
+/* 左侧 Momotalk logo */
 .momotalk_container{
   display: flex;
   align-items: center;
@@ -75,7 +101,7 @@ onMounted(() => {
   height: 32px;
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center; /* 建议加上，保证图片居中 */
+  background-position: center;
   user-select: none;
 }
 .momotalk_name{
@@ -86,7 +112,7 @@ onMounted(() => {
   margin-left: 4px;
 }
 
-/*右侧的按钮*/
+/* 右侧按钮 */
 .icon_container{
   display: flex;
   align-items: center;
@@ -106,7 +132,7 @@ onMounted(() => {
   background-color: rgba(255,255,255,.4);
 }
 
-/* 红点定位与样式 */
+/* 红点 */
 .icon_with_badge{
   position: relative;
 }
@@ -124,7 +150,6 @@ onMounted(() => {
   font-size: 12px;
   line-height: 18px;
   text-align: center;
-  /* 与导航背景做分隔描边，避免“糊在一起” */
   box-shadow: 0 0 0 2px rgb(241 157 170);
 }
 </style>
