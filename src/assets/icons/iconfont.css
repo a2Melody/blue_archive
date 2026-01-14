@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4948411 */
-  src: url('iconfont.woff2?t=1765810073048') format('woff2'),
-       url('iconfont.woff?t=1765810073048') format('woff'),
-       url('iconfont.ttf?t=1765810073048') format('truetype');
+  src: url('iconfont.woff2?t=1768194441242') format('woff2'),
+       url('iconfont.woff?t=1768194441242') format('woff'),
+       url('iconfont.ttf?t=1768194441242') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,270 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-shipintonghua3:before {
+  content: "\e64c";
+}
+
+.icon-shipinliaotian:before {
+  content: "\e650";
+}
+
+.icon-qunliao-shipinliaotian:before {
+  content: "\e6bb";
+}
+
+.icon-shipinliaotian1:before {
+  content: "\e666";
+}
+
+.icon-shipintonghua:before {
+  content: "\e668";
+}
+
+.icon-shipintonghua-tianchong:before {
+  content: "\e7dd";
+}
+
+.icon-shipintonghua1:before {
+  content: "\e638";
+}
+
+.icon-a-shipintonghuapoppy_icon_video:before {
+  content: "\e649";
+}
+
+.icon-shipintonghua2:before {
+  content: "\e6ba";
+}
+
+.icon-yuangou:before {
+  content: "\e7a7";
+}
+
+.icon-yuangou1:before {
+  content: "\eba0";
+}
+
+.icon-yuangou2:before {
+  content: "\e660";
+}
+
+.icon-a-CircleCheckyuangouqueren:before {
+  content: "\e921";
+}
+
+.icon-a-CircleCheckFilledyuangoutianchong:before {
+  content: "\e922";
+}
+
+.icon-check:before {
+  content: "\e639";
+}
+
+.icon-gou1:before {
+  content: "\e63a";
+}
+
+.icon-cha:before {
+  content: "\e63b";
+}
+
+.icon-gougou:before {
+  content: "\e6a5";
+}
+
+.icon-chacha:before {
+  content: "\e63d";
+}
+
+.icon-xiaolian-:before {
+  content: "\e640";
+}
+
+.icon-yuanquangou:before {
+  content: "\e69a";
+}
+
+.icon-yuanquanchasvg:before {
+  content: "\e6d7";
+}
+
+.icon-tianjiahaoyou:before {
+  content: "\e7aa";
+}
+
+.icon-sousuo1:before {
+  content: "\e641";
+}
+
+.icon-tianjiahaoyou1:before {
+  content: "\e64f";
+}
+
+.icon-tianjiahaoyou2:before {
+  content: "\e75c";
+}
+
+.icon-xiaolian:before {
+  content: "\ec80";
+}
+
+.icon-tianjiahaoyou-:before {
+  content: "\e695";
+}
+
+.icon-yuanquancha:before {
+  content: "\e68c";
+}
+
+.icon-sousuo2:before {
+  content: "\e642";
+}
+
+.icon-yuanquancha1:before {
+  content: "\e6dc";
+}
+
+.icon-gou3:before {
+  content: "\e644";
+}
+
+.icon-sousuo3:before {
+  content: "\e8b9";
+}
+
+.icon-sousuo_2:before {
+  content: "\e6d2";
+}
+
+.icon-sousuo4:before {
+  content: "\e645";
+}
+
+.icon-sousuo5:before {
+  content: "\e646";
+}
+
+.icon-yuanquanchahao:before {
+  content: "\e64a";
+}
+
+.icon-yuanquangouxuan:before {
+  content: "\e745";
+}
+
+.icon-tiaopifang:before {
+  content: "\e926";
+}
+
+.icon-tiaopiyuan:before {
+  content: "\e927";
+}
+
+.icon-yuanquangou1:before {
+  content: "\e64b";
+}
+
+.icon-sousuo6:before {
+  content: "\e782";
+}
+
+.icon-yuanquangou2:before {
+  content: "\ea2c";
+}
+
+.icon-sousuo7:before {
+  content: "\e6a6";
+}
+
+.icon-yuanquangouxuan1:before {
+  content: "\e67c";
+}
+
+.icon-fasong:before {
+  content: "\e62e";
+}
+
+.icon-send:before {
+  content: "\e631";
+}
+
+.icon-fasong1:before {
+  content: "\e632";
+}
+
+.icon-fasong2:before {
+  content: "\e6a3";
+}
+
+.icon-wenjianjia:before {
+  content: "\e62d";
+}
+
+.icon-weixinliaotian:before {
+  content: "\e628";
+}
+
+.icon-fanhui:before {
+  content: "\e65b";
+}
+
+.icon-weibiaoti--:before {
+  content: "\e62a";
+}
+
+.icon-20gf-bubble4:before {
+  content: "\e939";
+}
+
+.icon-fanhui1:before {
+  content: "\e643";
+}
+
+.icon-haoyou:before {
+  content: "\e7fe";
+}
+
+.icon-xiaoxi:before {
+  content: "\e62b";
+}
+
+.icon-shuyi_liaotian:before {
+  content: "\e661";
+}
+
+.icon-liaotiankuang:before {
+  content: "\e62c";
+}
+
+.icon-xiaoxi1:before {
+  content: "\e781";
+}
+
+.icon-fuzhi:before {
+  content: "\e61d";
+}
+
+.icon-fuzhi1:before {
+  content: "\eac1";
+}
+
+.icon-fuzhi_o:before {
+  content: "\eb4e";
+}
+
+.icon-fuzhi2:before {
+  content: "\e64e";
+}
+
+.icon-fuzhi-:before {
+  content: "\e648";
+}
+
+.icon-fuzhi3:before {
+  content: "\e65f";
 }
 
 .icon-cuowu:before {

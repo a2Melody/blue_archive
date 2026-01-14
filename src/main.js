@@ -7,24 +7,29 @@ import axios from 'axios';
 import { createApp } from 'vue';
 import {createPinia} from "pinia";
 import App from './App.vue';
-import router from './router'; // 你自己创建的 router 实例 (vue-router v4)
+import router from './router';
+
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css';
 
 const app = createApp(App);
 const pinia=createPinia();
 app.use(pinia);
-app.use(router); // <--- 关键：全局注册 vue-router 的组件 (RouterLink / RouterView)
-app.mount('#app');
+app.use(router);
+app.use(ElementPlus);
 
-// 添加请求拦截器
+// 请求拦截器：注入 Authorization
 axios.interceptors.request.use(config => {
     const store = userStore();
     const token = store.getToken();
-
     if (token) {
-        // 将 Token 注入到 Authorization 头中
         config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
-}, error => {
-    return Promise.reject(error);
+}, error => Promise.reject(error));
+
+// **这里新增：先尝试加载当前用户信息，再挂载应用**
+const store = userStore();
+store.loadCurrentUserInfo().finally(() => {
+    app.mount('#app');
 });

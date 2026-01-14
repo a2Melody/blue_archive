@@ -1,25 +1,32 @@
 <script setup>
+import axios from "axios";
+import {onMounted} from "vue";
 
 
+async function pingBackend()
+{
+  try {
+    const response = await axios.post('/api/chat/messages/private/getMessage', {
+      // 这里放置你要发送的 POST 数据，如果没有可以传空对象 {}
+      friendId:'6',
+      page:'0'
+    });
+
+    console.log('返回数据:', response.data);
+  } catch (error) {
+    console.error('请求失败:', error);
+  }
+}
+
+onMounted(()=>{
+  pingBackend();
+})
 </script>
 
 <template>
-  <div class="container">
-    <div class="triangle"></div>
-  </div>
 </template>
 
 <style scoped>
-.container{
-  /*  transform: skew(-25deg);*/
-}
-.triangle {
-  width: 0;
-  height: 0;
-  border-top: 100px solid orange;
-  border-right: 100px solid orange;
-  border-left: 100px solid transparent;
-  border-bottom: 100px solid transparent;
-}
+
 
 </style>
